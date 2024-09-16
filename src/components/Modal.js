@@ -2,40 +2,300 @@ import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 
 function Modal({ isOpen, onClose, onSave, onDelete, event }) {
-  const [title, setTitle] = useState("");
+  const [formData, setFormData] = useState({
+    startDate: "",
+    endDate: "",
+    companyName: "",
+    peopleCount: "",
+    contactName: "",
+    foodPackage: "",
+    contactPhone: "",
+    eventLocation: "",
+    eventDescription: "",
+    deposit: "",
+    pendingBalance: "",
+    attachments: null,
+  });
 
   useEffect(() => {
     if (event) {
-      setTitle(event.title || "");
+      setFormData({
+        ...event,
+        startDate: event.start
+          ? new Date(event.start).toISOString().substr(0, 16)
+          : "",
+        endDate: event.end
+          ? new Date(event.end).toISOString().substr(0, 16)
+          : "",
+      });
     }
   }, [event]);
 
+  const handleChange = (e) => {
+    const { name, value, type, files } = e.target;
+    setFormData((prevState) => ({
+      ...prevState,
+      [name]: type === "file" ? files[0] : value,
+    }));
+  };
+
+  const handleMoneyChange = (e) => {
+    const { name, value } = e.target;
+    const numericValue = value.replace(/\D/g, "");
+    const formattedValue = Number(numericValue).toLocaleString("es-CO");
+    setFormData((prevState) => ({
+      ...prevState,
+      [name]: formattedValue,
+    }));
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave(title);
+    onSave(formData);
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
-      <div className="bg-white p-5 rounded-lg shadow-xl w-96">
-        <h2 className="text-2xl font-bold mb-4">
-          {event && event.id ? "Editar Evento" : "Nuevo Evento"}
-        </h2>
-        <form onSubmit={handleSubmit}>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Título del evento"
-            required
-            className="w-full p-2 mb-4 border border-gray-300 rounded"
-          />
-          <div className="flex justify-between">
+    <div className="fixed inset-0 bg-gray-800 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-50">
+      <div className="bg-white p-8 rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-3xl font-bold text-gray-900">
+            {event && event.id ? "Editar Evento" : "Nuevo Evento"}
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700 text-2xl font-bold transition duration-150 ease-in-out"
+          >
+            &times;
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label
+                htmlFor="startDate"
+                className="block text-sm font-medium text-gray-600"
+              >
+                Fecha Inicio
+              </label>
+              <input
+                type="datetime-local"
+                id="startDate"
+                name="startDate"
+                value={formData.startDate}
+                onChange={handleChange}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm"
+                required
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="endDate"
+                className="block text-sm font-medium text-gray-600"
+              >
+                Fecha Fin
+              </label>
+              <input
+                type="datetime-local"
+                id="endDate"
+                name="endDate"
+                value={formData.endDate}
+                onChange={handleChange}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm"
+                required
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label
+                htmlFor="companyName"
+                className="block text-sm font-medium text-gray-600"
+              >
+                Nombre Empresa/Grupo
+              </label>
+              <input
+                type="text"
+                id="companyName"
+                name="companyName"
+                value={formData.companyName}
+                onChange={handleChange}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm"
+                required
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="peopleCount"
+                className="block text-sm font-medium text-gray-700"
+              >
+                N° de personas
+              </label>
+              <input
+                type="number"
+                id="peopleCount"
+                name="peopleCount"
+                value={formData.peopleCount}
+                onChange={handleChange}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm"
+                required
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="contactName"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Nombre Responsable/Contacto
+              </label>
+              <input
+                type="text"
+                id="contactName"
+                name="contactName"
+                value={formData.contactName}
+                onChange={handleChange}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm"
+                required
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="foodPackage"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Paquete de alimentación
+              </label>
+              <input
+                type="text"
+                id="foodPackage"
+                name="foodPackage"
+                value={formData.foodPackage}
+                onChange={handleChange}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="contactPhone"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Teléfonos de Contacto
+              </label>
+              <input
+                type="tel"
+                id="contactPhone"
+                name="contactPhone"
+                value={formData.contactPhone}
+                onChange={handleChange}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm"
+                required
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="eventLocation"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Lugar del Evento
+              </label>
+              <input
+                type="text"
+                id="eventLocation"
+                name="eventLocation"
+                value={formData.eventLocation}
+                onChange={handleChange}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm"
+                required
+              />
+            </div>
+          </div>
+          <div>
+            <label
+              htmlFor="eventDescription"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Descripción del Evento
+            </label>
+            <textarea
+              id="eventDescription"
+              name="eventDescription"
+              value={formData.eventDescription}
+              onChange={handleChange}
+              rows="3"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm"
+            ></textarea>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label
+                htmlFor="deposit"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Consignación/Abono
+              </label>
+              <div className="mt-1 relative rounded-md shadow-sm">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <span className="text-gray-500 sm:text-sm">$</span>
+                </div>
+                <input
+                  type="text"
+                  id="deposit"
+                  name="deposit"
+                  value={formData.deposit}
+                  onChange={handleMoneyChange}
+                  className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md"
+                  placeholder="0"
+                />
+              </div>
+            </div>
+            <div>
+              <label
+                htmlFor="pendingBalance"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Saldo Pendiente
+              </label>
+              <div className="mt-1 relative rounded-md shadow-sm">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <span className="text-gray-500 sm:text-sm">$</span>
+                </div>
+                <input
+                  type="text"
+                  id="pendingBalance"
+                  name="pendingBalance"
+                  value={formData.pendingBalance}
+                  onChange={handleMoneyChange}
+                  className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md"
+                  placeholder="0"
+                />
+              </div>
+            </div>
+          </div>
+          <div>
+            <label
+              htmlFor="attachments"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Adjuntar archivos
+            </label>
+            <input
+              type="file"
+              id="attachments"
+              name="attachments"
+              onChange={handleChange}
+              className="mt-1 block w-full text-sm text-gray-500
+                file:mr-4 file:py-2 file:px-4
+                file:rounded-full file:border-0
+                file:text-sm file:font-semibold
+                file:bg-indigo-50 file:text-indigo-700
+                hover:file:bg-indigo-100"
+            />
+          </div>
+          <div className="flex justify-end space-x-2 pt-4">
             <button
               type="submit"
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              className="px-6 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 transition duration-150 ease-in-out text-sm"
             >
               Guardar
             </button>
@@ -43,7 +303,7 @@ function Modal({ isOpen, onClose, onSave, onDelete, event }) {
               <button
                 type="button"
                 onClick={onDelete}
-                className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                className="px-6 py-3 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 transition duration-150 ease-in-out text-sm"
               >
                 Eliminar
               </button>
@@ -51,7 +311,7 @@ function Modal({ isOpen, onClose, onSave, onDelete, event }) {
             <button
               type="button"
               onClick={onClose}
-              className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+              className="px-6 py-3 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition duration-150 ease-in-out text-sm"
             >
               Cancelar
             </button>
@@ -69,10 +329,17 @@ Modal.propTypes = {
   onDelete: PropTypes.func.isRequired,
   event: PropTypes.shape({
     id: PropTypes.string,
-    title: PropTypes.string,
-    start: PropTypes.string,
-    end: PropTypes.string,
-    allDay: PropTypes.bool,
+    start: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
+    end: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
+    companyName: PropTypes.string,
+    peopleCount: PropTypes.string,
+    contactName: PropTypes.string,
+    foodPackage: PropTypes.string,
+    contactPhone: PropTypes.string,
+    eventLocation: PropTypes.string,
+    eventDescription: PropTypes.string,
+    deposit: PropTypes.string,
+    pendingBalance: PropTypes.string,
   }),
 };
 

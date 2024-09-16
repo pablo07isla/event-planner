@@ -10,41 +10,80 @@ function EventCalendar({ initialEvents }) {
   const [events, setEvents] = useState(initialEvents);
   const [modalOpen, setModalOpen] = useState(false);
   const [currentEvent, setCurrentEvent] = useState(null);
-  const [setError] = useState(null);
+  const [error, setError] = useState(null);
 
   const handleDateSelect = (selectInfo) => {
     setCurrentEvent({
       start: selectInfo.startStr,
       end: selectInfo.endStr,
       allDay: selectInfo.allDay,
+      companyName: "",
+      peopleCount: "",
+      contactName: "",
+      foodPackage: "",
+      contactPhone: "",
+      eventLocation: "",
+      eventDescription: "",
+      deposit: "",
+      pendingAmount: "",
+      attachments: null,
     });
     setModalOpen(true);
   };
 
   const handleEventClick = (clickInfo) => {
-    setCurrentEvent(clickInfo.event);
+    setCurrentEvent({
+      id: clickInfo.event.id,
+      start: clickInfo.event.start,
+      end: clickInfo.event.end,
+      allDay: clickInfo.event.allDay,
+      companyName: clickInfo.event.extendedProps.companyName || "",
+      peopleCount: clickInfo.event.extendedProps.peopleCount || "",
+      contactName: clickInfo.event.extendedProps.contactName || "",
+      foodPackage: clickInfo.event.extendedProps.foodPackage || "",
+      contactPhone: clickInfo.event.extendedProps.contactPhone || "",
+      eventLocation: clickInfo.event.extendedProps.eventLocation || "",
+      eventDescription: clickInfo.event.extendedProps.eventDescription || "",
+      deposit: clickInfo.event.extendedProps.deposit || "",
+      pendingAmount: clickInfo.event.extendedProps.pendingAmount || "",
+      attachments: clickInfo.event.extendedProps.attachments || null,
+    });
     setModalOpen(true);
   };
 
-  const handleSaveEvent = (title) => {
+  const handleSaveEvent = (eventData) => {
     setError(null);
     try {
-      if (currentEvent.id) {
+      const newEventData = {
+        ...eventData,
+        start: new Date(eventData.startDate),
+        end: new Date(eventData.endDate),
+        title: eventData.companyName,
+      };
+
+      if (eventData.id) {
         // Updating existing event
         setEvents(
-          events.map((e) => (e.id === currentEvent.id ? { ...e, title } : e))
+          events.map((e) =>
+            e.id === eventData.id ? { ...e, ...newEventData } : e
+          )
         );
       } else {
         // Creating new event
         const newEvent = {
+          ...newEventData,
           id: createEventId(),
-          title,
-          start: currentEvent.start,
-          end: currentEvent.end,
-          allDay: currentEvent.allDay,
         };
         setEvents([...events, newEvent]);
       }
+
+      // Handle file upload here if needed
+      if (eventData.attachments) {
+        // You might want to implement a file upload function here
+        // For example: uploadFile(eventData.attachments, eventData.id)
+        console.log("File attached:", eventData.attachments.name);
+      }
+
       setModalOpen(false);
     } catch (err) {
       setError("Error al guardar el evento. Por favor, inténtelo de nuevo.");
@@ -82,6 +121,12 @@ function EventCalendar({ initialEvents }) {
           events={events}
           select={handleDateSelect}
           eventClick={handleEventClick}
+          eventContent={(eventInfo) => (
+            <>
+              <b>{eventInfo.event.title}</b>
+              <p>{eventInfo.event.extendedProps.eventLocation}</p>
+            </>
+          )}
           className="p-4"
         />
       </div>
@@ -92,6 +137,7 @@ function EventCalendar({ initialEvents }) {
         onDelete={handleDeleteEvent}
         event={currentEvent}
       />
+      {error && <div className="text-red-500 mt-2">{error}</div>}
     </div>
   );
 }
@@ -101,9 +147,20 @@ EventCalendar.propTypes = {
     PropTypes.shape({
       id: PropTypes.string.isRequired,
       title: PropTypes.string.isRequired,
-      start: PropTypes.string.isRequired,
-      end: PropTypes.string,
+      start: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)])
+        .isRequired,
+      end: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
       allDay: PropTypes.bool,
+      companyName: PropTypes.string,
+      peopleCount: PropTypes.string,
+      contactName: PropTypes.string,
+      foodPackage: PropTypes.string,
+      contactPhone: PropTypes.string,
+      eventLocation: PropTypes.string,
+      eventDescription: PropTypes.string,
+      deposit: PropTypes.string,
+      pendingAmount: PropTypes.string,
+      attachments: PropTypes.object,
     })
   ),
 };
