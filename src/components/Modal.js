@@ -10,11 +10,13 @@ function Modal({ isOpen, onClose, onSave, onDelete, event }) {
     contactName: "",
     foodPackage: "",
     contactPhone: "",
+    email: "", // New field for email
     eventLocation: "",
     eventDescription: "",
     deposit: "",
     pendingBalance: "",
     attachments: null,
+    eventStatus: "", // New field for event status
   });
 
   useEffect(() => {
@@ -27,6 +29,9 @@ function Modal({ isOpen, onClose, onSave, onDelete, event }) {
         endDate: event.end
           ? new Date(event.end).toISOString().substr(0, 16)
           : "",
+
+        eventStatus: event.eventStatus || "", // Initialize event status
+        email: event.email || "", // Initialize email
       });
     }
   }, [event]);
@@ -72,10 +77,10 @@ function Modal({ isOpen, onClose, onSave, onDelete, event }) {
         </div>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
+            <div className="w-full">
               <label
                 htmlFor="startDate"
-                className="block text-sm font-medium text-gray-600"
+                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
               >
                 Fecha Inicio
               </label>
@@ -85,33 +90,15 @@ function Modal({ isOpen, onClose, onSave, onDelete, event }) {
                 name="startDate"
                 value={formData.startDate}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm"
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                placeholder="Fecha Inicio"
                 required
               />
             </div>
-            <div>
-              <label
-                htmlFor="endDate"
-                className="block text-sm font-medium text-gray-600"
-              >
-                Fecha Fin
-              </label>
-              <input
-                type="datetime-local"
-                id="endDate"
-                name="endDate"
-                value={formData.endDate}
-                onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm"
-                required
-              />
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label
                 htmlFor="companyName"
-                className="block text-sm font-medium text-gray-600"
+                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
               >
                 Nombre Empresa/Grupo
               </label>
@@ -121,31 +108,17 @@ function Modal({ isOpen, onClose, onSave, onDelete, event }) {
                 name="companyName"
                 value={formData.companyName}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm"
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                placeholder="Nombre Empresa/Grupo"
                 required
               />
             </div>
-            <div>
-              <label
-                htmlFor="peopleCount"
-                className="block text-sm font-medium text-gray-700"
-              >
-                N° de personas
-              </label>
-              <input
-                type="number"
-                id="peopleCount"
-                name="peopleCount"
-                value={formData.peopleCount}
-                onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm"
-                required
-              />
-            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label
                 htmlFor="contactName"
-                className="block text-sm font-medium text-gray-700"
+                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
               >
                 Nombre Responsable/Contacto
               </label>
@@ -155,14 +128,34 @@ function Modal({ isOpen, onClose, onSave, onDelete, event }) {
                 name="contactName"
                 value={formData.contactName}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm"
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                placeholder="Nombre Responsable/Contacto"
                 required
               />
             </div>
             <div>
               <label
+                htmlFor="peopleCount"
+                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+              >
+                N° de personas
+              </label>
+              <input
+                type="number"
+                id="peopleCount"
+                name="peopleCount"
+                value={formData.peopleCount}
+                onChange={handleChange}
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                placeholder="N° Personas"
+                required
+              />
+            </div>
+
+            <div>
+              <label
                 htmlFor="foodPackage"
-                className="block text-sm font-medium text-gray-700"
+                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
               >
                 Paquete de alimentación
               </label>
@@ -172,15 +165,16 @@ function Modal({ isOpen, onClose, onSave, onDelete, event }) {
                 name="foodPackage"
                 value={formData.foodPackage}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm"
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                placeholder="Nombre Responsable/Contacto"
               />
             </div>
             <div>
               <label
                 htmlFor="contactPhone"
-                className="block text-sm font-medium text-gray-700"
+                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
               >
-                Teléfonos de Contacto
+                Teléfono de Contacto
               </label>
               <input
                 type="tel"
@@ -188,14 +182,33 @@ function Modal({ isOpen, onClose, onSave, onDelete, event }) {
                 name="contactPhone"
                 value={formData.contactPhone}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm"
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                placeholder="Teléfono de Contacto"
+                required
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="email"
+                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+              >
+                Email
+              </label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                placeholder="Email"
                 required
               />
             </div>
             <div>
               <label
                 htmlFor="eventLocation"
-                className="block text-sm font-medium text-gray-700"
+                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
               >
                 Lugar del Evento
               </label>
@@ -205,15 +218,16 @@ function Modal({ isOpen, onClose, onSave, onDelete, event }) {
                 name="eventLocation"
                 value={formData.eventLocation}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm"
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                placeholder="Lugar del Evento"
                 required
               />
             </div>
           </div>
-          <div>
+          <div className="sm:col-span-2">
             <label
               htmlFor="eventDescription"
-              className="block text-sm font-medium text-gray-700"
+              className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
             >
               Descripción del Evento
             </label>
@@ -222,15 +236,16 @@ function Modal({ isOpen, onClose, onSave, onDelete, event }) {
               name="eventDescription"
               value={formData.eventDescription}
               onChange={handleChange}
-              rows="3"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm"
+              rows="5"
+              className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+              placeholder="Descripcion del Evento"
             ></textarea>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label
                 htmlFor="deposit"
-                className="block text-sm font-medium text-gray-700"
+                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
               >
                 Consignación/Abono
               </label>
@@ -244,7 +259,7 @@ function Modal({ isOpen, onClose, onSave, onDelete, event }) {
                   name="deposit"
                   value={formData.deposit}
                   onChange={handleMoneyChange}
-                  className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md"
+                  className="pl-7 pr-12 block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                   placeholder="0"
                 />
               </div>
@@ -252,7 +267,7 @@ function Modal({ isOpen, onClose, onSave, onDelete, event }) {
             <div>
               <label
                 htmlFor="pendingBalance"
-                className="block text-sm font-medium text-gray-700"
+                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
               >
                 Saldo Pendiente
               </label>
@@ -266,31 +281,55 @@ function Modal({ isOpen, onClose, onSave, onDelete, event }) {
                   name="pendingBalance"
                   value={formData.pendingBalance}
                   onChange={handleMoneyChange}
-                  className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md"
+                  className="pl-7 pr-12 block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                   placeholder="0"
                 />
               </div>
             </div>
           </div>
-          <div>
-            <label
-              htmlFor="attachments"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Adjuntar archivos
-            </label>
-            <input
-              type="file"
-              id="attachments"
-              name="attachments"
-              onChange={handleChange}
-              className="mt-1 block w-full text-sm text-gray-500
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label
+                htmlFor="eventStatus"
+                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+              >
+                Estado del Evento
+              </label>
+              <select
+                id="eventStatus"
+                name="eventStatus"
+                value={formData.eventStatus}
+                onChange={handleChange}
+                className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                required
+              >
+                <option selected="">Seleccione un estado</option>
+                <option value="Pendiente">Pendiente</option>
+                <option value="Con Abono">Con Abono</option>
+                <option value="Pago Total">Pago Total</option>
+                <option value="Cancelado">Cancelado</option>
+              </select>
+            </div>
+            <div>
+              <label
+                htmlFor="attachments"
+                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+              >
+                Adjuntar archivos
+              </label>
+              <input
+                type="file"
+                id="attachments"
+                name="attachments"
+                onChange={handleChange}
+                className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg  focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500
                 file:mr-4 file:py-2 file:px-4
                 file:rounded-full file:border-0
                 file:text-sm file:font-semibold
                 file:bg-indigo-50 file:text-indigo-700
                 hover:file:bg-indigo-100"
-            />
+              />
+            </div>
           </div>
           <div className="flex justify-end space-x-2 pt-4">
             <button
@@ -336,10 +375,12 @@ Modal.propTypes = {
     contactName: PropTypes.string,
     foodPackage: PropTypes.string,
     contactPhone: PropTypes.string,
+    email: PropTypes.string, // Add email to PropTypes
     eventLocation: PropTypes.string,
     eventDescription: PropTypes.string,
     deposit: PropTypes.string,
     pendingBalance: PropTypes.string,
+    eventStatus: PropTypes.string,
   }),
 };
 

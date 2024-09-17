@@ -22,14 +22,18 @@ function EventCalendar({ initialEvents }) {
       contactName: "",
       foodPackage: "",
       contactPhone: "",
+      email: "", // New field for email
       eventLocation: "",
       eventDescription: "",
       deposit: "",
       pendingAmount: "",
       attachments: null,
+      eventStatus: "Pendiente", // Default status for new events
     });
     setModalOpen(true);
   };
+
+  console.log("events", events);
 
   const handleEventClick = (clickInfo) => {
     setCurrentEvent({
@@ -42,11 +46,13 @@ function EventCalendar({ initialEvents }) {
       contactName: clickInfo.event.extendedProps.contactName || "",
       foodPackage: clickInfo.event.extendedProps.foodPackage || "",
       contactPhone: clickInfo.event.extendedProps.contactPhone || "",
+      email: clickInfo.event.extendedProps.email || "", // New field for email
       eventLocation: clickInfo.event.extendedProps.eventLocation || "",
       eventDescription: clickInfo.event.extendedProps.eventDescription || "",
       deposit: clickInfo.event.extendedProps.deposit || "",
       pendingAmount: clickInfo.event.extendedProps.pendingAmount || "",
       attachments: clickInfo.event.extendedProps.attachments || null,
+      eventStatus: clickInfo.event.extendedProps.eventStatus || "Pendiente",
     });
     setModalOpen(true);
   };
@@ -102,6 +108,29 @@ function EventCalendar({ initialEvents }) {
 
   const createEventId = () => String(new Date().getTime());
 
+  const getEventColor = (status) => {
+    switch (status) {
+      case "Pendiente":
+        return "#FFA500"; // Orange
+      case "Con Abono":
+        return "#4CAF50"; // Green
+      case "Pago Total":
+        return "#2196F3"; // Blue
+      case "Cancelado":
+        return "#F44336"; // Red
+      default:
+        return "#9E9E9E"; // Grey
+    }
+  };
+
+  const prepareEvents = (events) => {
+    return events.map((event) => ({
+      ...event,
+      backgroundColor: getEventColor(event.eventStatus),
+      borderColor: getEventColor(event.eventStatus),
+    }));
+  };
+
   return (
     <div className="container mx-auto p-4">
       <div className="bg-white shadow-lg rounded-lg overflow-hidden">
@@ -118,13 +147,13 @@ function EventCalendar({ initialEvents }) {
           selectMirror={true}
           dayMaxEvents={true}
           weekends={true}
-          events={events}
+          events={prepareEvents(events)} // Use the prepared events here
           select={handleDateSelect}
           eventClick={handleEventClick}
           eventContent={(eventInfo) => (
             <>
               <b>{eventInfo.event.title}</b>
-              <p>{eventInfo.event.extendedProps.eventLocation}</p>
+              <p>{eventInfo.event.extendedProps.peopleCount}pax</p>
             </>
           )}
           className="p-4"
@@ -156,11 +185,13 @@ EventCalendar.propTypes = {
       contactName: PropTypes.string,
       foodPackage: PropTypes.string,
       contactPhone: PropTypes.string,
+      email: PropTypes.string, // Add email to PropTypes
       eventLocation: PropTypes.string,
       eventDescription: PropTypes.string,
       deposit: PropTypes.string,
       pendingAmount: PropTypes.string,
       attachments: PropTypes.object,
+      eventStatus: PropTypes.string, // New prop type for event status
     })
   ),
 };
