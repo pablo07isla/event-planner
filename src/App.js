@@ -3,8 +3,7 @@ import EventCalendar from "./components/EventCalendar";
 
 function App() {
   return (
-    <div className="App">
-      <h1>Event Planner</h1>
+    <div className="App ">
       <EventCalendar />
     </div>
   );

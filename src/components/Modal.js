@@ -1,20 +1,21 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
+import MultiSelectDropdown from "./MultiSelectDropdown";
 
-function Modal({ isOpen, onClose, onSave, onDelete, event }) {
+function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
   const [formData, setFormData] = useState({
     startDate: "",
     endDate: "",
     companyName: "",
     peopleCount: "",
     contactName: "",
-    foodPackage: "",
+    foodPackage: [],
     contactPhone: "",
     email: "", // New field for email
     eventLocation: "",
     eventDescription: "",
     deposit: "",
-    pendingBalance: "",
+    pendingAmount: "",
     attachments: null,
     eventStatus: "", // New field for event status
   });
@@ -23,18 +24,35 @@ function Modal({ isOpen, onClose, onSave, onDelete, event }) {
     if (event) {
       setFormData({
         ...event,
-        startDate: event.start
-          ? new Date(event.start).toISOString().substr(0, 16)
-          : "",
-        endDate: event.end
-          ? new Date(event.end).toISOString().substr(0, 16)
-          : "",
-
+        startDate: formatDateForInput(event.start),
+        endDate: formatDateForInput(event.end),
+        foodPackage: Array.isArray(event.foodPackage) ? event.foodPackage : [],
         eventStatus: event.eventStatus || "", // Initialize event status
         email: event.email || "", // Initialize email
+        deposit: event.deposit ? event.deposit.toString() : "",
+        pendingAmount: event.pendingAmount
+          ? event.pendingAmount.toString()
+          : "",
       });
     }
   }, [event]);
+
+  const formatDateForInput = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    // Tomar solo la fecha sin cambiar la zona horaria
+    return date.toISOString().slice(0, 16); // Formato YYYY-MM-DD
+  };
+
+  const formatCurrency = (value) => {
+    if (!value) return "";
+    return new Intl.NumberFormat("es-CO", {
+      style: "currency",
+      currency: "COP",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
+  };
 
   const handleChange = (e) => {
     const { name, value, type, files } = e.target;
@@ -44,21 +62,50 @@ function Modal({ isOpen, onClose, onSave, onDelete, event }) {
     }));
   };
 
-  const handleMoneyChange = (e) => {
-    const { name, value } = e.target;
-    const numericValue = value.replace(/\D/g, "");
-    const formattedValue = Number(numericValue).toLocaleString("es-CO");
+  const handleFoodPackageChange = (selectedOptions) => {
     setFormData((prevState) => ({
       ...prevState,
-      [name]: formattedValue,
+      foodPackage: selectedOptions,
     }));
+  };
+
+  const handleMoneyChange = (e) => {
+    const { name, value } = e.target;
+
+    // Limpiar el valor para dejar solo números
+    const numericValue = value.replace(/[^\d]/g, "");
+    if (!numericValue) {
+      setFormData((prevState) => ({
+        ...prevState,
+        [name]: "",
+      }));
+      return;
+    }
+
+    // Actualizar el estado con el valor limpio (sin formato)
+    setFormData((prevState) => ({
+      ...prevState,
+      [name]: numericValue,
+    }));
+
+    // Formatear el valor como moneda y actualizar el campo de entrada
+    e.target.value = formatCurrency(numericValue);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave(formData);
+    const submissionData = {
+      ...formData,
+      start: new Date(formData.startDate).toISOString(),
+      end: new Date(formData.endDate).toISOString(),
+      peopleCount: parseInt(formData.peopleCount),
+      deposit: parseFloat(formData.deposit) || 0,
+      pendingAmount: parseFloat(formData.pendingAmount) || 0,
+      allDay: true, // Add this line
+    };
+    onSave(submissionData);
   };
-
+  console.log("submit", formData);
   if (!isOpen) return null;
 
   return (
@@ -88,13 +135,32 @@ function Modal({ isOpen, onClose, onSave, onDelete, event }) {
                 type="datetime-local"
                 id="startDate"
                 name="startDate"
-                value={formData.startDate}
+                value={formData.startDate} // Eliminado el "split"
                 onChange={handleChange}
                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                 placeholder="Fecha Inicio"
                 required
               />
             </div>
+            <div className="w-full">
+              <label
+                htmlFor="endDate"
+                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+              >
+                Fecha Fin
+              </label>
+              <input
+                type="datetime-local"
+                id="endDate"
+                name="endDate"
+                value={formData.endDate} // Eliminado el "split"
+                onChange={handleChange}
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                required
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label
                 htmlFor="companyName"
@@ -113,8 +179,7 @@ function Modal({ isOpen, onClose, onSave, onDelete, event }) {
                 required
               />
             </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
             <div>
               <label
                 htmlFor="contactName"
@@ -131,42 +196,6 @@ function Modal({ isOpen, onClose, onSave, onDelete, event }) {
                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                 placeholder="Nombre Responsable/Contacto"
                 required
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="peopleCount"
-                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-              >
-                N° de personas
-              </label>
-              <input
-                type="number"
-                id="peopleCount"
-                name="peopleCount"
-                value={formData.peopleCount}
-                onChange={handleChange}
-                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                placeholder="N° Personas"
-                required
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="foodPackage"
-                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-              >
-                Paquete de alimentación
-              </label>
-              <input
-                type="text"
-                id="foodPackage"
-                name="foodPackage"
-                value={formData.foodPackage}
-                onChange={handleChange}
-                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                placeholder="Nombre Responsable/Contacto"
               />
             </div>
             <div>
@@ -207,6 +236,24 @@ function Modal({ isOpen, onClose, onSave, onDelete, event }) {
             </div>
             <div>
               <label
+                htmlFor="peopleCount"
+                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+              >
+                N° de personas
+              </label>
+              <input
+                type="number"
+                id="peopleCount"
+                name="peopleCount"
+                value={formData.peopleCount}
+                onChange={handleChange}
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                placeholder="N° Personas"
+                required
+              />
+            </div>
+            <div>
+              <label
                 htmlFor="eventLocation"
                 className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
               >
@@ -221,6 +268,29 @@ function Modal({ isOpen, onClose, onSave, onDelete, event }) {
                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                 placeholder="Lugar del Evento"
                 required
+              />
+            </div>
+            <div className="col-span-2">
+              <label
+                htmlFor="foodPackage"
+                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+              >
+                Paquete de alimentación
+              </label>
+              <MultiSelectDropdown
+                options={[
+                  { value: "Paquete 1", label: "Paquete 1" },
+                  { value: "Paquete 2", label: "Paquete 2" },
+                  { value: "Paquete 3", label: "Paquete 3" },
+                  {
+                    value: "Desayuno/Refrigerio",
+                    label: "Desayuno/Refrigerio",
+                  },
+                  { value: "Auditorio", label: "Auditorio" },
+                ]}
+                selectedValues={formData.foodPackage}
+                onChange={handleFoodPackageChange}
+                placeholder="Seleccionar paquetes de alimentación"
               />
             </div>
           </div>
@@ -251,13 +321,13 @@ function Modal({ isOpen, onClose, onSave, onDelete, event }) {
               </label>
               <div className="mt-1 relative rounded-md shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <span className="text-gray-500 sm:text-sm">$</span>
+                  <span className="text-gray-500 sm:text-sm"></span>
                 </div>
                 <input
                   type="text"
                   id="deposit"
                   name="deposit"
-                  value={formData.deposit}
+                  value={formatCurrency(formData.deposit)}
                   onChange={handleMoneyChange}
                   className="pl-7 pr-12 block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                   placeholder="0"
@@ -266,20 +336,20 @@ function Modal({ isOpen, onClose, onSave, onDelete, event }) {
             </div>
             <div>
               <label
-                htmlFor="pendingBalance"
+                htmlFor="pendingAmount"
                 className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
               >
                 Saldo Pendiente
               </label>
               <div className="mt-1 relative rounded-md shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <span className="text-gray-500 sm:text-sm">$</span>
+                  <span className="text-gray-500 sm:text-sm"></span>
                 </div>
                 <input
                   type="text"
-                  id="pendingBalance"
-                  name="pendingBalance"
-                  value={formData.pendingBalance}
+                  id="pendingAmount"
+                  name="pendingAmount"
+                  value={formatCurrency(formData.pendingAmount)}
                   onChange={handleMoneyChange}
                   className="pl-7 pr-12 block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                   placeholder="0"
@@ -361,7 +431,7 @@ function Modal({ isOpen, onClose, onSave, onDelete, event }) {
   );
 }
 
-Modal.propTypes = {
+ModalEvent.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   onSave: PropTypes.func.isRequired,
@@ -373,15 +443,15 @@ Modal.propTypes = {
     companyName: PropTypes.string,
     peopleCount: PropTypes.string,
     contactName: PropTypes.string,
-    foodPackage: PropTypes.string,
+    foodPackage: PropTypes.arrayOf(PropTypes.string),
     contactPhone: PropTypes.string,
     email: PropTypes.string, // Add email to PropTypes
     eventLocation: PropTypes.string,
     eventDescription: PropTypes.string,
     deposit: PropTypes.string,
-    pendingBalance: PropTypes.string,
+    pendingAmount: PropTypes.string,
     eventStatus: PropTypes.string,
   }),
 };
 
-export default Modal;
+export default ModalEvent;
