@@ -148,14 +148,27 @@ function EventCalendar({ initialEvents }) {
 
   const handleCancelDateChange = () => {
     setAlertDialogOpen(false);
-    // Revert the change in the calendar
-    if (eventToUpdate) {
+    console.log("eventToUpdate:", eventToUpdate);
+    if (eventToUpdate && calendarRef.current) {
       const calendarApi = calendarRef.current.getApi();
       const event = calendarApi.getEventById(eventToUpdate.id);
+      console.log("Event found:", event);
       if (event) {
         event.setDates(eventToUpdate.oldStart, eventToUpdate.oldEnd);
+
+        const eventStatus = event.extendedProps.eventStatus || "Pendiente";
+        console.log("Event status:", eventStatus);
+        const colors = getEventColor(eventStatus);
+        console.log("Colors:", colors);
+
+        event.setProp("backgroundColor", colors.backgroundColor);
+        event.setProp("borderColor", colors.backgroundColor);
+        event.setProp("textColor", colors.textColor);
+
+        console.log("Event after updates:", event);
       }
     }
+    setEvents((prevEvents) => [...prevEvents]);
   };
 
   const handleSaveEvent = async (eventData) => {
