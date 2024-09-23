@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
+import listPlugin from "@fullcalendar/list";
 import interactionPlugin from "@fullcalendar/interaction";
 import ModalEvent from "./Modal";
 import esLocale from "@fullcalendar/core/locales/es";
@@ -12,8 +13,10 @@ import "bootstrap-icons/font/bootstrap-icons.css"; // needs additional webpack c
 import "@fortawesome/fontawesome-free/css/all.css"; // needs additional webpack config!
 import bootstrapPlugin from "@fullcalendar/bootstrap";
 import axios from "axios";
-
+import Sidebar from "./Sidebar";
 import { Modal, Button } from "react-bootstrap";
+import "./EventCalendar.css"; // Asegúrate de que la ruta sea correcta
+import "react-datepicker/dist/react-datepicker.css";
 
 function EventCalendar({ initialEvents }) {
   const [events, setEvents] = useState(initialEvents);
@@ -24,8 +27,8 @@ function EventCalendar({ initialEvents }) {
   const [eventToUpdate, setEventToUpdate] = useState(null);
 
   const handleDateSelect = (selectInfo) => {
-    let endDate = new Date(selectInfo.end);
-    endDate.setDate(endDate.getDate() - 1); // Restar un día a la fecha de fin
+    // let endDate = new Date(selectInfo.end);
+    // endDate.setDate(endDate.getDate() - 1); // Restar un día a la fecha de fin
 
     setCurrentEvent({
       start: selectInfo.startStr,
@@ -331,128 +334,185 @@ function EventCalendar({ initialEvents }) {
 
   const calendarRef = useRef(null);
 
+  const handleAddEvent = () => {
+    setCurrentEvent({
+      start: "",
+      end: "",
+      allDay: true,
+      companyName: "",
+      peopleCount: "",
+      contactName: "",
+      foodPackage: [],
+      contactPhone: "",
+      email: "",
+      eventLocation: "",
+      eventDescription: "",
+      deposit: "",
+      pendingAmount: "",
+      attachments: null,
+      eventStatus: "Pendiente",
+    });
+    setModalOpen(true);
+  };
+
   return (
-    <div className="container mx-auto p-6">
-      <div className="bg-white shadow-xl rounded-2xl overflow-hidden">
-        <div className="p-6">
-          <h2 className="text-3xl font-bold text-gray-800 mb-6">
-            Calendario de Eventos
-          </h2>
-          <FullCalendar
-            plugins={[
-              dayGridPlugin,
-              timeGridPlugin,
-              interactionPlugin,
-              bootstrap5Plugin,
-              bootstrapPlugin,
-            ]}
-            themeSystem="bootstrap"
-            headerToolbar={{
-              left: "prev,next today",
-              center: "title",
-              right: "dayGridMonth,timeGridWeek,timeGridDay",
-            }}
-            initialView="dayGridMonth"
-            editable={true}
-            selectable={true}
-            selectMirror={true}
-            dayMaxEvents={true}
-            weekends={true}
-            events={preparedEvents}
-            select={handleDateSelect}
-            eventClick={handleEventClick}
-            ref={calendarRef}
-            eventDrop={handleEventDrop}
-            eventResize={handleEventResize}
-            eventContent={(eventInfo) => (
-              <div className="flex items-center justify-between w-full px-2 py-1 text-sm">
-                <span className="font-semibold truncate">
-                  {eventInfo.event.title}
-                </span>
-                <span className="ml-1 text-xs bg-gray-200 text-gray-700 px-1 rounded">
-                  {eventInfo.event.extendedProps.peopleCount}pax
-                </span>
-              </div>
-            )}
-            locale={esLocale}
-            buttonText={{
-              today: "Hoy",
-              month: "Mes",
-              week: "Semana",
-              day: "Día",
-              list: "Lista",
-            }}
-            firstDay={1}
-            titleFormat={{ year: "numeric", month: "long" }}
-            views={{
-              dayGridMonth: {
-                dayHeaderFormat: { weekday: "long" },
-              },
-              timeGridWeek: {
-                dayHeaderFormat: {
-                  weekday: "long",
-                  day: "numeric",
-                  month: "numeric",
+    <div className="flex h-screen overflow-hidden">
+      <Sidebar currentUser="Nombre de Usuario" onAddEvent={handleAddEvent} />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 overflow-auto p-6">
+          <div className="bg-white shadow-xl rounded-2xl h-full">
+            {/* <h2 className="text-3xl font-bold text-gray-800 mb-6">
+              Calendario de Eventos
+            </h2> */}
+            <FullCalendar
+              plugins={[
+                dayGridPlugin,
+                timeGridPlugin,
+                listPlugin,
+                interactionPlugin,
+                bootstrap5Plugin,
+                bootstrapPlugin,
+              ]}
+              // themeSystem="bootstrap"
+              headerToolbar={{
+                left: "prev,next today",
+                center: "title",
+                right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
+              }}
+              initialView="dayGridMonth"
+              editable={true}
+              selectable={true}
+              selectMirror={true}
+              dayMaxEvents={true}
+              weekends={true}
+              events={preparedEvents}
+              select={handleDateSelect}
+              eventClick={handleEventClick}
+              ref={calendarRef}
+              eventDrop={handleEventDrop}
+              eventResize={handleEventResize}
+              height="100%"
+              eventContent={(eventInfo) => (
+                <div className="flex items-center justify-between w-full px-2 py-1 text-sm">
+                  <span className="font-semibold truncate">
+                    {eventInfo.event.title}
+                  </span>
+                  <span className="ml-1 text-xs bg-gray-200 text-gray-700 px-1 rounded">
+                    {eventInfo.event.extendedProps.peopleCount}pax
+                  </span>
+                </div>
+              )}
+              locale={esLocale}
+              buttonText={{
+                today: "Hoy",
+                month: "Mes",
+                week: "Semana",
+                day: "Día",
+                list: "Lista",
+              }}
+              firstDay={1}
+              titleFormat={{ year: "numeric", month: "long" }}
+              views={{
+                dayGridMonth: {
+                  dayHeaderFormat: { weekday: "long" },
                 },
-              },
-              timeGridDay: {
-                dayHeaderFormat: {
-                  weekday: "long",
-                  day: "numeric",
-                  month: "numeric",
+                timeGridWeek: {
+                  dayHeaderFormat: {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "numeric",
+                  },
                 },
-              },
-            }}
-            slotLabelFormat={{
-              hour: "2-digit",
-              minute: "2-digit",
-              hour12: false,
-            }}
-            eventTimeFormat={{
-              hour: "2-digit",
-              minute: "2-digit",
-              hour12: false,
-            }}
-            // className="bootstrap5"
-          />
+                timeGridDay: {
+                  dayHeaderFormat: {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "numeric",
+                  },
+                },
+                listWeek: {
+                  buttonText: "Lista", // Texto para la vista de lista
+                },
+              }}
+              slotLabelFormat={{
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false,
+              }}
+              eventTimeFormat={{
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false,
+              }}
+              bootstrapFontAwesome={false}
+              buttonIcons={{
+                prev: "chevron-left",
+                next: "chevron-right",
+              }}
+              customButtons={{
+                prev: {
+                  icon: "chevron-left",
+                  click: function () {
+                    const calendarApi = calendarRef.current.getApi();
+                    calendarApi.prev();
+                  },
+                },
+                next: {
+                  icon: "chevron-right",
+                  click: function () {
+                    const calendarApi = calendarRef.current.getApi();
+                    calendarApi.next();
+                  },
+                },
+                today: {
+                  text: "Hoy",
+                  click: function () {
+                    const calendarApi = calendarRef.current.getApi();
+                    calendarApi.today();
+                  },
+                },
+              }}
+            />
+
+            <ModalEvent
+              isOpen={modalOpen}
+              onClose={() => setModalOpen(false)}
+              onSave={handleSaveEvent}
+              onDelete={handleDeleteEvent}
+              event={currentEvent}
+            />
+            <Modal
+              show={alertDialogOpen}
+              onHide={() => setAlertDialogOpen(false)}
+              centered
+            >
+              <Modal.Header closeButton>
+                <Modal.Title>Confirmar cambio de fecha</Modal.Title>
+              </Modal.Header>
+              <Modal.Body>
+                ¿Está seguro de que desea cambiar la fecha del evento?
+              </Modal.Body>
+              <Modal.Footer>
+                <Button variant="secondary" onClick={handleCancelDateChange}>
+                  Cancelar
+                </Button>
+                <Button variant="primary" onClick={handleConfirmDateChange}>
+                  Confirmar
+                </Button>
+              </Modal.Footer>
+            </Modal>
+          </div>
+          {error && (
+            <div
+              className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+              role="alert"
+            >
+              <strong className="font-bold">Error!</strong>
+              <span className="block sm:inline"> {error}</span>
+            </div>
+          )}
         </div>
       </div>
-      <ModalEvent
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSave={handleSaveEvent}
-        onDelete={handleDeleteEvent}
-        event={currentEvent}
-      />
-      <Modal
-        show={alertDialogOpen}
-        onHide={() => setAlertDialogOpen(false)}
-        centered
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Confirmar cambio de fecha</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          ¿Está seguro de que desea cambiar la fecha del evento?
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleCancelDateChange}>
-            Cancelar
-          </Button>
-          <Button variant="primary" onClick={handleConfirmDateChange}>
-            Confirmar
-          </Button>
-        </Modal.Footer>
-      </Modal>
-      {error && (
-        <div
-          className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
-          role="alert"
-        >
-          <strong className="font-bold">Error!</strong>
-          <span className="block sm:inline"> {error}</span>
-        </div>
-      )}
     </div>
   );
 }

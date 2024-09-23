@@ -113,7 +113,7 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
       <div className="bg-white p-8 rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-3xl font-bold text-gray-900">
-            {event && event.id ? "Editar Evento" : "Nuevo Evento"}
+            {event?.id ? "Editar Evento" : "Nuevo Evento"}
           </h2>
           <button
             onClick={onClose}
@@ -283,9 +283,10 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
                   { value: "Paquete 2", label: "Paquete 2" },
                   { value: "Paquete 3", label: "Paquete 3" },
                   {
-                    value: "Desayuno/Refrigerio",
-                    label: "Desayuno/Refrigerio",
+                    value: "Desayuno",
+                    label: "Desayuno",
                   },
+                  { value: "Refrigerio", label: "Refrigerio" },
                   { value: "Auditorio", label: "Auditorio" },
                 ]}
                 selectedValues={formData.foodPackage}

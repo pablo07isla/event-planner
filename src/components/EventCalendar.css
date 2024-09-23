@@ -80,3 +80,51 @@
   .modal-buttons button[type="button"]:hover {
     background-color: #d32f2f;
   }
+
+  /* Estilos personalizados para el calendario */
+.fc .fc-button-primary {
+  background-color: #4f46e5; /* Color del sidebar (indigo-600) */
+  border-color: #4f46e5;
+  margin-right: 5px; /* Añade espacio entre los botones */
+}
+
+.fc .fc-button-primary:not(:disabled).fc-button-active,
+.fc .fc-button-primary:not(:disabled):active {
+  background-color: #4338ca; /* Un tono más oscuro para el estado activo (indigo-700) */
+  border-color: #4338ca;
+}
+
+.fc .fc-button-primary:hover {
+  background-color: #4338ca; /* El mismo tono más oscuro para el hover */
+  border-color: #4338ca;
+}
+
+.fc .fc-toolbar-title {
+  color: #1e293b; /* Un color oscuro para el título (slate-800) */
+}
+
+/* Estilo para los días de la semana */
+.fc th {
+  color: #4b5563; /* Un color gris oscuro para los días de la semana (gray-600) */
+}
+
+/* Estilo para los números de los días */
+.fc .fc-daygrid-day-number {
+  color: #1e293b; /* El mismo color oscuro que el título (slate-800) */
+}
+
+/* Estilos para los botones de vista */
+.fc-button-group {
+  display: flex;
+  gap: 5px; /* Añade espacio entre los botones dentro del grupo */
+  
+}
+
+.fc .fc-button {
+  padding: 6px 12px; /* Ajusta el padding para un mejor aspecto */
+}
+
+/* Ajuste adicional para el botón "Hoy" */
+.fc-today-button {
+  margin-right: 10px !important; /* Añade más espacio después del botón "Hoy" */
+}
