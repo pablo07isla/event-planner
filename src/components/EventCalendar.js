@@ -16,7 +16,9 @@ import axios from "axios";
 import Sidebar from "./Sidebar";
 import { Modal, Button } from "react-bootstrap";
 import "./EventCalendar.css"; // Asegúrate de que la ruta sea correcta
-import "react-datepicker/dist/react-datepicker.css";
+import { useNavigate } from "react-router-dom";
+import EventList from "./EventList";
+import { FaPrint } from "react-icons/fa";
 
 function EventCalendar({ initialEvents }) {
   const [events, setEvents] = useState(initialEvents);
@@ -25,7 +27,10 @@ function EventCalendar({ initialEvents }) {
   const [error, setError] = useState(null);
   const [alertDialogOpen, setAlertDialogOpen] = useState(false);
   const [eventToUpdate, setEventToUpdate] = useState(null);
-
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
+  const calendarRef = useRef(null);
+  const [showModal, setShowModal] = useState(false); // Estado para controlar el modal
   const handleDateSelect = (selectInfo) => {
     // let endDate = new Date(selectInfo.end);
     // endDate.setDate(endDate.getDate() - 1); // Restar un día a la fecha de fin
@@ -226,8 +231,15 @@ function EventCalendar({ initialEvents }) {
 
       setModalOpen(false);
     } catch (err) {
-      setError("Error al guardar el evento. Por favor, inténtelo de nuevo.");
-      console.error(err);
+      if (err.response && err.response.status === 401) {
+        // Token expirado o inválido, redirigir al login
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        window.location.href = "/login";
+      } else {
+        setError("Error al guardar el evento. Por favor, inténtelo de nuevo.");
+        console.error(err);
+      }
     }
   };
 
@@ -246,18 +258,34 @@ function EventCalendar({ initialEvents }) {
   };
 
   useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const response = await axios.get("http://localhost:3001/api/events");
-        setEvents(response.data);
-      } catch (err) {
-        setError("Error al cargar los eventos. Por favor, recargue la página.");
-        console.error(err);
-      }
-    };
+    const token = localStorage.getItem("token");
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    if (!token || !storedUser) {
+      navigate("/login");
+    } else {
+      // Configurar axios con el token
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      // Establecer el usuario
+      setUser(storedUser);
+      // Cargar eventos
+      fetchEvents();
+    }
+  }, [navigate]);
 
-    fetchEvents();
-  }, []);
+  const fetchEvents = async () => {
+    try {
+      const response = await axios.get("http://localhost:3001/api/events");
+      setEvents(response.data);
+    } catch (error) {
+      if (error.response && error.response.status === 401) {
+        // Token expirado o inválido
+        localStorage.removeItem("token");
+        navigate("/login");
+      } else {
+        console.error("Error fetching events:", error);
+      }
+    }
+  };
 
   const getEventColor = (status) => {
     switch (status) {
@@ -332,7 +360,7 @@ function EventCalendar({ initialEvents }) {
     });
   }, [events]); // Only re-run the memoization if events changes
 
-  const calendarRef = useRef(null);
+  //const calendarRef = useRef(null);
 
   const handleAddEvent = () => {
     setCurrentEvent({
@@ -355,15 +383,67 @@ function EventCalendar({ initialEvents }) {
     setModalOpen(true);
   };
 
+  const [visibleEvents, setVisibleEvents] = useState([]); // Eventos visibles en el rango actual
+
+  // Función para capturar el rango visible actual de FullCalendar
+  const handleDatesSet = (dateInfo) => {
+    const calendarApi = calendarRef.current?.getApi(); // Verifica que calendarRef no sea undefined
+
+    if (calendarApi) {
+      const currentEvents = calendarApi.getEvents(); // Obtiene todos los eventos visibles en la vista actual
+
+      // Filtra los eventos basados en el rango de fechas de la vista actual
+      const filteredEvents = currentEvents.filter((event) => {
+        const eventStart = new Date(event.start);
+        const eventEnd = new Date(event.end || event.start); // Si no hay 'end', usa 'start'
+        return eventStart >= dateInfo.start && eventEnd <= dateInfo.end;
+      });
+
+      setVisibleEvents(filteredEvents); // Actualiza el estado con los eventos filtrados
+    }
+  };
+
+  const handleShowModal = () => setShowModal(true);
+  const handleCloseModal = () => setShowModal(false);
+
   return (
     <div className="flex h-screen overflow-hidden">
-      <Sidebar currentUser="Nombre de Usuario" onAddEvent={handleAddEvent} />
+      <Sidebar currentUser={user?.username} onAddEvent={handleAddEvent} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <div className="flex-1 overflow-auto p-6">
           <div className="bg-white shadow-xl rounded-2xl h-full">
             {/* <h2 className="text-3xl font-bold text-gray-800 mb-6">
               Calendario de Eventos
             </h2> */}
+            {/* Botón para exportar PDF que abre el modal */}
+            {/* Botón flotante circular para exportar PDF */}
+            <button
+              onClick={handleShowModal}
+              className="floating-button"
+              aria-label="Exportar PDF"
+            >
+              <FaPrint size={24} color="white" />
+            </button>
+            {/* Modal con la tabla de eventos */}
+            <Modal
+              show={showModal}
+              onHide={handleCloseModal}
+              size="lg"
+              centered
+            >
+              <Modal.Header closeButton>
+                <Modal.Title>Lista de Eventos</Modal.Title>
+              </Modal.Header>
+              <Modal.Body>
+                {/* Muestra la tabla de eventos dentro del modal */}
+                <EventList events={visibleEvents} />
+              </Modal.Body>
+              <Modal.Footer>
+                <Button variant="secondary" onClick={handleCloseModal}>
+                  Cerrar
+                </Button>
+              </Modal.Footer>
+            </Modal>
             <FullCalendar
               plugins={[
                 dayGridPlugin,
@@ -373,7 +453,7 @@ function EventCalendar({ initialEvents }) {
                 bootstrap5Plugin,
                 bootstrapPlugin,
               ]}
-              // themeSystem="bootstrap"
+              themeSystem="bootstrap"
               headerToolbar={{
                 left: "prev,next today",
                 center: "title",
@@ -391,6 +471,7 @@ function EventCalendar({ initialEvents }) {
               ref={calendarRef}
               eventDrop={handleEventDrop}
               eventResize={handleEventResize}
+              datesSet={handleDatesSet} // Cada vez que cambie la vista, capturamos el rango visible
               height="100%"
               eventContent={(eventInfo) => (
                 <div className="flex items-center justify-between w-full px-2 py-1 text-sm">
@@ -444,34 +525,34 @@ function EventCalendar({ initialEvents }) {
                 minute: "2-digit",
                 hour12: false,
               }}
-              bootstrapFontAwesome={false}
-              buttonIcons={{
-                prev: "chevron-left",
-                next: "chevron-right",
-              }}
-              customButtons={{
-                prev: {
-                  icon: "chevron-left",
-                  click: function () {
-                    const calendarApi = calendarRef.current.getApi();
-                    calendarApi.prev();
-                  },
-                },
-                next: {
-                  icon: "chevron-right",
-                  click: function () {
-                    const calendarApi = calendarRef.current.getApi();
-                    calendarApi.next();
-                  },
-                },
-                today: {
-                  text: "Hoy",
-                  click: function () {
-                    const calendarApi = calendarRef.current.getApi();
-                    calendarApi.today();
-                  },
-                },
-              }}
+              //bootstrapFontAwesome={false}
+              // buttonIcons={{
+              //   prev: "chevron-left",
+              //   next: "chevron-right",
+              // }}
+              // customButtons={{
+              //   prev: {
+              //     icon: "chevron-left",
+              //     click: function () {
+              //       const calendarApi = calendarRef.current.getApi();
+              //       calendarApi.prev();
+              //     },
+              //   },
+              //   next: {
+              //     icon: "chevron-right",
+              //     click: function () {
+              //       const calendarApi = calendarRef.current.getApi();
+              //       calendarApi.next();
+              //     },
+              //   },
+              //   today: {
+              //     text: "Hoy",
+              //     click: function () {
+              //       const calendarApi = calendarRef.current.getApi();
+              //       calendarApi.today();
+              //     },
+              //   },
+              // }}
             />
 
             <ModalEvent
@@ -481,6 +562,7 @@ function EventCalendar({ initialEvents }) {
               onDelete={handleDeleteEvent}
               event={currentEvent}
             />
+
             <Modal
               show={alertDialogOpen}
               onHide={() => setAlertDialogOpen(false)}

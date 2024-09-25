@@ -7,8 +7,17 @@ import {
   User,
   LogOut,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import PropTypes from "prop-types";
 
 const Sidebar = ({ currentUser, onAddEvent }) => {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
   return (
     <div className="w-64 h-screen bg-gradient-to-b from-indigo-600 to-indigo-800 text-white flex flex-col shadow-xl">
       <div className="p-6">
@@ -17,7 +26,7 @@ const Sidebar = ({ currentUser, onAddEvent }) => {
           <ul className="space-y-4">
             <li>
               <a
-                href="#"
+                href="/"
                 className="flex items-center space-x-3 p-3 rounded-lg hover:bg-indigo-700 transition duration-150 ease-in-out text-white"
               >
                 <Calendar className="h-5 w-5" />
@@ -26,7 +35,7 @@ const Sidebar = ({ currentUser, onAddEvent }) => {
             </li>
             <li>
               <a
-                href="#"
+                href="/search"
                 className="flex items-center space-x-3 p-3 rounded-lg hover:bg-indigo-700 transition duration-150 ease-in-out text-white"
               >
                 <Search className="h-5 w-5" />
@@ -35,7 +44,7 @@ const Sidebar = ({ currentUser, onAddEvent }) => {
             </li>
             <li>
               <a
-                href="#"
+                href="/marketing"
                 className="flex items-center space-x-3 p-3 rounded-lg hover:bg-indigo-700 transition duration-150 ease-in-out text-white"
               >
                 <Megaphone className="h-5 w-5" />
@@ -63,7 +72,10 @@ const Sidebar = ({ currentUser, onAddEvent }) => {
               <p className="text-xs text-indigo-200">Administrador</p>
             </div>
           </div>
-          <button className="mt-4 w-full flex items-center justify-center space-x-2 text-sm text-indigo-200 hover:text-white transition duration-150 ease-in-out">
+          <button
+            onClick={handleLogout}
+            className="mt-4 w-full flex items-center justify-center space-x-2 text-sm text-indigo-200 hover:text-white transition duration-150 ease-in-out"
+          >
             <LogOut className="h-4 w-4" />
             <span>Cerrar sesión</span>
           </button>
@@ -71,6 +83,10 @@ const Sidebar = ({ currentUser, onAddEvent }) => {
       </div>
     </div>
   );
+};
+Sidebar.propTypes = {
+  currentUser: PropTypes.string.isRequired,
+  onAddEvent: PropTypes.func.isRequired,
 };
 
 export default Sidebar;

@@ -108,10 +108,8 @@
   color: #4b5563; /* Un color gris oscuro para los días de la semana (gray-600) */
 }
 
-/* Estilo para los números de los días */
-.fc .fc-daygrid-day-number {
-  color: #1e293b; /* El mismo color oscuro que el título (slate-800) */
-}
+
+
 
 /* Estilos para los botones de vista */
 .fc-button-group {
@@ -127,4 +125,137 @@
 /* Ajuste adicional para el botón "Hoy" */
 .fc-today-button {
   margin-right: 10px !important; /* Añade más espacio después del botón "Hoy" */
+}
+
+.modal-90w {
+  width: 90%;
+  max-width: 90%;
+}
+
+.custom-modal .modal-dialog {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.custom-modal .modal-content {
+  background: none;
+  border: none;
+  box-shadow: none;
+}
+
+.custom-modal-content {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 400px;
+  max-width: 90%;
+}
+
+.modal-title {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.modal-message {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.cancel-button, .confirm-button {
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-weight: bold;
+}
+
+.cancel-button {
+  background-color: #6c757d;
+  border-color: #6c757d;
+}
+
+.confirm-button {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+/* Estilos del botón flotante */
+.floating-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1000; /* Asegura que esté encima del contenido */
+  transition: background-color 0.3s ease;
+}
+
+.floating-button:hover {
+  background-color: #0056b3;
+}
+
+/* Quitar subrayado de las fechas */
+.fc a.fc-col-header-cell-cushion,
+.fc a.fc-daygrid-day-number {
+  text-decoration: none !important;
+}
+
+/* Quitar subrayado de los días de la semana */
+.fc th a {
+  text-decoration: none !important;
+}
+
+/* Asegurar que los estilos se apliquen incluso con mayor especificidad */
+.fc-theme-standard .fc-scrollgrid,
+.fc-theme-standard .fc-list {
+  border: none !important;
+}
+
+
+
+/* Opcional: Ajustar el espaciado y tamaño de fuente si es necesario */
+.fc .fc-daygrid-day-number {
+  padding: 4px;
+  font-size: 1em;
+  color: #1e293b; /* El mismo color oscuro que el título (slate-800) */
+
+}
+
+/* Hacer más visible la cuadrícula del calendario */
+.fc-theme-standard .fc-scrollgrid {
+   border: 1px solid #ddd !important;
+} 
+
+.fc .fc-scrollgrid-section > * {
+  border-width: 1px !important;
+border-style: solid !important;
+  border-color: #ddd !important;
+}
+
+
+
+/* Mejorar la visibilidad de los bordes de las celdas */
+.fc .fc-daygrid-day {
+  border: 1px solid #ddd !important;
+}
+/* Opcional: Añadir un sutil efecto de hover a las celdas */
+.fc .fc-daygrid-day:hover {
+  background-color: #f8f9fa;
 }
