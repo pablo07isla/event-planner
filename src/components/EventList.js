@@ -154,18 +154,7 @@ const EventList = ({ events }) => {
                     <p>
                       <FaUsers className="inline mr-1" />{" "}
                       <strong>N° de personas:</strong>{" "}
-                      {event.extendedProps?.peopleCount || "N/A"}
-                    </p>
-                    <p>
-                      <strong>Nombre Responsable:</strong>{" "}
-                      {event.extendedProps?.contactName || "N/A"}
-                    </p>
-                  </div>
-                  <div>
-                    <p>
-                      <FaPhoneAlt className="inline mr-1" />{" "}
-                      <strong>Teléfonos:</strong>{" "}
-                      {event.extendedProps?.contactPhone || "N/A"}
+                      {event.extendedProps?.peopleCount || "N/A"} pax
                     </p>
                     <p>
                       <FaMapMarkerAlt className="inline mr-1" />{" "}
@@ -175,10 +164,22 @@ const EventList = ({ events }) => {
                   </div>
                   <div>
                     <p>
+                      <strong>Responsable:</strong>{" "}
+                      {event.extendedProps?.contactName || "N/A"}
+                    </p>
+                    <p>
                       <FaMoneyBillWave className="inline mr-1" />{" "}
                       <strong>Consignación:</strong>{" "}
                       {formatCurrency(event.extendedProps.deposit)}
                     </p>
+                  </div>
+                  <div>
+                    <p>
+                      <FaPhoneAlt className="inline mr-1" />{" "}
+                      <strong>Teléfonos:</strong>{" "}
+                      {event.extendedProps?.contactPhone || "N/A"}
+                    </p>
+
                     <p>
                       <FaMoneyBillWave className="inline mr-1" />{" "}
                       <strong>Saldo Pendiente:</strong>{" "}
@@ -194,7 +195,7 @@ const EventList = ({ events }) => {
                       "No especificado"}
                   </p>
                   <strong>Descripción:</strong>
-                  <p className="text-xs">
+                  <p className="text-xs" style={{ whiteSpace: "pre-wrap" }}>
                     {event.extendedProps?.eventDescription ||
                       "No hay descripción disponible"}
                   </p>

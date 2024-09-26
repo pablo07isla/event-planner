@@ -133,6 +133,10 @@ function EventCalendar({ initialEvents }) {
 
         // Remove any fields that might cause issues
         delete updateData.id; // The ID is usually in the URL for PUT requests
+        const eventExists = await axios.get(
+          `http://localhost:3001/api/events/${eventToUpdate.id}`
+        );
+        console.log("eventExists", eventExists.data); // Verifica si el evento se obtiene correctamente
 
         const response = await axios.put(
           `http://localhost:3001/api/events/${eventToUpdate.id}`,
@@ -246,7 +250,15 @@ function EventCalendar({ initialEvents }) {
   const handleDeleteEvent = async () => {
     setError(null);
     try {
-      await axios.delete(`http://localhost:3001/api/events/${currentEvent.id}`);
+      const token = localStorage.getItem("token"); // Suponiendo que guardas el token en localStorage
+      await axios.delete(
+        `http://localhost:3001/api/events/${currentEvent.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       setEvents((prevEvents) =>
         prevEvents.filter((e) => e.id !== currentEvent.id)
       );
