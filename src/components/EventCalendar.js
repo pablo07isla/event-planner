@@ -75,6 +75,8 @@ function EventCalendar({ initialEvents }) {
       pendingAmount: clickInfo.event.extendedProps.pendingAmount || "",
       attachments: clickInfo.event.extendedProps.attachments || null,
       eventStatus: clickInfo.event.extendedProps.eventStatus || "Pendiente",
+      lastModified: clickInfo.event.extendedProps.lastModified || "",
+      lastModifiedBy: clickInfo.event.extendedProps.lastModifiedBy || "",
     });
     setModalOpen(true);
   };
@@ -186,6 +188,7 @@ function EventCalendar({ initialEvents }) {
   const handleSaveEvent = async (eventData) => {
     setError(null);
     try {
+      const currentUser = JSON.parse(localStorage.getItem("user"));
       const newEventData = {
         ...eventData,
         start: new Date(eventData.start).toISOString(),
@@ -195,6 +198,10 @@ function EventCalendar({ initialEvents }) {
         peopleCount: parseInt(eventData.peopleCount, 10),
         deposit: parseFloat(eventData.deposit) || 0,
         pendingAmount: parseFloat(eventData.pendingAmount) || 0,
+        lastModified: new Date().toISOString(),
+        lastModifiedBy: currentUser
+          ? currentUser.username
+          : "Usuario desconocido",
       };
 
       let response;
@@ -209,16 +216,6 @@ function EventCalendar({ initialEvents }) {
           newEventData
         );
       }
-
-      // Aplicar el color basado en el estado del evento
-      // const updatedEvent = response.data;
-      // const colors = getEventColor(updatedEvent.eventStatus);
-      // const eventWithColor = {
-      //   ...updatedEvent,
-      //   backgroundColor: colors.backgroundColor,
-      //   textColor: colors.textColor,
-      //   borderColor: colors.backgroundColor,
-      // };
 
       const savedEvent = response.data;
       const eventWithColor = applyEventColor(savedEvent);

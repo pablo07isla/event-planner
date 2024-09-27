@@ -18,6 +18,8 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
     pendingAmount: "",
     attachments: null,
     eventStatus: "", // New field for event status
+    lastModified: "",
+    lastModifiedBy: "",
   });
 
   useEffect(() => {
@@ -33,6 +35,8 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
         pendingAmount: event.pendingAmount
           ? event.pendingAmount.toString()
           : "",
+        lastModified: event.lastModified || "",
+        lastModifiedBy: event.lastModifiedBy || "",
       });
     }
   }, [event]);
@@ -42,6 +46,18 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
     const date = new Date(dateString);
     // Tomar solo la fecha sin cambiar la zona horaria
     return date.toISOString().slice(0, 16); // Formato YYYY-MM-DD
+  };
+
+  const formatLastModified = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date.toLocaleString("es-CO", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
   const formatCurrency = (value) => {
@@ -122,6 +138,12 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
             &times;
           </button>
         </div>
+        {event?.id && (
+          <div className="mb-4 text-sm text-gray-400">
+            Última modificación: {formatLastModified(formData.lastModified)} por{" "}
+            {formData.lastModifiedBy}
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="w-full">
@@ -452,6 +474,8 @@ ModalEvent.propTypes = {
     deposit: PropTypes.string,
     pendingAmount: PropTypes.string,
     eventStatus: PropTypes.string,
+    lastModified: PropTypes.string,
+    lastModifiedBy: PropTypes.string,
   }),
 };
 
