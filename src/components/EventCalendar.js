@@ -19,6 +19,7 @@ import "./EventCalendar.css"; // Asegúrate de que la ruta sea correcta
 import { useNavigate } from "react-router-dom";
 import EventList from "./EventList";
 import { FaPrint } from "react-icons/fa";
+import { parseISO, format, addDays } from "date-fns";
 
 function EventCalendar({ initialEvents }) {
   const [events, setEvents] = useState(initialEvents);
@@ -31,14 +32,18 @@ function EventCalendar({ initialEvents }) {
   const navigate = useNavigate();
   const calendarRef = useRef(null);
   const [showModal, setShowModal] = useState(false); // Estado para controlar el modal
+
   const handleDateSelect = (selectInfo) => {
     // let endDate = new Date(selectInfo.end);
     // endDate.setDate(endDate.getDate() - 1); // Restar un día a la fecha de fin
 
+    const start = parseISO(selectInfo.startStr);
+    const end = parseISO(selectInfo.endStr);
+
     setCurrentEvent({
-      start: selectInfo.startStr,
-      end: selectInfo.endStr, // No restar días, usar el valor que ya es correcto
-      allDay: true,
+      start: format(start, "yyyy-MM-dd'T'HH:mm"),
+      end: format(end, "yyyy-MM-dd'T'HH:mm"),
+      allDay: selectInfo.allDay,
       companyName: "",
       peopleCount: "",
       contactName: "",
@@ -58,11 +63,14 @@ function EventCalendar({ initialEvents }) {
   console.log("events", events);
 
   const handleEventClick = (clickInfo) => {
+    const start = parseISO(clickInfo.event.startStr);
+    const end = parseISO(clickInfo.event.endStr);
+
     setCurrentEvent({
       id: clickInfo.event.id,
-      start: clickInfo.event.startStr,
-      end: clickInfo.event.endStr,
-      allDay: true, // Establecer allDay como true
+      start: format(start, "yyyy-MM-dd'T'HH:mm"),
+      end: format(end, "yyyy-MM-dd'T'HH:mm"),
+      allDay: clickInfo.event.allDay,
       companyName: clickInfo.event.extendedProps.companyName || "",
       peopleCount: clickInfo.event.extendedProps.peopleCount || "",
       contactName: clickInfo.event.extendedProps.contactName || "",
@@ -73,7 +81,7 @@ function EventCalendar({ initialEvents }) {
       eventDescription: clickInfo.event.extendedProps.eventDescription || "",
       deposit: clickInfo.event.extendedProps.deposit || "",
       pendingAmount: clickInfo.event.extendedProps.pendingAmount || "",
-      attachments: clickInfo.event.extendedProps.attachments || null,
+      attachments: clickInfo.event.extendedProps.attachments || [],
       eventStatus: clickInfo.event.extendedProps.eventStatus || "Pendiente",
       lastModified: clickInfo.event.extendedProps.lastModified || "",
       lastModifiedBy: clickInfo.event.extendedProps.lastModifiedBy || "",
@@ -185,45 +193,53 @@ function EventCalendar({ initialEvents }) {
     setEvents((prevEvents) => [...prevEvents]);
   };
 
-  const handleSaveEvent = async (eventData) => {
+  const handleSaveEvent = async (formData) => {
     setError(null);
     try {
       const currentUser = JSON.parse(localStorage.getItem("user"));
-      const newEventData = {
-        ...eventData,
-        start: new Date(eventData.start).toISOString(),
-        end: new Date(eventData.end).toISOString(),
-        title: eventData.companyName,
-        allDay: true, // Asegurarse de que allDay sea true
-        peopleCount: parseInt(eventData.peopleCount, 10),
-        deposit: parseFloat(eventData.deposit) || 0,
-        pendingAmount: parseFloat(eventData.pendingAmount) || 0,
-        lastModified: new Date().toISOString(),
-        lastModifiedBy: currentUser
-          ? currentUser.username
-          : "Usuario desconocido",
-      };
+
+      // Convertir las fechas a ISO string
+      const start = parseISO(formData.get("startDate"));
+      const end = parseISO(formData.get("endDate"));
+
+      formData.set("start", format(start, "yyyy-MM-dd'T'HH:mm:ss"));
+      formData.set("end", format(end, "yyyy-MM-dd'T'HH:mm:ss"));
+      // Añadir datos adicionales al FormData
+      formData.append("lastModified", new Date().toISOString());
+      formData.append(
+        "lastModifiedBy",
+        currentUser ? currentUser.username : "Usuario desconocido"
+      );
 
       let response;
-      if (eventData.id) {
+      if (formData.get("id")) {
         response = await axios.put(
-          `http://localhost:3001/api/events/${eventData.id}`,
-          newEventData
+          `http://localhost:3001/api/events/${formData.get("id")}`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
         );
       } else {
         response = await axios.post(
           "http://localhost:3001/api/events",
-          newEventData
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
         );
       }
-
       const savedEvent = response.data;
       const eventWithColor = applyEventColor(savedEvent);
 
       setEvents((prevEvents) => {
-        if (eventData.id) {
+        if (formData.get("id")) {
           return prevEvents.map((e) =>
-            e.id === eventData.id ? eventWithColor : e
+            e.id === formData.get("id") ? eventWithColor : e
           );
         } else {
           return [...prevEvents, eventWithColor];
@@ -338,8 +354,8 @@ function EventCalendar({ initialEvents }) {
 
     return events.map((event) => {
       const preparedEvent = applyEventColor(event);
-      let end = new Date(preparedEvent.end);
-      let start = new Date(preparedEvent.start);
+      const start = parseISO(preparedEvent.start);
+      const end = parseISO(preparedEvent.end);
 
       // If end date is invalid, set it to start date + 1 day
       if (!isValidDate(end)) {
@@ -362,8 +378,8 @@ function EventCalendar({ initialEvents }) {
 
       return {
         ...preparedEvent,
-        start: start.toISOString(),
-        end: end.toISOString(),
+        start: format(start, "yyyy-MM-dd'T'HH:mm:ss"),
+        end: format(end, "yyyy-MM-dd'T'HH:mm:ss"),
         allDay: true,
       };
     });
@@ -485,7 +501,7 @@ function EventCalendar({ initialEvents }) {
               eventContent={(eventInfo) => (
                 <div className="flex items-center justify-between w-full px-2 py-1 text-sm">
                   <span className="font-semibold truncate">
-                    {eventInfo.event.title}
+                    {eventInfo.event.extendedProps.companyName}
                   </span>
                   <span className="ml-1 text-xs bg-gray-200 text-gray-700 px-1 rounded">
                     {eventInfo.event.extendedProps.peopleCount}pax
@@ -627,7 +643,7 @@ EventCalendar.propTypes = {
       eventDescription: PropTypes.string,
       deposit: PropTypes.string,
       pendingAmount: PropTypes.string,
-      attachments: PropTypes.object,
+      attachments: PropTypes.arrayOf(PropTypes.object),
       eventStatus: PropTypes.string, // New prop type for event status
     })
   ),

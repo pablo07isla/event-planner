@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import MultiSelectDropdown from "./MultiSelectDropdown";
+import { parseISO, format } from "date-fns";
 
 function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
   const [formData, setFormData] = useState({
@@ -16,7 +17,7 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
     eventDescription: "",
     deposit: "",
     pendingAmount: "",
-    attachments: null,
+    attachments: [],
     eventStatus: "", // New field for event status
     lastModified: "",
     lastModifiedBy: "",
@@ -26,6 +27,7 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
     if (event) {
       setFormData({
         ...event,
+        title: event.companyName || "",
         startDate: formatDateForInput(event.start),
         endDate: formatDateForInput(event.end),
         foodPackage: Array.isArray(event.foodPackage) ? event.foodPackage : [],
@@ -35,17 +37,32 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
         pendingAmount: event.pendingAmount
           ? event.pendingAmount.toString()
           : "",
+        attachments: Array.isArray(event.attachments) ? event.attachments : [],
         lastModified: event.lastModified || "",
         lastModifiedBy: event.lastModifiedBy || "",
       });
     }
   }, [event]);
 
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    setFormData((prevState) => ({
+      ...prevState,
+      attachments: [...prevState.attachments, ...files],
+    }));
+  };
+
+  const removeAttachment = (index) => {
+    setFormData((prevState) => ({
+      ...prevState,
+      attachments: prevState.attachments.filter((_, i) => i !== index),
+    }));
+  };
+
   const formatDateForInput = (dateString) => {
     if (!dateString) return "";
-    const date = new Date(dateString);
-    // Tomar solo la fecha sin cambiar la zona horaria
-    return date.toISOString().slice(0, 16); // Formato YYYY-MM-DD
+    const date = parseISO(dateString);
+    return format(date, "yyyy-MM-dd'T'HH:mm");
   };
 
   const formatLastModified = (dateString) => {
@@ -110,17 +127,22 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const submissionData = {
-      ...formData,
-      start: new Date(formData.startDate).toISOString(),
-      end: new Date(formData.endDate).toISOString(),
-      peopleCount: parseInt(formData.peopleCount),
-      deposit: parseFloat(formData.deposit) || 0,
-      pendingAmount: parseFloat(formData.pendingAmount) || 0,
-      allDay: true, // Add this line
-    };
-    onSave(submissionData);
+    const formDataToSubmit = new FormData();
+
+    // Añadir todos los campos del formulario al FormData
+    Object.keys(formData).forEach((key) => {
+      if (key === "attachments") {
+        formData[key].forEach((file, index) => {
+          formDataToSubmit.append(`attachments[${index}]`, file);
+        });
+      } else {
+        formDataToSubmit.append(key, formData[key]);
+      }
+    });
+
+    onSave(formDataToSubmit);
   };
+
   console.log("submit", formData);
   if (!isOpen) return null;
 
@@ -414,7 +436,8 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
                 type="file"
                 id="attachments"
                 name="attachments"
-                onChange={handleChange}
+                onChange={handleFileChange}
+                multiple
                 className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg  focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500
                 file:mr-4 file:py-2 file:px-4
                 file:rounded-full file:border-0
@@ -424,6 +447,7 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
               />
             </div>
           </div>
+
           <div className="flex justify-end space-x-2 pt-4">
             <button
               type="submit"
@@ -474,6 +498,7 @@ ModalEvent.propTypes = {
     deposit: PropTypes.string,
     pendingAmount: PropTypes.string,
     eventStatus: PropTypes.string,
+    attachments: PropTypes.arrayOf(PropTypes.object), // Cambiado a array de archivos
     lastModified: PropTypes.string,
     lastModifiedBy: PropTypes.string,
   }),
