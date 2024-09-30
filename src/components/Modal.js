@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import MultiSelectDropdown from "./MultiSelectDropdown";
 import { parseISO, format } from "date-fns";
+import axios from "axios"; // Importamos axios para hacer las solicitudes
 
 function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
   const [formData, setFormData] = useState({
@@ -52,11 +53,42 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
     }));
   };
 
-  const removeAttachment = (index) => {
-    setFormData((prevState) => ({
-      ...prevState,
-      attachments: prevState.attachments.filter((_, i) => i !== index),
-    }));
+  const downloadAttachment = async (filename) => {
+    try {
+      const response = await axios.get(`http://localhost:3001/${filename}`, {
+        responseType: "blob",
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error("Error al descargar el archivo:", error);
+    }
+  };
+
+  const removeAttachment = async (filename, index) => {
+    try {
+      // Elimina el prefijo 'uploads/' si está presente
+      const cleanFilename = filename.replace(/^uploads\//, "");
+
+      await axios.delete(
+        `http://localhost:3001/api/events/${
+          event.id
+        }/attachments/${encodeURIComponent(cleanFilename)}`
+      );
+
+      setFormData((prevState) => ({
+        ...prevState,
+        attachments: prevState.attachments.filter((_, i) => i !== index),
+      }));
+    } catch (error) {
+      console.error("Error al eliminar el archivo:", error);
+    }
   };
 
   const formatDateForInput = (dateString) => {
@@ -141,6 +173,44 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
     });
 
     onSave(formDataToSubmit);
+  };
+
+  const renderFilePreview = (file, index) => {
+    const isFileObject = file instanceof File || file instanceof Blob;
+    const fileName = isFileObject ? file.name : file.split("/").pop();
+    const isImage = /\.(jpg|jpeg|png|gif)$/i.test(fileName);
+    const isVideo = /\.(mp4|webm|ogg)$/i.test(fileName);
+    const filePath = isFileObject
+      ? URL.createObjectURL(file)
+      : `/${file.path || file}`;
+
+    if (isImage) {
+      return (
+        <img
+          src={filePath}
+          alt="Preview"
+          className="w-32 h-32 object-cover rounded"
+        />
+      );
+    } else if (isVideo) {
+      return (
+        <video
+          src={filePath}
+          controls
+          className="w-32 h-32 object-cover rounded"
+        />
+      );
+    } else {
+      return (
+        <a
+          href="#"
+          onClick={() => downloadAttachment(fileName)}
+          className="text-indigo-600 hover:underline"
+        >
+          {fileName}
+        </a>
+      );
+    }
   };
 
   console.log("submit", formData);
@@ -447,7 +517,33 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
               />
             </div>
           </div>
-
+          {/* Mostrar archivos adjuntos guardados */}
+          {formData.attachments.length > 0 && (
+            <div className="mb-4">
+              <h3 className="text-lg font-medium text-gray-900">
+                Archivos Adjuntos
+              </h3>
+              <ul className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {formData.attachments.map((file, index) => (
+                  <li key={index} className="flex flex-col items-center">
+                    {renderFilePreview(file, index)}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        removeAttachment(
+                          file.name || file.split("/").pop(),
+                          index
+                        )
+                      }
+                      className="text-red-600 hover:text-red-800 mt-2"
+                    >
+                      Eliminar
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           <div className="flex justify-end space-x-2 pt-4">
             <button
               type="submit"
