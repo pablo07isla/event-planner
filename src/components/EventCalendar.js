@@ -528,12 +528,28 @@ function EventCalendar({ initialEvents }) {
                     day: "numeric",
                     month: "numeric",
                   },
+                  allDaySlot: true,
+                  allDayText: "Todo el día",
+                  slotDuration: "24:00:00",
+                  slotLabelFormat: {
+                    hour: "numeric",
+                    minute: "2-digit",
+                    hour12: true,
+                  },
                 },
                 timeGridDay: {
                   dayHeaderFormat: {
                     weekday: "long",
                     day: "numeric",
                     month: "numeric",
+                  },
+                  allDaySlot: true,
+                  allDayText: "Todo el día",
+                  slotDuration: "24:00:00",
+                  slotLabelFormat: {
+                    hour: "numeric",
+                    minute: "2-digit",
+                    hour12: true,
                   },
                 },
                 listWeek: {
@@ -550,34 +566,6 @@ function EventCalendar({ initialEvents }) {
                 minute: "2-digit",
                 hour12: false,
               }}
-              //bootstrapFontAwesome={false}
-              // buttonIcons={{
-              //   prev: "chevron-left",
-              //   next: "chevron-right",
-              // }}
-              // customButtons={{
-              //   prev: {
-              //     icon: "chevron-left",
-              //     click: function () {
-              //       const calendarApi = calendarRef.current.getApi();
-              //       calendarApi.prev();
-              //     },
-              //   },
-              //   next: {
-              //     icon: "chevron-right",
-              //     click: function () {
-              //       const calendarApi = calendarRef.current.getApi();
-              //       calendarApi.next();
-              //     },
-              //   },
-              //   today: {
-              //     text: "Hoy",
-              //     click: function () {
-              //       const calendarApi = calendarRef.current.getApi();
-              //       calendarApi.today();
-              //     },
-              //   },
-              // }}
             />
 
             <ModalEvent
