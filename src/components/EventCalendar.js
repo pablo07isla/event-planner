@@ -32,6 +32,7 @@ function EventCalendar({ initialEvents }) {
   const navigate = useNavigate();
   const calendarRef = useRef(null);
   const [showModal, setShowModal] = useState(false); // Estado para controlar el modal
+  const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3001";
 
   const handleDateSelect = (selectInfo) => {
     // let endDate = new Date(selectInfo.end);
@@ -130,7 +131,7 @@ function EventCalendar({ initialEvents }) {
 
         // Fetch the full event data before updating
         const eventResponse = await axios.get(
-          `http://localhost:3001/api/events/${eventToUpdate.id}`
+          `${API_URL}/api/events/${eventToUpdate.id}`
         );
         const fullEventData = eventResponse.data;
 
@@ -144,12 +145,12 @@ function EventCalendar({ initialEvents }) {
         // Remove any fields that might cause issues
         delete updateData.id; // The ID is usually in the URL for PUT requests
         const eventExists = await axios.get(
-          `http://localhost:3001/api/events/${eventToUpdate.id}`
+          `${API_URL}/api/events/${eventToUpdate.id}`
         );
         console.log("eventExists", eventExists.data); // Verifica si el evento se obtiene correctamente
 
         const response = await axios.put(
-          `http://localhost:3001/api/events/${eventToUpdate.id}`,
+          `${API_URL}/api/events/${eventToUpdate.id}`,
           updateData
         );
 
@@ -214,7 +215,7 @@ function EventCalendar({ initialEvents }) {
       let response;
       if (formData.get("id")) {
         response = await axios.put(
-          `http://localhost:3001/api/events/${formData.get("id")}`,
+          `${API_URL}/api/events/${formData.get("id")}`,
           formData,
           {
             headers: {
@@ -223,15 +224,11 @@ function EventCalendar({ initialEvents }) {
           }
         );
       } else {
-        response = await axios.post(
-          "http://localhost:3001/api/events",
-          formData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        );
+        response = await axios.post(`${API_URL}/api/events`, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
       }
       const savedEvent = response.data;
       const eventWithColor = applyEventColor(savedEvent);
@@ -264,14 +261,11 @@ function EventCalendar({ initialEvents }) {
     setError(null);
     try {
       const token = localStorage.getItem("token"); // Suponiendo que guardas el token en localStorage
-      await axios.delete(
-        `http://localhost:3001/api/events/${currentEvent.id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await axios.delete(`${API_URL}/api/events/${currentEvent.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       setEvents((prevEvents) =>
         prevEvents.filter((e) => e.id !== currentEvent.id)
       );
@@ -299,7 +293,7 @@ function EventCalendar({ initialEvents }) {
 
   const fetchEvents = async () => {
     try {
-      const response = await axios.get("http://localhost:3001/api/events");
+      const response = await axios.get(`${API_URL}/api/events`);
       setEvents(response.data);
     } catch (error) {
       if (error.response && error.response.status === 401) {

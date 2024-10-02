@@ -24,6 +24,8 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
     lastModifiedBy: "",
   });
 
+  const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3001";
+
   useEffect(() => {
     if (event) {
       setFormData({
@@ -55,7 +57,7 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
 
   const downloadAttachment = async (filename) => {
     try {
-      const response = await axios.get(`http://localhost:3001/${filename}`, {
+      const response = await axios.get(`${API_URL}/${filename}`, {
         responseType: "blob",
       });
 
@@ -77,9 +79,9 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
       const cleanFilename = filename.replace(/^uploads\//, "");
 
       await axios.delete(
-        `http://localhost:3001/api/events/${
-          event.id
-        }/attachments/${encodeURIComponent(cleanFilename)}`
+        `${API_URL}/api/events/${event.id}/attachments/${encodeURIComponent(
+          cleanFilename
+        )}`
       );
 
       setFormData((prevState) => ({
@@ -184,33 +186,34 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
       ? URL.createObjectURL(file)
       : `/${file.path || file}`;
 
-    if (isImage) {
-      return (
-        <img
-          src={filePath}
-          alt="Preview"
-          className="w-32 h-32 object-cover rounded"
-        />
-      );
-    } else if (isVideo) {
-      return (
-        <video
-          src={filePath}
-          controls
-          className="w-32 h-32 object-cover rounded"
-        />
-      );
-    } else {
-      return (
-        <a
-          href="#"
-          onClick={() => downloadAttachment(fileName)}
-          className="text-indigo-600 hover:underline"
-        >
-          {fileName}
-        </a>
-      );
-    }
+    // if (isImage) {
+    //   return (
+    //     <img
+    //       src={filePath}
+    //       alt="Preview"
+    //       className="w-32 h-32 object-cover rounded"
+    //     />
+    //   );
+    // } else if (isVideo) {
+    //   return (
+    //     <video
+    //       src={filePath}
+    //       controls
+    //       className="w-32 h-32 object-cover rounded"
+    //     />
+    //   );
+    // } else {
+
+    // }
+    return (
+      <a
+        href="#"
+        onClick={() => downloadAttachment(fileName)}
+        className="text-indigo-600 hover:underline"
+      >
+        {fileName}
+      </a>
+    );
   };
 
   console.log("submit", formData);
