@@ -199,12 +199,13 @@ function EventCalendar({ initialEvents }) {
     try {
       const currentUser = JSON.parse(localStorage.getItem("user"));
 
-      // Convertir las fechas a ISO string
-      const start = parseISO(formData.get("startDate"));
-      const end = parseISO(formData.get("endDate"));
+      // Convertir las fechas a formato UTC
+      const start = new Date(formData.get("startDate")); // Crear un objeto Date
+      const end = new Date(formData.get("endDate"));
 
-      formData.set("start", format(start, "yyyy-MM-dd'T'HH:mm:ss"));
-      formData.set("end", format(end, "yyyy-MM-dd'T'HH:mm:ss"));
+      // Asegúrate de enviar las fechas en UTC (toISOString convierte a UTC)
+      formData.set("start", start.toISOString());
+      formData.set("end", end.toISOString());
       // Añadir datos adicionales al FormData
       formData.append("lastModified", new Date().toISOString());
       formData.append(
