@@ -35,13 +35,13 @@ function EventCalendar({ initialEvents }) {
   const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3001";
 
   const handleDateSelect = (selectInfo) => {
-    const start = new Date(selectInfo.startStr); // Convertir a objeto Date
-    const end = new Date(selectInfo.endStr); // Convertir a objeto Date
+    const start = parseISO(selectInfo.startStr);
+    const end = parseISO(selectInfo.endStr);
 
     setCurrentEvent({
       start: format(start, "yyyy-MM-dd'T'HH:mm"),
       end: format(end, "yyyy-MM-dd'T'HH:mm"),
-      allDay: selectInfo.allDay,
+      allDay: true,
       companyName: "",
       peopleCount: "",
       contactName: "",
@@ -61,8 +61,8 @@ function EventCalendar({ initialEvents }) {
   console.log("events", events);
 
   const handleEventClick = (clickInfo) => {
-    const start = new Date(clickInfo.event.startStr); // Convertir a objeto Date
-    const end = new Date(clickInfo.event.endStr); // Convertir a objeto Date
+    const start = parseISO(clickInfo.event.startStr);
+    const end = parseISO(clickInfo.event.endStr);
 
     setCurrentEvent({
       id: clickInfo.event.id,
@@ -197,8 +197,8 @@ function EventCalendar({ initialEvents }) {
       const currentUser = JSON.parse(localStorage.getItem("user"));
 
       // Convertir las fechas a formato UTC
-      const start = new Date(formData.get("startDate")); // Crear un objeto Date
-      const end = new Date(formData.get("endDate"));
+      let start = new Date(formData.get("startDate"));
+      let end = new Date(formData.get("endDate"));
 
       // Asegúrate de enviar las fechas en UTC (toISOString convierte a UTC)
       formData.set("start", start.toISOString());
@@ -346,8 +346,8 @@ function EventCalendar({ initialEvents }) {
 
     return events.map((event) => {
       const preparedEvent = applyEventColor(event);
-      const start = parseISO(preparedEvent.start);
-      const end = parseISO(preparedEvent.end);
+      let start = parseISO(preparedEvent.start);
+      let end = parseISO(preparedEvent.end);
 
       // If end date is invalid, set it to start date + 1 day
       if (!isValidDate(end)) {
