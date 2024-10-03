@@ -482,7 +482,7 @@ function EventCalendar({ initialEvents }) {
               selectMirror={true}
               dayMaxEvents={true}
               weekends={true}
-              timeZone="local" // Asegúrate de usar la zona horaria correcta
+              timeZone="UTC" // Asegúrate de usar la zona horaria correcta
               events={preparedEvents}
               select={handleDateSelect}
               eventClick={handleEventClick}
