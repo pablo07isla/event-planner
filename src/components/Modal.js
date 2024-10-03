@@ -180,11 +180,6 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
   const renderFilePreview = (file, index) => {
     const isFileObject = file instanceof File || file instanceof Blob;
     const fileName = isFileObject ? file.name : file.split("/").pop();
-    const isImage = /\.(jpg|jpeg|png|gif)$/i.test(fileName);
-    const isVideo = /\.(mp4|webm|ogg)$/i.test(fileName);
-    const filePath = isFileObject
-      ? URL.createObjectURL(file)
-      : `/${file.path || file}`;
 
     // if (isImage) {
     //   return (

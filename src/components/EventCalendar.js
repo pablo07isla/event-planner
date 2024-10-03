@@ -19,7 +19,7 @@ import "./EventCalendar.css"; // Asegúrate de que la ruta sea correcta
 import { useNavigate } from "react-router-dom";
 import EventList from "./EventList";
 import { FaPrint } from "react-icons/fa";
-import { parseISO, format, addDays } from "date-fns";
+import { parseISO, format } from "date-fns";
 
 function EventCalendar({ initialEvents }) {
   const [events, setEvents] = useState(initialEvents);
@@ -35,11 +35,8 @@ function EventCalendar({ initialEvents }) {
   const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3001";
 
   const handleDateSelect = (selectInfo) => {
-    // let endDate = new Date(selectInfo.end);
-    // endDate.setDate(endDate.getDate() - 1); // Restar un día a la fecha de fin
-
-    const start = parseISO(selectInfo.startStr);
-    const end = parseISO(selectInfo.endStr);
+    const start = new Date(selectInfo.startStr); // Convertir a objeto Date
+    const end = new Date(selectInfo.endStr); // Convertir a objeto Date
 
     setCurrentEvent({
       start: format(start, "yyyy-MM-dd'T'HH:mm"),
@@ -64,8 +61,8 @@ function EventCalendar({ initialEvents }) {
   console.log("events", events);
 
   const handleEventClick = (clickInfo) => {
-    const start = parseISO(clickInfo.event.startStr);
-    const end = parseISO(clickInfo.event.endStr);
+    const start = new Date(clickInfo.event.startStr); // Convertir a objeto Date
+    const end = new Date(clickInfo.event.endStr); // Convertir a objeto Date
 
     setCurrentEvent({
       id: clickInfo.event.id,
@@ -93,10 +90,10 @@ function EventCalendar({ initialEvents }) {
   const handleEventDrop = (dropInfo) => {
     setEventToUpdate({
       id: dropInfo.event.id,
-      start: dropInfo.event.start,
-      end: dropInfo.event.end,
-      oldStart: dropInfo.oldEvent.start,
-      oldEnd: dropInfo.oldEvent.end,
+      start: dropInfo.event.start.toISOString(), // Convertir a UTC
+      end: dropInfo.event.end.toISOString(), // Convertir a UTC
+      oldStart: dropInfo.oldEvent.start.toISOString(),
+      oldEnd: dropInfo.oldEvent.end.toISOString(),
     });
     setAlertDialogOpen(true);
   };
@@ -104,10 +101,10 @@ function EventCalendar({ initialEvents }) {
   const handleEventResize = (resizeInfo) => {
     setEventToUpdate({
       id: resizeInfo.event.id,
-      start: resizeInfo.event.start,
-      end: resizeInfo.event.end,
-      oldStart: resizeInfo.oldEvent.start,
-      oldEnd: resizeInfo.oldEvent.end,
+      start: resizeInfo.event.start.toISOString(), // Convertir a UTC
+      end: resizeInfo.event.end.toISOString(), // Convertir a UTC
+      oldStart: resizeInfo.oldEvent.start.toISOString(),
+      oldEnd: resizeInfo.oldEvent.end.toISOString(),
     });
     setAlertDialogOpen(true);
   };
