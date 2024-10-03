@@ -11,6 +11,9 @@ const Register = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
+  // Usa la variable de entorno REACT_APP_API_URL o localhost si no está definida
+  const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3001";
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (password !== confirmPassword) {
@@ -18,7 +21,7 @@ const Register = () => {
       return;
     }
     try {
-      await axios.post("http://localhost:3001/api/register", {
+      await axios.post(`${API_URL}/api/register`, {
         username, // Envía también el nombre de usuario
         email,
         password,

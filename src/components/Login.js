@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3001";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -12,7 +13,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:3001/api/login", {
+      const response = await axios.post(`${API_URL}/api/login`, {
         email,
         password,
       });
@@ -27,7 +28,22 @@ const Login = () => {
       );
       navigate("/");
     } catch (err) {
-      setError(err.response?.data?.error || "An error occurred during login");
+      // Manejo de errores
+      if (err.response) {
+        if (err.response.status === 401) {
+          setError("Correo electrónico o contraseña incorrectos.");
+        } else if (err.response.status === 500) {
+          setError(
+            "Error del servidor. Por favor, inténtalo de nuevo más tarde."
+          );
+        } else {
+          setError(
+            "Error: " + err.response.data.message || "Error desconocido."
+          );
+        }
+      } else {
+        setError("No se pudo conectar con el servidor. Verifica tu conexión.");
+      }
     }
   };
 
