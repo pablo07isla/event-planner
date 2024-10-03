@@ -57,7 +57,7 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
 
   const downloadAttachment = async (filename) => {
     try {
-      const response = await axios.get(`${API_URL}/${filename}`, {
+      const response = await axios.get(`${API_URL}/uploads/${filename}`, {
         responseType: "blob",
       });
 
