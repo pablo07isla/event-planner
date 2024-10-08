@@ -57,7 +57,7 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
 
   const downloadAttachment = async (filename) => {
     try {
-      const response = await axios.get(`${API_URL}/uploads/${filename}`, {
+      const response = await axios.get(`${API_URL}/${filename}`, {
         responseType: "blob",
       });
 
@@ -75,13 +75,13 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
 
   const removeAttachment = async (filename, index) => {
     try {
-      // Elimina el prefijo 'uploads/' si está presente
-      const cleanFilename = filename.replace(/^uploads\//, "");
+      // Codificar correctamente el nombre del archivo
+      const cleanFilename = encodeURIComponent(
+        filename.replace(/^uploads\//, "")
+      );
 
       await axios.delete(
-        `${API_URL}/api/events/${event.id}/attachments/${encodeURIComponent(
-          cleanFilename
-        )}`
+        `${API_URL}/api/events/${event.id}/attachments/${cleanFilename}`
       );
 
       setFormData((prevState) => ({
