@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import MultiSelectDropdown from "./MultiSelectDropdown";
 import { parseISO, format } from "date-fns";
 import axios from "axios"; // Importamos axios para hacer las solicitudes
+import ModalCompany from "./ModalCompany"; // Asegúrate de importar el nuevo modal
 
 function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
   const [formData, setFormData] = useState({
@@ -25,6 +26,23 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
   });
 
   const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3001";
+  const [isCompanyModalOpen, setCompanyModalOpen] = useState(false);
+
+  const handleCompanySave = async (companyData) => {
+    try {
+      const response = await axios.post(
+        `${API_URL}/api/companies`,
+        companyData
+      );
+      console.log("Compañía guardada:", response.data);
+
+      // Si se guardó correctamente, cierra el modal
+      setCompanyModalOpen(false);
+    } catch (error) {
+      console.error("Error guardando la compañía:", error);
+      // Aquí puedes mostrar un mensaje de error al usuario si lo deseas
+    }
+  };
 
   useEffect(() => {
     if (event) {
@@ -289,6 +307,7 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                 placeholder="Nombre Empresa/Grupo"
                 required
+                onClick={() => setCompanyModalOpen(true)} // Abre el modal de compañía al hacer clic
               />
             </div>
 
@@ -568,6 +587,11 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
           </div>
         </form>
       </div>
+      <ModalCompany
+        isOpen={isCompanyModalOpen}
+        onClose={() => setCompanyModalOpen(false)}
+        onSave={handleCompanySave}
+      />
     </div>
   );
 }
