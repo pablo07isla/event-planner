@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
+
 import PropTypes from "prop-types";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -54,6 +55,7 @@ function EventCalendar({ initialEvents }) {
       pendingAmount: "",
       attachments: null,
       eventStatus: "Pendiente",
+      companyGroupId: null,
     });
     setModalOpen(true);
   };
@@ -83,6 +85,7 @@ function EventCalendar({ initialEvents }) {
       eventStatus: clickInfo.event.extendedProps.eventStatus || "Pendiente",
       lastModified: clickInfo.event.extendedProps.lastModified || "",
       lastModifiedBy: clickInfo.event.extendedProps.lastModifiedBy || "",
+      companyGroupId: clickInfo.event.extendedProps.companyGroupId || null,
     });
     setModalOpen(true);
   };
@@ -626,6 +629,7 @@ EventCalendar.propTypes = {
       pendingAmount: PropTypes.string,
       attachments: PropTypes.arrayOf(PropTypes.object),
       eventStatus: PropTypes.string, // New prop type for event status
+      companyGroupId: PropTypes.string, // New prop type for company group ID
     })
   ),
 };

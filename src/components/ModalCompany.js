@@ -1,11 +1,9 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import axios from "axios";
 
-import { useNavigate } from "react-router-dom";
-
-const ModalCompany = ({ isOpen, onClose, onSave }) => {
-  const [companyData, setCompanyData] = useState({
+const ModalCompany = ({ isOpen, onClose, onSave, companyData }) => {
+  const [formData, setFormData] = useState({
+    id: "",
     companyName: "",
     identificationType: "CC",
     identificationNumber: "",
@@ -15,15 +13,52 @@ const ModalCompany = ({ isOpen, onClose, onSave }) => {
     address: "",
     city: "",
   });
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      if (companyData) {
+        setFormData(companyData);
+      } else {
+        setFormData({
+          id: "",
+          companyName: "",
+          identificationType: "CC",
+          identificationNumber: "",
+          contactPerson: "",
+          phone: "",
+          email: "",
+          address: "",
+          city: "",
+        });
+      }
+      setError(null); // Limpiar el error cuando se abre el modal
+    }
+  }, [isOpen, companyData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setCompanyData((prevData) => ({ ...prevData, [name]: value }));
+    setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSave(companyData);
+    setError(null);
+    try {
+      const result = await onSave(formData);
+      if (typeof result === 'string') {
+        // Si onSave devuelve un string, es un mensaje de error
+        setError(result);
+      } else {
+        handleClose();
+      }
+    } catch (error) {
+      setError("Ocurrió un error al guardar la empresa.");
+    }
+  };
+
+  const handleClose = () => {
+    setError(null); // Limpiar el error al cerrar el modal
     onClose();
   };
 
@@ -33,9 +68,11 @@ const ModalCompany = ({ isOpen, onClose, onSave }) => {
     <div className="fixed inset-0 bg-gray-800 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-[9999]">
       <div className="bg-white p-8 rounded-lg shadow-2xl w-full max-w-4xl">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">Nueva Compañía</h2>
+          <h2 className="text-2xl font-bold">
+            {formData.id ? "Editar Compañía" : "Nueva Compañía"}
+          </h2>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
           >
             &times;
@@ -43,25 +80,24 @@ const ModalCompany = ({ isOpen, onClose, onSave }) => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+              <strong className="font-bold">Error: </strong>
+              <span className="block sm:inline">{error}</span>
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label
-                htmlFor="companyName"
-                className="block mb-2 text-sm font-medium"
-              >
+              <label htmlFor="companyName" className="block mb-2 text-sm font-medium">
                 Nombre de la Compañía
               </label>
               <input
                 type="text"
                 id="companyName"
                 name="companyName"
-                value={companyData.companyName}
-                onChange={(e) =>
-                  setCompanyData({
-                    ...companyData,
-                    companyName: e.target.value,
-                  })
-                }
+                value={formData.companyName}
+                onChange={handleChange}
                 className="border rounded-lg p-2 w-full"
                 required
               />
@@ -76,7 +112,7 @@ const ModalCompany = ({ isOpen, onClose, onSave }) => {
               <select
                 id="identificationType"
                 name="identificationType"
-                value={companyData.identificationType}
+                value={formData.identificationType}
                 onChange={handleChange}
                 className="border rounded-lg p-2 w-full"
                 required
@@ -96,7 +132,7 @@ const ModalCompany = ({ isOpen, onClose, onSave }) => {
                 type="text"
                 id="identificationNumber"
                 name="identificationNumber"
-                value={companyData.identificationNumber}
+                value={formData.identificationNumber}
                 onChange={handleChange}
                 className="border rounded-lg p-2 w-full"
                 required
@@ -113,7 +149,7 @@ const ModalCompany = ({ isOpen, onClose, onSave }) => {
                 type="text"
                 id="contactPerson"
                 name="contactPerson"
-                value={companyData.contactPerson}
+                value={formData.contactPerson}
                 onChange={handleChange}
                 className="border rounded-lg p-2 w-full"
                 required
@@ -127,7 +163,7 @@ const ModalCompany = ({ isOpen, onClose, onSave }) => {
                 type="tel"
                 id="phone"
                 name="phone"
-                value={companyData.phone}
+                value={formData.phone}
                 onChange={handleChange}
                 className="border rounded-lg p-2 w-full"
                 required
@@ -141,7 +177,7 @@ const ModalCompany = ({ isOpen, onClose, onSave }) => {
                 type="email"
                 id="email"
                 name="email"
-                value={companyData.email}
+                value={formData.email}
                 onChange={handleChange}
                 className="border rounded-lg p-2 w-full"
                 required
@@ -158,7 +194,7 @@ const ModalCompany = ({ isOpen, onClose, onSave }) => {
                 type="text"
                 id="address"
                 name="address"
-                value={companyData.address}
+                value={formData.address}
                 onChange={handleChange}
                 className="border rounded-lg p-2 w-full"
                 required
@@ -172,7 +208,7 @@ const ModalCompany = ({ isOpen, onClose, onSave }) => {
                 type="text"
                 id="city"
                 name="city"
-                value={companyData.city}
+                value={formData.city}
                 onChange={handleChange}
                 className="border rounded-lg p-2 w-full"
                 required
@@ -189,7 +225,7 @@ const ModalCompany = ({ isOpen, onClose, onSave }) => {
             </button>
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
             >
               Cancelar
@@ -205,6 +241,7 @@ ModalCompany.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   onSave: PropTypes.func.isRequired,
+  companyData: PropTypes.object,
 };
 
 export default ModalCompany;
