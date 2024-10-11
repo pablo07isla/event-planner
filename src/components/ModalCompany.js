@@ -14,6 +14,8 @@ const ModalCompany = ({ isOpen, onClose, onSave, companyData }) => {
     city: "",
   });
   const [error, setError] = useState(null);
+  const [searchResult, setSearchResult] = useState(null);
+  const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3001";
 
   useEffect(() => {
     if (isOpen) {
@@ -41,12 +43,40 @@ const ModalCompany = ({ isOpen, onClose, onSave, companyData }) => {
     setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
+  const handleSearch = async () => {
+    if (!formData.identificationNumber) {
+      setError("Por favor, ingrese un número de identificación para buscar.");
+      return;
+    }
+    try {
+      console.log("Buscando empresa con identificationNumber:", formData.identificationNumber);
+      const response = await fetch(`${API_URL}/api/companies/search?identificationNumber=${encodeURIComponent(formData.identificationNumber)}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || data.message || `HTTP error! status: ${response.status}`);
+      }
+      
+      setSearchResult(data);
+      setError(null);
+    } catch (error) {
+      console.error("Error al buscar la empresa:", error);
+      setError(`Error al buscar la empresa: ${error.message}`);
+      setSearchResult(null);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
     try {
       const result = await onSave(formData);
-      if (typeof result === 'string') {
+      if (typeof result === "string") {
         // Si onSave devuelve un string, es un mensaje de error
         setError(result);
       } else {
@@ -81,15 +111,59 @@ const ModalCompany = ({ isOpen, onClose, onSave, companyData }) => {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+            <div
+              className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+              role="alert"
+            >
               <strong className="font-bold">Error: </strong>
               <span className="block sm:inline">{error}</span>
             </div>
           )}
 
           <div className="grid grid-cols-2 gap-4">
+            {/* Campo de búsqueda */}
+            <div className="col-span-2">
+              <label
+                htmlFor="identificationNumber"
+                className="block mb-2 text-sm font-medium"
+              >
+                Buscar por Número de Identificación
+              </label>
+              <div className="flex">
+                <input
+                  type="text"
+                  id="identificationNumber"
+                  name="identificationNumber"
+                  value={formData.identificationNumber}
+                  onChange={handleChange}
+                  className="border rounded-l-lg p-2 flex-grow"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={handleSearch}
+                  className="bg-blue-500 text-white rounded-r-lg px-4 py-2 hover:bg-blue-600"
+                >
+                  Buscar
+                </button>
+              </div>
+            </div>
+
+            {/* Mostrar resultado de búsqueda */}
+            {searchResult && (
+              <div className="col-span-2 bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative">
+                <p>Empresa encontrada:</p>
+                <p>Nombre: {searchResult.companyName}</p>
+                <p>Contacto: {searchResult.contactPerson}</p>
+                <p>Teléfono: {searchResult.phone}</p>
+              </div>
+            )}
+
             <div>
-              <label htmlFor="companyName" className="block mb-2 text-sm font-medium">
+              <label
+                htmlFor="companyName"
+                className="block mb-2 text-sm font-medium"
+              >
                 Nombre de la Compañía
               </label>
               <input
