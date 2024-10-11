@@ -1,5 +1,8 @@
+// EventsCalendar/event-planner/src/components/ModalCompany.js
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
+import CompanyInfo from "./CompanyInfo"; // Importar el nuevo componente
+
 
 const ModalCompany = ({ isOpen, onClose, onSave, companyData }) => {
   const [formData, setFormData] = useState({
@@ -14,6 +17,8 @@ const ModalCompany = ({ isOpen, onClose, onSave, companyData }) => {
     city: "",
   });
   const [error, setError] = useState(null);
+  const [message, setMessage] = useState(null);
+  const [messageType, setMessageType] = useState("error"); // "error" o "info"
   const [searchResult, setSearchResult] = useState(null);
   const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3001";
 
@@ -35,6 +40,9 @@ const ModalCompany = ({ isOpen, onClose, onSave, companyData }) => {
         });
       }
       setError(null); // Limpiar el error cuando se abre el modal
+      setMessage(null); // Limpiar mensajes
+      setMessageType("error");
+      setSearchResult(null); // Restablecer el resultado de la búsqueda al abrir el modal
     }
   }, [isOpen, companyData]);
 
@@ -46,6 +54,7 @@ const ModalCompany = ({ isOpen, onClose, onSave, companyData }) => {
   const handleSearch = async () => {
     if (!formData.identificationNumber) {
       setError("Por favor, ingrese un número de identificación para buscar.");
+      setMessage(null);
       return;
     }
     try {
@@ -56,17 +65,31 @@ const ModalCompany = ({ isOpen, onClose, onSave, companyData }) => {
         }
       });
       
+      if (response.status === 404) {
+        // Empresa no encontrada
+        setMessage("La empresa no existe en nuestra base de datos.");
+        setMessageType("info");
+        setSearchResult(null);
+        return;
+      }
+
       const data = await response.json();
       
       if (!response.ok) {
-        throw new Error(data.error || data.message || `HTTP error! status: ${response.status}`);
+        // Otros errores
+        setMessage(data.error || data.message || `HTTP error! status: ${response.status}`);
+        setMessageType("error");
+        setSearchResult(null);
+        return;
       }
       
       setSearchResult(data);
+      setMessage(null);
       setError(null);
     } catch (error) {
       console.error("Error al buscar la empresa:", error);
-      setError(`Error al buscar la empresa: ${error.message}`);
+      setMessage(`Error al buscar la empresa: ${error.message}`);
+      setMessageType("error");
       setSearchResult(null);
     }
   };
@@ -74,6 +97,8 @@ const ModalCompany = ({ isOpen, onClose, onSave, companyData }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+    setMessage(null);
+    setMessageType("error");
     try {
       const result = await onSave(formData);
       if (typeof result === "string") {
@@ -89,7 +114,28 @@ const ModalCompany = ({ isOpen, onClose, onSave, companyData }) => {
 
   const handleClose = () => {
     setError(null); // Limpiar el error al cerrar el modal
+    setMessage(null); // Limpiar mensajes
+    setMessageType("error");
+    setSearchResult(null); // Restablecer el resultado de la búsqueda al cerrar el modal
     onClose();
+  };
+
+  const handleAddCompany = (company) => {
+    setFormData({
+      ...formData,
+      companyName: company.companyName || "",
+      identificationType: company.identificationType || "CC",
+      identificationNumber: company.identificationNumber || "",
+      contactPerson: company.contactPerson || "",
+      phone: company.phone || "",
+      email: company.email || "",
+      address: company.address || "",
+      city: company.city || "",
+    });
+    setSearchResult(null); // Opcional: cerrar la sección de búsqueda una vez agregada
+    setError(null);
+    setMessage(null);
+    setMessageType("error");
   };
 
   if (!isOpen) return null;
@@ -110,17 +156,36 @@ const ModalCompany = ({ isOpen, onClose, onSave, companyData }) => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {message && (
+            <div
+              className={`px-4 py-3 rounded relative ${
+                messageType === "error"
+                  ? "bg-red-100 border border-red-400 text-red-700"
+                  : "bg-blue-100 border border-blue-400 text-blue-700"
+              }`}
+              role="alert"
+            >
+              {messageType === "error" && (
+                <strong className="font-bold">Error: </strong>
+              )}
+              {messageType === "info" && (
+                <strong className="font-bold">Información: </strong>
+              )}
+              <span className="block sm:inline">{message}</span>
+            </div>
+          )}
+
           {error && (
             <div
               className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
               role="alert"
             >
-              <strong className="font-bold">Error: </strong>
+              <strong className="font-bold">Atención: </strong>
               <span className="block sm:inline">{error}</span>
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-4">
+          
             {/* Campo de búsqueda */}
             <div className="col-span-2">
               <label
@@ -151,14 +216,11 @@ const ModalCompany = ({ isOpen, onClose, onSave, companyData }) => {
 
             {/* Mostrar resultado de búsqueda */}
             {searchResult && (
-              <div className="col-span-2 bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative">
-                <p>Empresa encontrada:</p>
-                <p>Nombre: {searchResult.companyName}</p>
-                <p>Contacto: {searchResult.contactPerson}</p>
-                <p>Teléfono: {searchResult.phone}</p>
-              </div>
+              <CompanyInfo company={searchResult} onAdd={handleAddCompany} />
             )}
 
+            {/* Campos del formulario */}
+            <div className="grid grid-cols-2 gap-4">
             <div>
               <label
                 htmlFor="companyName"
