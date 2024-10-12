@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import PropTypes from "prop-types";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -17,34 +17,43 @@ const EventList = ({ events }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const eventListRef = useRef();
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [pdfError, setPdfError] = useState(null);
 
   // Generar PDF sincronizado con la paginación del modal
   const generatePDF = async () => {
-    const pdf = new jsPDF();
-    let currentPDFPage = 1;
+    try {
+      setIsGeneratingPDF(true);
+      const pdf = new jsPDF();
+      let currentPDFPage = 1;
 
-    // Guardar la página actual para restaurarla al final
-    const originalPage = currentPage;
+      // Guardar la página actual para restaurarla al final
+      const originalPage = currentPage;
 
-    // Recorrer cada página de la paginación
-    for (let page = 1; page <= totalPages; page++) {
-      setCurrentPage(page); // Cambiar a la página actual
-      await new Promise((resolve) => setTimeout(resolve, 500)); // Esperar a que la página se renderice
+      // Recorrer cada página de la paginación
+      for (let page = 1; page <= totalPages; page++) {
+        setCurrentPage(page); // Cambiar a la página actual
+        await new Promise((resolve) => setTimeout(resolve, 500)); // Esperar a que la página se renderice
 
-      const input = eventListRef.current;
-      const canvas = await html2canvas(input);
-      const imgData = canvas.toDataURL("image/png");
+        const input = eventListRef.current;
+        const canvas = await html2canvas(input);
+        const imgData = canvas.toDataURL("image/png");
 
-      if (currentPDFPage > 1) pdf.addPage();
-      pdf.addImage(imgData, "PNG", 10, 10, 190, 0);
+        if (currentPDFPage > 1) pdf.addPage();
+        pdf.addImage(imgData, "PNG", 10, 10, 190, 0);
 
-      currentPDFPage++;
+        currentPDFPage++;
+      }
+
+      // Restaurar la página original
+      setCurrentPage(originalPage);
+
+      pdf.save("reporte_eventos.pdf");
+    } catch (error) {
+      setPdfError("Error al generar el PDF. Por favor, intenta nuevamente.");
+    } finally {
+      setIsGeneratingPDF(false);
     }
-
-    // Restaurar la página original
-    setCurrentPage(originalPage);
-
-    pdf.save("reporte_eventos.pdf");
   };
 
   // Ordenar y agrupar los eventos por fecha
@@ -75,15 +84,17 @@ const EventList = ({ events }) => {
     return sortedGrouped;
   };
 
-  // Obtener los eventos paginados y agrupados por fecha
-  const getPaginatedAndGroupedEvents = () => {
-    // Primero ordenar todos los eventos por fecha
-    const groupedEvents = groupAndSortEventsByDate(events);
-    const sortedDates = Object.keys(groupedEvents);
+  const groupedEvents = useMemo(
+    () => groupAndSortEventsByDate(events),
+    [events]
+  );
 
-    // Aplicar la paginación a los eventos ya ordenados por fecha
-    const paginatedGroupedEvents = {};
+  const paginatedGroupedEvents = useMemo(() => {
+    const paginated = {};
     let eventCounter = 0;
+    const sortedDates = Object.keys(groupedEvents).sort(
+      (a, b) => new Date(a) - new Date(b)
+    );
 
     sortedDates.forEach((date) => {
       const eventsOnDate = groupedEvents[date];
@@ -91,13 +102,13 @@ const EventList = ({ events }) => {
         eventCounter >= (currentPage - 1) * EVENTS_PER_PAGE &&
         eventCounter < currentPage * EVENTS_PER_PAGE
       ) {
-        paginatedGroupedEvents[date] = eventsOnDate;
+        paginated[date] = eventsOnDate;
       }
       eventCounter += eventsOnDate.length;
     });
 
-    return paginatedGroupedEvents;
-  };
+    return paginated;
+  }, [groupedEvents, currentPage]);
 
   // Formatear la fecha correctamente para mostrarla
   const formatDateForDisplay = (dateString) => {
@@ -126,13 +137,18 @@ const EventList = ({ events }) => {
   }, [events]);
 
   // Obtener los eventos paginados y agrupados
-  const paginatedGroupedEvents = getPaginatedAndGroupedEvents();
   const sortedDates = Object.keys(paginatedGroupedEvents);
 
   return (
     <div className="w-full">
-      <Button onClick={generatePDF} variant="success" className="mb-4">
-        Descargar PDF
+      {pdfError && <div className="alert alert-danger">{pdfError}</div>}
+      <Button
+        onClick={generatePDF}
+        variant="success"
+        className="mb-4"
+        disabled={isGeneratingPDF}
+      >
+        {isGeneratingPDF ? "Generando PDF..." : "Descargar PDF"}
       </Button>
 
       <div ref={eventListRef} className="bg-white p-4 shadow rounded w-full">
