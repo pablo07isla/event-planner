@@ -147,7 +147,7 @@ const EventList = ({ events }) => {
                 className="mb-4 p-3 border rounded shadow-sm text-sm"
               >
                 <h3 className="text-lg font-bold mb-2">
-                  {event.title || "Evento sin nombre"}
+                  {event.extendedProps?.companyName || "Evento sin nombre"}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                   <div>

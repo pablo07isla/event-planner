@@ -29,6 +29,12 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
   const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3001";
   const [isCompanyModalOpen, setCompanyModalOpen] = useState(false);
   const [companyData, setCompanyData] = useState(null);
+  const [companies, setCompanies] = useState([]); // Estado para almacenar la lista de empresas
+
+  // Declaración de estados faltantes
+  const [message, setMessage] = useState(null);
+  const [messageType, setMessageType] = useState("error"); // "error" o "info"
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     console.log("ModalEvent useEffect - event:", event);
@@ -38,17 +44,32 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
     } else {
       console.log("No hay companyGroupId, estableciendo companyData a null");
       setCompanyData(null);
+      setFormData((prevState) => ({
+        ...prevState,
+        companyName: "",
+        companyGroupId: null,
+      }));
     }
   }, [event]);
 
   const fetchCompanyData = async (companyId) => {
     console.log("Iniciando fetchCompanyData para companyId:", companyId);
     try {
-      const response = await axios.get(`${API_URL}/api/companies/${companyId}`);
+      const response = await axios.get(`${API_URL}/api/companies/${companyId}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
       console.log("Datos de la empresa obtenidos:", response.data);
+      setFormData((prevState) => ({
+        ...prevState,
+        companyName: response.data.companyName,
+        companyGroupId: response.data.id,
+      }));
       setCompanyData(response.data);
     } catch (error) {
       console.error("Error al obtener datos de la empresa:", error);
+      setError("No se pudieron obtener los datos de la empresa.");
       setCompanyData(null);
     }
   };
@@ -58,7 +79,11 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
     if (formData.companyGroupId) {
       console.log("companyGroupId encontrado:", formData.companyGroupId);
       try {
-        const response = await axios.get(`${API_URL}/api/companies/${formData.companyGroupId}`);
+        const response = await axios.get(`${API_URL}/api/companies/${formData.companyGroupId}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
         console.log("Datos de la empresa obtenidos en handleCompanyClick:", response.data);
         setCompanyData(response.data);
       } catch (error) {
@@ -73,41 +98,54 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
     setCompanyModalOpen(true);
   };
 
-  const handleCompanySave = async (updatedCompanyData) => {
-    console.log("handleCompanySave iniciado con datos:", updatedCompanyData);
+  const handleCompanySave = async (formData, action) => {
+    console.log("handleCompanySave iniciado, formData:", formData, "acción:", action);
     try {
       let response;
-      if (updatedCompanyData.id) {
-        console.log("Actualizando empresa existente");
-        response = await axios.put(
-          `${API_URL}/api/companies/${updatedCompanyData.id}`,
-          updatedCompanyData
+      if (action === "create") {
+        // Crear una nueva empresa
+        response = await axios.post(`${API_URL}/api/companies`, formData, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        setCompanies((prevCompanies) => [...prevCompanies, response.data]);
+        setMessage("Empresa creada exitosamente.");
+        setMessageType("info");
+      } else if (action === "edit") {
+        // Editar una empresa existente
+        response = await axios.put(`${API_URL}/api/companies/${formData.id}`, formData, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        setCompanies((prevCompanies) =>
+          prevCompanies.map((company) => (company.id === response.data.id ? response.data : company))
         );
-      } else {
-        console.log("Creando nueva empresa");
-        response = await axios.post(
-          `${API_URL}/api/companies`,
-          updatedCompanyData
-        );
+        // Opcional: Mostrar un mensaje de éxito
+        setMessage("Empresa actualizada exitosamente.");
+        setMessageType("info");
       }
-      console.log("Respuesta de guardar/actualizar compañía:", response.data);
 
+      // Actualizar formData con los datos de la empresa guardada
       setFormData((prevState) => ({
         ...prevState,
         companyName: response.data.companyName,
         companyGroupId: response.data.id,
       }));
 
-      setCompanyData(response.data);
+      // Cerrar el modal de empresa después de guardar
       setCompanyModalOpen(false);
+      // Limpiar posibles mensajes de error
+      setError(null);
     } catch (error) {
-      console.error("Error al guardar la compañía:", error);
-      if (error.response && error.response.status === 400) {
-        // Manejar el error de número de identificación duplicado
-        return error.response.data.message || "Esta empresa ya existe";
-      } else {
-        return "Ocurrió un error al guardar la compañía. Por favor, inténtelo de nuevo.";
-      }
+      console.error("Error al guardar la empresa:", error);
+      // Manejar errores y mostrar mensajes adecuados
+      const errorMsg =
+        error.response?.data?.message || "Ocurrió un error al guardar la empresa.";
+      setError(errorMsg);
+      setMessageType("error");
+      return errorMsg; // Retornar el mensaje de error para que el modal hijo lo maneje
     }
   };
 
