@@ -1,8 +1,12 @@
-import React, { useState, useEffect } from "react";
-import PropTypes from "prop-types";
+// Importamos axios para hacer las solicitudes
+import ModalCompany from "./ModalCompany";
 import MultiSelectDropdown from "./MultiSelectDropdown";
+import axios from "axios";
 import { parseISO, format } from "date-fns";
-import axios from "axios"; // Importamos axios para hacer las solicitudes
+import PropTypes from "prop-types";
+import React, { useState, useEffect } from "react";
+
+// Asegúrate de importar el nuevo modal
 
 function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
   const [formData, setFormData] = useState({
@@ -22,9 +26,158 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
     eventStatus: "", // New field for event status
     lastModified: "",
     lastModifiedBy: "",
+    companyGroupId: null,
   });
 
   const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3001";
+  const [isCompanyModalOpen, setCompanyModalOpen] = useState(false);
+  const [companyData, setCompanyData] = useState(null);
+  const [companies, setCompanies] = useState([]); // Estado para almacenar la lista de empresas
+
+  // Declaración de estados faltantes
+  const [message, setMessage] = useState(null);
+  const [messageType, setMessageType] = useState("error"); // "error" o "info"
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    console.log("ModalEvent useEffect - event:", event);
+    if (event && event.companyGroupId) {
+      console.log(
+        "Llamando a fetchCompanyData con companyGroupId:",
+        event.companyGroupId
+      );
+      fetchCompanyData(event.companyGroupId);
+    } else {
+      console.log("No hay companyGroupId, estableciendo companyData a null");
+      setCompanyData(null);
+      setFormData((prevState) => ({
+        ...prevState,
+        companyName: "",
+        companyGroupId: null,
+      }));
+    }
+  }, [event]);
+
+  const fetchCompanyData = async (companyId) => {
+    console.log("Iniciando fetchCompanyData para companyId:", companyId);
+    try {
+      const response = await axios.get(
+        `${API_URL}/api/companies/${companyId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      console.log("Datos de la empresa obtenidos:", response.data);
+      setFormData((prevState) => ({
+        ...prevState,
+        companyName: response.data.companyName,
+        companyGroupId: response.data.id,
+      }));
+      setCompanyData(response.data);
+    } catch (error) {
+      console.error("Error al obtener datos de la empresa:", error);
+      setError("No se pudieron obtener los datos de la empresa.");
+      setCompanyData(null);
+    }
+  };
+
+  const handleCompanyClick = async () => {
+    console.log("handleCompanyClick iniciado, formData:", formData);
+    if (formData.companyGroupId) {
+      console.log("companyGroupId encontrado:", formData.companyGroupId);
+      try {
+        const response = await axios.get(
+          `${API_URL}/api/companies/${formData.companyGroupId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        console.log(
+          "Datos de la empresa obtenidos en handleCompanyClick:",
+          response.data
+        );
+        setCompanyData(response.data);
+      } catch (error) {
+        console.error(
+          "Error al obtener datos de la empresa en handleCompanyClick:",
+          error
+        );
+        setCompanyData(null);
+      }
+    } else {
+      console.log("No hay companyGroupId, estableciendo companyData a null");
+      setCompanyData(null);
+    }
+    console.log("Abriendo modal de compañía");
+    setCompanyModalOpen(true);
+  };
+
+  const handleCompanySave = async (formData, action) => {
+    console.log(
+      "handleCompanySave iniciado, formData:",
+      formData,
+      "acción:",
+      action
+    );
+    try {
+      let response;
+      if (action === "create") {
+        // Crear una nueva empresa
+        response = await axios.post(`${API_URL}/api/companies`, formData, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        setCompanies((prevCompanies) => [...prevCompanies, response.data]);
+        setMessage("Empresa creada exitosamente.");
+        setMessageType("info");
+      } else if (action === "edit") {
+        // Editar una empresa existente
+        response = await axios.put(
+          `${API_URL}/api/companies/${formData.id}`,
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        setCompanies((prevCompanies) =>
+          prevCompanies.map((company) =>
+            company.id === response.data.id ? response.data : company
+          )
+        );
+        // Opcional: Mostrar un mensaje de éxito
+        setMessage("Empresa actualizada exitosamente.");
+        setMessageType("info");
+      }
+
+      // Actualizar formData con los datos de la empresa guardada
+      setFormData((prevState) => ({
+        ...prevState,
+        companyName: response.data.companyName,
+        companyGroupId: response.data.id,
+      }));
+
+      // Cerrar el modal de empresa después de guardar
+      setCompanyModalOpen(false);
+      // Limpiar posibles mensajes de error
+      setError(null);
+    } catch (error) {
+      console.error("Error al guardar la empresa:", error);
+      // Manejar errores y mostrar mensajes adecuados
+      const errorMsg =
+        error.response?.data?.message ||
+        "Ocurrió un error al guardar la empresa.";
+      setError(errorMsg);
+      setMessageType("error");
+      return errorMsg; // Retornar el mensaje de error para que el modal hijo lo maneje
+    }
+  };
 
   useEffect(() => {
     if (event) {
@@ -33,6 +186,7 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
         title: event.companyName || "",
         startDate: formatDateForInput(event.start),
         endDate: formatDateForInput(event.end),
+        companyName: event.companyName || "",
         foodPackage: Array.isArray(event.foodPackage) ? event.foodPackage : [],
         eventStatus: event.eventStatus || "", // Initialize event status
         email: event.email || "", // Initialize email
@@ -47,51 +201,51 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
     }
   }, [event]);
 
-  const handleFileChange = (e) => {
-    const files = Array.from(e.target.files);
-    setFormData((prevState) => ({
-      ...prevState,
-      attachments: [...prevState.attachments, ...files],
-    }));
-  };
+  // const handleFileChange = (e) => {
+  //   const files = Array.from(e.target.files);
+  //   setFormData((prevState) => ({
+  //     ...prevState,
+  //     attachments: [...prevState.attachments, ...files],
+  //   }));
+  // };
 
-  const downloadAttachment = async (filename) => {
-    try {
-      const response = await axios.get(`${API_URL}/${filename}`, {
-        responseType: "blob",
-      });
+  // const downloadAttachment = async (filename) => {
+  //   try {
+  //     const response = await axios.get(`${API_URL}/uploads/${filename}`, {
+  //       responseType: "blob",
+  //     });
 
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", filename);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-    } catch (error) {
-      console.error("Error al descargar el archivo:", error);
-    }
-  };
+  //     const url = window.URL.createObjectURL(new Blob([response.data]));
+  //     const link = document.createElement("a");
+  //     link.href = url;
+  //     link.setAttribute("download", filename);
+  //     document.body.appendChild(link);
+  //     link.click();
+  //     link.remove();
+  //   } catch (error) {
+  //     console.error("Error al descargar el archivo:", error);
+  //   }
+  // };
 
-  const removeAttachment = async (filename, index) => {
-    try {
-      // Codificar correctamente el nombre del archivo
-      const cleanFilename = encodeURIComponent(
-        filename.replace(/^uploads\//, "")
-      );
+  // const removeAttachment = async (filename, index) => {
+  //   try {
+  //     // Elimina el prefijo 'uploads/' si está presente
+  //     const cleanFilename = filename.replace(/^uploads\//, "");
 
-      await axios.delete(
-        `${API_URL}/api/events/${event.id}/attachments/${cleanFilename}`
-      );
+  //     await axios.delete(
+  //       `${API_URL}/api/events/${event.id}/attachments/${encodeURIComponent(
+  //         cleanFilename
+  //       )}`
+  //     );
 
-      setFormData((prevState) => ({
-        ...prevState,
-        attachments: prevState.attachments.filter((_, i) => i !== index),
-      }));
-    } catch (error) {
-      console.error("Error al eliminar el archivo:", error);
-    }
-  };
+  //     setFormData((prevState) => ({
+  //       ...prevState,
+  //       attachments: prevState.attachments.filter((_, i) => i !== index),
+  //     }));
+  //   } catch (error) {
+  //     console.error("Error al eliminar el archivo:", error);
+  //   }
+  // };
 
   const formatDateForInput = (dateString) => {
     if (!dateString) return "";
@@ -122,10 +276,10 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
   };
 
   const handleChange = (e) => {
-    const { name, value, type, files } = e.target;
+    const { name, value } = e.target;
     setFormData((prevState) => ({
       ...prevState,
-      [name]: type === "file" ? files[0] : value,
+      [name]: value,
     }));
   };
 
@@ -169,6 +323,9 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
         formData[key].forEach((file, index) => {
           formDataToSubmit.append(`attachments[${index}]`, file);
         });
+      } else if (key === "companyId" || key === "companyName") {
+        // Asegurarse de que companyId y companyName se incluyan en los datos enviados
+        formDataToSubmit.append(key, formData[key]);
       } else {
         formDataToSubmit.append(key, formData[key]);
       }
@@ -177,39 +334,39 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
     onSave(formDataToSubmit);
   };
 
-  const renderFilePreview = (file, index) => {
-    const isFileObject = file instanceof File || file instanceof Blob;
-    const fileName = isFileObject ? file.name : file.split("/").pop();
+  // const renderFilePreview = (file, index) => {
+  //   const isFileObject = file instanceof File || file instanceof Blob;
+  //   const fileName = isFileObject ? file.name : file.split("/").pop();
 
-    // if (isImage) {
-    //   return (
-    //     <img
-    //       src={filePath}
-    //       alt="Preview"
-    //       className="w-32 h-32 object-cover rounded"
-    //     />
-    //   );
-    // } else if (isVideo) {
-    //   return (
-    //     <video
-    //       src={filePath}
-    //       controls
-    //       className="w-32 h-32 object-cover rounded"
-    //     />
-    //   );
-    // } else {
+  //   // if (isImage) {
+  //   //   return (
+  //   //     <img
+  //   //       src={filePath}
+  //   //       alt="Preview"
+  //   //       className="w-32 h-32 object-cover rounded"
+  //   //     />
+  //   //   );
+  //   // } else if (isVideo) {
+  //   //   return (
+  //   //     <video
+  //   //       src={filePath}
+  //   //       controls
+  //   //       className="w-32 h-32 object-cover rounded"
+  //   //     />
+  //   //   );
+  //   // } else {
 
-    // }
-    return (
-      <a
-        href="#"
-        onClick={() => downloadAttachment(fileName)}
-        className="text-indigo-600 hover:underline"
-      >
-        {fileName}
-      </a>
-    );
-  };
+  //   // }
+  //   return (
+  //     <a
+  //       href="#"
+  //       onClick={() => downloadAttachment(fileName)}
+  //       className="text-indigo-600 hover:underline"
+  //     >
+  //       {fileName}
+  //     </a>
+  //   );
+  // };
 
   console.log("submit", formData);
   if (!isOpen) return null;
@@ -289,6 +446,7 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                 placeholder="Nombre Empresa/Grupo"
                 required
+                onClick={handleCompanyClick}
               />
             </div>
 
@@ -493,7 +651,7 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
                 <option value="Cancelado">Cancelado</option>
               </select>
             </div>
-            <div>
+            {/* <div>
               <label
                 htmlFor="attachments"
                 className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
@@ -513,10 +671,10 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
                 file:bg-indigo-50 file:text-indigo-700
                 hover:file:bg-indigo-100"
               />
-            </div>
+            </div>*/}
           </div>
           {/* Mostrar archivos adjuntos guardados */}
-          {formData.attachments.length > 0 && (
+          {/* {formData.attachments.length > 0 && (
             <div className="mb-4">
               <h3 className="text-lg font-medium text-gray-900">
                 Archivos Adjuntos
@@ -541,7 +699,7 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
                 ))}
               </ul>
             </div>
-          )}
+          )} */}
           <div className="flex justify-end space-x-2 pt-4">
             <button
               type="submit"
@@ -568,6 +726,12 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
           </div>
         </form>
       </div>
+      <ModalCompany
+        isOpen={isCompanyModalOpen}
+        onClose={() => setCompanyModalOpen(false)}
+        onSave={handleCompanySave}
+        companyData={companyData}
+      />
     </div>
   );
 }
