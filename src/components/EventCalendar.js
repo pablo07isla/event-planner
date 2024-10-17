@@ -1,26 +1,28 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
-
-import PropTypes from "prop-types";
-import FullCalendar from "@fullcalendar/react";
-import dayGridPlugin from "@fullcalendar/daygrid";
-import timeGridPlugin from "@fullcalendar/timegrid";
-import listPlugin from "@fullcalendar/list";
-import interactionPlugin from "@fullcalendar/interaction";
 import ModalEvent from "./Modal";
-import esLocale from "@fullcalendar/core/locales/es";
 import bootstrap5Plugin from "@fullcalendar/bootstrap5";
+import esLocale from "@fullcalendar/core/locales/es";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import interactionPlugin from "@fullcalendar/interaction";
+import listPlugin from "@fullcalendar/list";
+import FullCalendar from "@fullcalendar/react";
+import timeGridPlugin from "@fullcalendar/timegrid";
+import PropTypes from "prop-types";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import "bootstrap/dist/css/bootstrap.css";
-import "bootstrap-icons/font/bootstrap-icons.css"; // needs additional webpack config!
-import "@fortawesome/fontawesome-free/css/all.css"; // needs additional webpack config!
+import "bootstrap-icons/font/bootstrap-icons.css";
+// needs additional webpack config!
+import "@fortawesome/fontawesome-free/css/all.css";
+import Sidebar from "./Sidebar";
+// needs additional webpack config!
 import bootstrapPlugin from "@fullcalendar/bootstrap";
 import axios from "axios";
-import Sidebar from "./Sidebar";
 import { Modal, Button } from "react-bootstrap";
-import "./EventCalendar.css"; // Asegúrate de que la ruta sea correcta
-import { useNavigate } from "react-router-dom";
+import "./EventCalendar.css";
 import EventList from "./EventList";
-import { FaPrint } from "react-icons/fa";
 import { parseISO, format } from "date-fns";
+import { FaPrint } from "react-icons/fa";
+// Asegúrate de que la ruta sea correcta
+import { useNavigate } from "react-router-dom";
 
 function EventCalendar({ initialEvents }) {
   const [events, setEvents] = useState(initialEvents);
@@ -34,6 +36,7 @@ function EventCalendar({ initialEvents }) {
   const calendarRef = useRef(null);
   const [showModal, setShowModal] = useState(false); // Estado para controlar el modal
   const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3001";
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
 
   const handleDateSelect = (selectInfo) => {
     const start = parseISO(selectInfo.startStr);
@@ -427,183 +430,198 @@ function EventCalendar({ initialEvents }) {
   const handleCloseModal = () => setShowModal(false);
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-screen overflow-hidden bg-gray-100">
       <Sidebar currentUser={user?.username} onAddEvent={handleAddEvent} />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="flex-1 overflow-auto p-6">
-          <div className="bg-white shadow-xl rounded-2xl h-full">
-            {/* <h2 className="text-3xl font-bold text-gray-800 mb-6">
-              Calendario de Eventos
-            </h2> */}
-            {/* Botón para exportar PDF que abre el modal */}
-            {/* Botón flotante circular para exportar PDF */}
-            <button
-              onClick={handleShowModal}
-              className="floating-button"
-              aria-label="Exportar PDF"
-            >
-              <FaPrint size={24} color="white" />
-            </button>
-            {/* Modal con la tabla de eventos */}
-            <Modal
-              show={showModal}
-              onHide={handleCloseModal}
-              size="lg"
-              centered
-            >
-              <Modal.Header closeButton>
-                <Modal.Title>Lista de Eventos</Modal.Title>
-              </Modal.Header>
-              <Modal.Body>
-                {/* Muestra la tabla de eventos dentro del modal */}
-                <EventList events={visibleEvents} />
-              </Modal.Body>
-              <Modal.Footer>
-                <Button variant="secondary" onClick={handleCloseModal}>
-                  Cerrar
-                </Button>
-              </Modal.Footer>
-            </Modal>
-            <FullCalendar
-              plugins={[
-                dayGridPlugin,
-                timeGridPlugin,
-                listPlugin,
-                interactionPlugin,
-                bootstrap5Plugin,
-                bootstrapPlugin,
-              ]}
-              themeSystem="bootstrap"
-              headerToolbar={{
-                left: "prev,next today",
-                center: "title",
-                right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
-              }}
-              initialView="dayGridMonth"
-              editable={true}
-              selectable={true}
-              selectMirror={true}
-              dayMaxEvents={true}
-              weekends={true}
-              timeZone="local" // Asegúrate de usar la zona horaria correcta
-              events={preparedEvents}
-              select={handleDateSelect}
-              eventClick={handleEventClick}
-              ref={calendarRef}
-              eventDrop={handleEventDrop}
-              eventResize={handleEventResize}
-              datesSet={handleDatesSet} // Cada vez que cambie la vista, capturamos el rango visible
-              height="100%"
-              eventContent={(eventInfo) => (
-                <div className="flex items-center justify-between w-full px-2 py-1 text-sm">
-                  <span className="font-semibold truncate">
-                    {eventInfo.event.extendedProps.companyName}
-                  </span>
-                  <span className="ml-1 text-xs bg-gray-200 text-gray-700 px-1 rounded">
-                    {eventInfo.event.extendedProps.peopleCount}pax
-                  </span>
-                </div>
-              )}
-              locale={esLocale}
-              buttonText={{
-                today: "Hoy",
-                month: "Mes",
-                week: "Semana",
-                day: "Día",
-                list: "Lista",
-              }}
-              firstDay={1}
-              titleFormat={{ year: "numeric", month: "long" }}
-              views={{
-                dayGridMonth: {
-                  dayHeaderFormat: { weekday: "long" },
-                },
-                timeGridWeek: {
-                  dayHeaderFormat: {
-                    weekday: "long",
-                    day: "numeric",
-                    month: "numeric",
-                  },
-                  allDaySlot: true,
-                  allDayText: "Todo el día",
-                  slotDuration: "24:00:00",
-                  slotLabelFormat: {
-                    hour: "numeric",
-                    minute: "2-digit",
-                    hour12: true,
-                  },
-                },
-                timeGridDay: {
-                  dayHeaderFormat: {
-                    weekday: "long",
-                    day: "numeric",
-                    month: "numeric",
-                  },
-                  allDaySlot: true,
-                  allDayText: "Todo el día",
-                  slotDuration: "24:00:00",
-                  slotLabelFormat: {
-                    hour: "numeric",
-                    minute: "2-digit",
-                    hour12: true,
-                  },
-                },
-                listWeek: {
-                  buttonText: "Lista", // Texto para la vista de lista
-                },
-              }}
-              slotLabelFormat={{
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: false,
-              }}
-              eventTimeFormat={{
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: false,
-              }}
-            />
+      <div className="flex-1 flex flex-col overflow-hidden transition-all duration-300 ">
+        <div className="flex-1 overflow-auto p-4 lg:p-6">
+          <div className="bg-white shadow-2xl rounded-3xl h-full overflow-hidden flex flex-col">
+            <div className="p-4 lg:p-6 flex-grow">
+              <button
+                onClick={handleShowModal}
+                className="fixed bottom-6 right-6 z-10 bg-indigo-600 hover:bg-indigo-700 text-white p-4 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50"
+                aria-label="Exportar PDF"
+              >
+                <FaPrint size={24} />
+              </button>
 
-            <ModalEvent
-              isOpen={modalOpen}
-              onClose={() => setModalOpen(false)}
-              onSave={handleSaveEvent}
-              onDelete={handleDeleteEvent}
-              event={currentEvent}
-            />
+              <Modal
+                show={showModal}
+                onHide={handleCloseModal}
+                size="lg"
+                centered
+                className="rounded-lg"
+              >
+                <Modal.Header closeButton className="bg-indigo-600 text-white">
+                  <Modal.Title className="text-xl font-semibold">
+                    Lista de Eventos
+                  </Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="p-6">
+                  <EventList events={visibleEvents} />
+                </Modal.Body>
+                <Modal.Footer className="border-t border-gray-200">
+                  <Button
+                    variant="secondary"
+                    onClick={handleCloseModal}
+                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors duration-300"
+                  >
+                    Cerrar
+                  </Button>
+                </Modal.Footer>
+              </Modal>
 
-            <Modal
-              show={alertDialogOpen}
-              onHide={() => setAlertDialogOpen(false)}
-              centered
-            >
-              <Modal.Header closeButton>
-                <Modal.Title>Confirmar cambio de fecha</Modal.Title>
-              </Modal.Header>
-              <Modal.Body>
-                ¿Está seguro de que desea cambiar la fecha del evento?
-              </Modal.Body>
-              <Modal.Footer>
-                <Button variant="secondary" onClick={handleCancelDateChange}>
-                  Cancelar
-                </Button>
-                <Button variant="primary" onClick={handleConfirmDateChange}>
-                  Confirmar
-                </Button>
-              </Modal.Footer>
-            </Modal>
+              <FullCalendar
+                plugins={[
+                  dayGridPlugin,
+                  timeGridPlugin,
+                  listPlugin,
+                  interactionPlugin,
+                  bootstrap5Plugin,
+                  bootstrapPlugin,
+                ]}
+                themeSystem="bootstrap"
+                headerToolbar={{
+                  left: "prev,next today",
+                  center: "title",
+                  right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
+                }}
+                initialView="dayGridMonth"
+                editable={true}
+                selectable={true}
+                selectMirror={true}
+                dayMaxEvents={true}
+                weekends={true}
+                timeZone="local"
+                events={preparedEvents}
+                select={handleDateSelect}
+                eventClick={handleEventClick}
+                ref={calendarRef}
+                eventDrop={handleEventDrop}
+                eventResize={handleEventResize}
+                datesSet={handleDatesSet}
+                height="100%"
+                eventContent={(eventInfo) => (
+                  <div className="flex items-center justify-between w-full px-2 py-1 text-sm bg-indigo-100 rounded-lg shadow-sm overflow-hidden">
+                    <span className="font-semibold truncate text-indigo-800 flex-grow">
+                      {eventInfo.event.extendedProps.companyName}
+                    </span>
+                    <span className="ml-1 text-xs bg-indigo-200 text-indigo-800 px-2 py-1 rounded-full whitespace-nowrap">
+                      {eventInfo.event.extendedProps.peopleCount}pax
+                    </span>
+                  </div>
+                )}
+                locale={esLocale}
+                buttonText={{
+                  today: "Hoy",
+                  month: "Mes",
+                  week: "Semana",
+                  day: "Día",
+                  list: "Lista",
+                }}
+                firstDay={1}
+                titleFormat={{ year: "numeric", month: "long" }}
+                views={{
+                  dayGridMonth: {
+                    dayHeaderFormat: { weekday: "short" },
+                    displayEventTime: false,
+                  },
+                  timeGridWeek: {
+                    dayHeaderFormat: {
+                      weekday: "short",
+                      day: "numeric",
+                      month: "numeric",
+                    },
+                    slotDuration: "01:00:00",
+                    slotLabelInterval: "01:00:00",
+                  },
+                  timeGridDay: {
+                    dayHeaderFormat: {
+                      weekday: "long",
+                      day: "numeric",
+                      month: "long",
+                    },
+                    slotDuration: "01:00:00",
+                    slotLabelInterval: "01:00:00",
+                  },
+                  listWeek: {
+                    listDayFormat: {
+                      weekday: "long",
+                      day: "numeric",
+                      month: "long",
+                    },
+                    listDaySideFormat: { weekday: "short" },
+                  },
+                }}
+                slotLabelFormat={{
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: false,
+                }}
+                eventTimeFormat={{
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: false,
+                }}
+              />
+
+              <ModalEvent
+                isOpen={modalOpen}
+                onClose={() => setModalOpen(false)}
+                onSave={handleSaveEvent}
+                onDelete={handleDeleteEvent}
+                event={currentEvent}
+              />
+
+              <Modal
+                show={alertDialogOpen}
+                onHide={() => setAlertDialogOpen(false)}
+                centered
+                className="rounded-lg overflow-hidden z-[999]"
+              >
+                <Modal.Header closeButton>
+                  <Modal.Title>Confirmar cambio de fecha</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                  ¿Está seguro de que desea cambiar la fecha del evento?
+                </Modal.Body>
+                <Modal.Footer>
+                  <Button variant="secondary" onClick={handleCancelDateChange}>
+                    Cancelar
+                  </Button>
+                  <Button variant="primary" onClick={handleConfirmDateChange}>
+                    Confirmar
+                  </Button>
+                </Modal.Footer>
+              </Modal>
+            </div>
           </div>
           {error && (
             <div
-              className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+              className="mt-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-r-md"
               role="alert"
             >
-              <strong className="font-bold">Error!</strong>
-              <span className="block sm:inline"> {error}</span>
+              <p className="font-bold">Error</p>
+              <p>{error}</p>
             </div>
           )}
         </div>
       </div>
+      <style jsx global>{`
+        .fc .fc-daygrid-day-frame {
+          min-height: 100px;
+        }
+        .fc .fc-daygrid-day-events {
+          margin-bottom: 0;
+        }
+        .fc .fc-daygrid-event {
+          margin-top: 2px;
+          margin-bottom: 2px;
+        }
+        .fc .fc-list-event-title {
+          font-weight: bold;
+          color: #4f46e5;
+        }
+      `}</style>
     </div>
   );
 }
