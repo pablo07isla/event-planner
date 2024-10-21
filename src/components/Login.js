@@ -1,8 +1,8 @@
 // Login.js
+
+import { supabase } from "../supabaseClient";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3001";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -13,36 +13,41 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(`${API_URL}/api/login`, {
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
-      localStorage.setItem("token", response.data.token);
+
+      if (error) throw error;
+
+      // Obtener información adicional del usuario desde la tabla 'users'
+      const { data: userData, error: userError } = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", data.user.id)
+        .single();
+
+      if (userError) throw userError;
+
+      localStorage.setItem("token", data.session.access_token);
       localStorage.setItem(
         "user",
         JSON.stringify({
-          id: response.data.userId,
-          username: response.data.username, // Guarda el username para mostrarlo en la aplicación
-          role: response.data.role,
+          id: data.user.id,
+          username: userData.username,
+          role: userData.role,
         })
       );
       navigate("/");
     } catch (err) {
-      // Manejo de errores
-      if (err.response) {
-        if (err.response.status === 401) {
-          setError("Correo electrónico o contraseña incorrectos.");
-        } else if (err.response.status === 500) {
-          setError(
-            "Error del servidor. Por favor, inténtalo de nuevo más tarde."
-          );
-        } else {
-          setError(
-            "Error: " + err.response.data.message || "Error desconocido."
-          );
-        }
+      if (err.status === 400) {
+        setError("Correo electrónico o contraseña incorrectos.");
+      } else if (err.status === 500) {
+        setError(
+          "Error del servidor. Por favor, inténtalo de nuevo más tarde."
+        );
       } else {
-        setError("No se pudo conectar con el servidor. Verifica tu conexión.");
+        setError("Error: " + err.message || "Error desconocido.");
       }
     }
   };

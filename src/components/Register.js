@@ -1,7 +1,8 @@
 // Register.js
+
+import { supabase } from "../supabaseClient";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 
 const Register = () => {
   const [username, setUsername] = useState("");
@@ -11,26 +12,39 @@ const Register = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  // Usa la variable de entorno REACT_APP_API_URL o localhost si no está definida
-  const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3001";
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (password !== confirmPassword) {
-      setError("Passwords don't match");
+      setError("Las contraseñas no coinciden");
       return;
     }
     try {
-      await axios.post(`${API_URL}/api/register`, {
-        username, // Envía también el nombre de usuario
+      // Registrar al usuario con Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
       });
+
+      if (authError) throw authError;
+
+      // Insertar información adicional en la tabla 'users'
+      const { data: userData, error: userError } = await supabase
+        .from("users")
+        .insert([
+          {
+            id: authData.user.id,
+            username,
+            email,
+            role: "user",
+            // No incluimos la contraseña aquí, ya que Supabase Auth la maneja
+          },
+        ]);
+
+      if (userError) throw userError;
+
       navigate("/login");
     } catch (err) {
-      setError(
-        err.response?.data?.error || "An error occurred during registration"
-      );
+      setError(err.message || "Ocurrió un error durante el registro");
     }
   };
 

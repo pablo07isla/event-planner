@@ -1,3 +1,4 @@
+import { supabase } from "../supabaseClient";
 import * as Avatar from "@radix-ui/react-avatar";
 import * as Separator from "@radix-ui/react-separator";
 import {
@@ -16,10 +17,15 @@ const Sidebar = ({ currentUser, onAddEvent }) => {
   console.log("currentUser:", currentUser); // Agregar este log
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    navigate("/login");
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error("Error al cerrar sesión:", error);
+    } else {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      navigate("/login");
+    }
   };
 
   return (
