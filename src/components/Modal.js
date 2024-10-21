@@ -111,12 +111,7 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
   };
 
   const handleCompanySave = async (formData, action) => {
-    console.log(
-      "handleCompanySave iniciado, formData:",
-      formData,
-      "acción:",
-      action
-    );
+    console.log("handleCompanySave iniciado, formData:", formData, "acción:", action);
     try {
       let response;
       if (action === "create") {
@@ -127,7 +122,7 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
         const { data, error } = await supabase
           .from("CompanyGroups")
           .insert([formData])
-          .select(); // Añadir .select() para intentar obtener los datos insertados
+          .select();
 
         if (error) throw error;
 
@@ -159,17 +154,21 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
         const { data, error } = await supabase
           .from("CompanyGroups")
           .update(formData)
-          .eq("id", formData.id);
+          .eq("id", formData.id)
+          .select(); // Añadimos .select() para obtener los datos actualizados
         if (error) throw error;
-        if (!data) {
+        if (!data || data.length === 0) {
           throw new Error("No se recibieron datos después de la actualización");
         }
-        response = { data };
+        response = { data: data[0] }; // Tomamos el primer elemento del array
         setMessage("Empresa actualizada exitosamente.");
         setMessageType("info");
       }
 
+      console.log("Respuesta de Supabase:", response);
+
       if (!response.data) {
+        console.error("Respuesta de Supabase no contiene datos:", response);
         throw new Error("Respuesta de Supabase no contiene datos");
       }
 
@@ -182,9 +181,8 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
       setCompanyModalOpen(false);
       setError(null);
     } catch (error) {
-      console.error("Error al guardar la empresa:", error);
-      const errorMsg =
-        error.message || "Ocurrió un error al guardar la empresa.";
+      console.error("Error detallado al guardar la empresa:", error);
+      const errorMsg = error.message || "Ocurrió un error al guardar la empresa.";
       setError(errorMsg);
       setMessageType("error");
       return errorMsg;

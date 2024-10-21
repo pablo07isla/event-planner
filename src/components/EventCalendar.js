@@ -120,56 +120,62 @@ function EventCalendar({ initialEvents }) {
     setAlertDialogOpen(false);
     if (eventToUpdate) {
       try {
-        // Log the eventToUpdate ID for debugging
         console.log("eventToUpdate.id:", eventToUpdate.id);
 
-        // Ensure start and end dates are valid
-        const start =
-          eventToUpdate.start instanceof Date
-            ? eventToUpdate.start.toISOString()
-            : eventToUpdate.start;
-        const end =
-          eventToUpdate.end instanceof Date
-            ? eventToUpdate.end.toISOString()
-            : eventToUpdate.end;
+        const start = eventToUpdate.start instanceof Date
+          ? eventToUpdate.start.toISOString()
+          : eventToUpdate.start;
+        const end = eventToUpdate.end instanceof Date
+          ? eventToUpdate.end.toISOString()
+          : eventToUpdate.end;
 
         // Fetch the full event data before updating
-        const eventResponse = await supabase
+        const { data: eventData, error: fetchError } = await supabase
           .from("events")
           .select("*")
-          .eq("id", eventToUpdate.id);
-        const fullEventData = eventResponse.data[0];
+          .eq("id", eventToUpdate.id)
+          .single();
+
+        if (fetchError) throw fetchError;
+
+        if (!eventData) {
+          throw new Error("No se encontró el evento para actualizar");
+        }
+
+        console.log("Datos del evento antes de la actualización:", eventData);
 
         // Prepare the update data, keeping all fields and updating only the dates
         const updateData = {
-          ...fullEventData,
+          ...eventData,
           start: start,
           end: end,
         };
 
         // Remove any fields that might cause issues
-        delete updateData.id; // The ID is usually in the URL for PUT requests
-        const eventExists = await supabase
-          .from("events")
-          .select("*")
-          .eq("id", eventToUpdate.id);
-        console.log("eventExists", eventExists.data); // Verifica si el evento se obtiene correctamente
+        delete updateData.id;
 
-        const response = await supabase
+        const { data: updatedData, error: updateError } = await supabase
           .from("events")
           .update(updateData)
-          .eq("id", eventToUpdate.id);
+          .eq("id", eventToUpdate.id)
+          .select();
 
-        const updatedEvent = response.data[0];
+        if (updateError) throw updateError;
+
+        if (!updatedData || updatedData.length === 0) {
+          throw new Error("No se recibieron datos después de la actualización");
+        }
+
+        const updatedEvent = updatedData[0];
+        console.log("Evento actualizado:", updatedEvent);
+
         setEvents((prevEvents) =>
           prevEvents.map((e) => (e.id === updatedEvent.id ? updatedEvent : e))
         );
       } catch (err) {
-        console.error("Error details:", err.response?.data);
+        console.error("Error detallado:", err);
         setError(
-          `Error al actualizar el evento: ${
-            err.response?.data?.error || err.message
-          }. Por favor, inténtelo de nuevo.`
+          `Error al actualizar el evento: ${err.message}. Por favor, inténtelo de nuevo.`
         );
       }
     }
