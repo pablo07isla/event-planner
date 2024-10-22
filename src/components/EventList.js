@@ -84,31 +84,20 @@ const EventList = ({ events }) => {
     return sortedGrouped;
   };
 
-  const groupedEvents = useMemo(
-    () => groupAndSortEventsByDate(events),
-    [events]
-  );
+  const paginatedEvents = useMemo(() => {
+    const allEvents = events.sort((a, b) => new Date(a.start) - new Date(b.start));
+    const pages = [];
+    for (let i = 0; i < allEvents.length; i += EVENTS_PER_PAGE) {
+      pages.push(allEvents.slice(i, i + EVENTS_PER_PAGE));
+    }
+    return pages;
+  }, [events]);
 
-  const paginatedGroupedEvents = useMemo(() => {
-    const paginated = {};
-    let eventCounter = 0;
-    const sortedDates = Object.keys(groupedEvents).sort(
-      (a, b) => new Date(a) - new Date(b)
-    );
+  const currentPageEvents = paginatedEvents[currentPage - 1] || [];
 
-    sortedDates.forEach((date) => {
-      const eventsOnDate = groupedEvents[date];
-      if (
-        eventCounter >= (currentPage - 1) * EVENTS_PER_PAGE &&
-        eventCounter < currentPage * EVENTS_PER_PAGE
-      ) {
-        paginated[date] = eventsOnDate;
-      }
-      eventCounter += eventsOnDate.length;
-    });
-
-    return paginated;
-  }, [groupedEvents, currentPage]);
+  const groupedEvents = useMemo(() => {
+    return groupAndSortEventsByDate(currentPageEvents);
+  }, [currentPageEvents]);
 
   // Formatear la fecha correctamente para mostrarla
   const formatDateForDisplay = (dateString) => {
@@ -136,8 +125,8 @@ const EventList = ({ events }) => {
     setTotalPages(Math.ceil(events.length / EVENTS_PER_PAGE));
   }, [events]);
 
-  // Obtener los eventos paginados y agrupados
-  const sortedDates = Object.keys(paginatedGroupedEvents);
+  // Obtener las fechas ordenadas para la página actual
+  const sortedDates = Object.keys(groupedEvents).sort((a, b) => new Date(a) - new Date(b));
 
   return (
     <div className="w-full">
@@ -157,7 +146,7 @@ const EventList = ({ events }) => {
             <h2 className="text-xl font-bold mb-3 border-b pb-2">
               {formatDateForDisplay(date)}
             </h2>
-            {paginatedGroupedEvents[date].map((event) => (
+            {groupedEvents[date].map((event) => (
               <div
                 key={event.id}
                 className="mb-4 p-3 border rounded shadow-sm text-sm"

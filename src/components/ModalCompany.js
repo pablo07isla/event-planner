@@ -1,7 +1,10 @@
-import React, { useState, useEffect } from "react";
+import { supabase } from "../supabaseClient";
+import CompanyInfo from "./CompanyInfo";
+import { PlusCircleIcon } from "@heroicons/react/24/solid";
 import PropTypes from "prop-types";
-import CompanyInfo from "./CompanyInfo"; // Importar el nuevo componente
-import { PlusCircleIcon } from "@heroicons/react/24/solid"; // Importar icono
+import React, { useState, useEffect } from "react";
+
+// Importar supabase
 
 const ModalCompany = ({ isOpen, onClose, onSave, companyData }) => {
   const [formData, setFormData] = useState({
@@ -17,11 +20,10 @@ const ModalCompany = ({ isOpen, onClose, onSave, companyData }) => {
   });
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
-  const [messageType, setMessageType] = useState("error"); // "error" o "info"
+  const [messageType, setMessageType] = useState("error");
   const [searchResult, setSearchResult] = useState(null);
-  const [isFormVisible, setIsFormVisible] = useState(false); // Nuevo estado
-  const [isCreating, setIsCreating] = useState(false); // Nuevo estado
-  const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3001";
+  const [isFormVisible, setIsFormVisible] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -67,37 +69,26 @@ const ModalCompany = ({ isOpen, onClose, onSave, companyData }) => {
       return;
     }
     try {
-      console.log("Buscando empresa con identificationNumber:", formData.identificationNumber);
-      const response = await fetch(`${API_URL}/api/companies/search?identificationNumber=${encodeURIComponent(formData.identificationNumber)}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+      const { data, error } = await supabase
+        .from("CompanyGroups")
+        .select("*")
+        .eq("identificationNumber", formData.identificationNumber)
+        .single();
+
+      if (error) {
+        if (error.code === "PGRST116") {
+          // No se encontró la empresa
+          setMessage("La empresa no existe en nuestra base de datos.");
+          setMessageType("info");
+          setSearchResult(null);
+        } else {
+          throw error;
         }
-        
-      });
-      
-
-      if (response.status === 404) {
-        // Empresa no encontrada
-        setMessage("La empresa no existe en nuestra base de datos.");
-        setMessageType("info");
-        setSearchResult(null);
-        return;
+      } else {
+        setSearchResult(data);
+        setMessage(null);
+        setError(null);
       }
-
-      const data = await response.json();
-      console.log(" empresa encontrada:", data)
-      
-      if (!response.ok) {
-        // Otros errores
-        setMessage(data.error || data.message || `HTTP error! status: ${response.status}`);
-        setMessageType("error");
-        setSearchResult(null);
-        return;
-      }
-      
-      setSearchResult(data);
-      setMessage(null);
-      setError(null);
     } catch (error) {
       console.error("Error al buscar la empresa:", error);
       setMessage(`Error al buscar la empresa: ${error.message}`);
@@ -112,18 +103,15 @@ const ModalCompany = ({ isOpen, onClose, onSave, companyData }) => {
     setMessage(null);
     setMessageType("error");
     try {
-      let result; // Corrección: Declaración adecuada de 'result'
+      let result;
 
       if (isCreating) {
-        // Lógica para crear una nueva empresa
         result = await onSave(formData, "create");
       } else {
-        // Lógica para editar una empresa existente
         result = await onSave(formData, "edit");
       }
 
       if (typeof result === "string") {
-        // Si onSave devuelve un string, es un mensaje de error
         setError(result);
       } else {
         handleClose();
@@ -134,10 +122,10 @@ const ModalCompany = ({ isOpen, onClose, onSave, companyData }) => {
   };
 
   const handleClose = () => {
-    setError(null); // Limpiar el error al cerrar el modal
-    setMessage(null); // Limpiar mensajes
+    setError(null);
+    setMessage(null);
     setMessageType("error");
-    setSearchResult(null); // Restablecer el resultado de la búsqueda al cerrar el modal
+    setSearchResult(null);
     resetForm();
     onClose();
   };
@@ -159,8 +147,8 @@ const ModalCompany = ({ isOpen, onClose, onSave, companyData }) => {
     setError(null);
     setMessage(null);
     setMessageType("error");
-    setIsFormVisible(true); // Mostrar el formulario
-    setIsCreating(false); // Modo edición
+    setIsFormVisible(true);
+    setIsCreating(false);
   };
 
   if (!isOpen) return null;
@@ -334,7 +322,10 @@ const ModalCompany = ({ isOpen, onClose, onSave, companyData }) => {
                   />
                 </div>
                 <div>
-                  <label htmlFor="phone" className="block mb-2 text-sm font-medium">
+                  <label
+                    htmlFor="phone"
+                    className="block mb-2 text-sm font-medium"
+                  >
                     Teléfono
                   </label>
                   <input
@@ -348,7 +339,10 @@ const ModalCompany = ({ isOpen, onClose, onSave, companyData }) => {
                   />
                 </div>
                 <div>
-                  <label htmlFor="email" className="block mb-2 text-sm font-medium">
+                  <label
+                    htmlFor="email"
+                    className="block mb-2 text-sm font-medium"
+                  >
                     Email
                   </label>
                   <input
@@ -379,7 +373,10 @@ const ModalCompany = ({ isOpen, onClose, onSave, companyData }) => {
                   />
                 </div>
                 <div>
-                  <label htmlFor="city" className="block mb-2 text-sm font-medium">
+                  <label
+                    htmlFor="city"
+                    className="block mb-2 text-sm font-medium"
+                  >
                     Ciudad
                   </label>
                   <input

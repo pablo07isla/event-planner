@@ -12,10 +12,10 @@ import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 // needs additional webpack config!
 import "@fortawesome/fontawesome-free/css/all.css";
+import { supabase } from "../supabaseClient";
 import Sidebar from "./Sidebar";
 // needs additional webpack config!
 import bootstrapPlugin from "@fullcalendar/bootstrap";
-import axios from "axios";
 import { Modal, Button } from "react-bootstrap";
 import "./EventCalendar.css";
 import EventList from "./EventList";
@@ -39,12 +39,13 @@ function EventCalendar({ initialEvents }) {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
 
   const handleDateSelect = (selectInfo) => {
-    const start = parseISO(selectInfo.startStr);
-    const end = parseISO(selectInfo.endStr);
+    // Convertir las fechas a la zona horaria local
+    const start = new Date(selectInfo.start);
+    const end = new Date(selectInfo.end);
 
     setCurrentEvent({
-      start: format(start, "yyyy-MM-dd'T'HH:mm"),
-      end: format(end, "yyyy-MM-dd'T'HH:mm"),
+      start: format(start, "yyyy-MM-dd'T'HH:mm:ss"),
+      end: format(end, "yyyy-MM-dd'T'HH:mm:ss"),
       allDay: true,
       companyName: "",
       peopleCount: "",
@@ -119,54 +120,62 @@ function EventCalendar({ initialEvents }) {
     setAlertDialogOpen(false);
     if (eventToUpdate) {
       try {
-        // Log the eventToUpdate ID for debugging
         console.log("eventToUpdate.id:", eventToUpdate.id);
 
-        // Ensure start and end dates are valid
-        const start =
-          eventToUpdate.start instanceof Date
-            ? eventToUpdate.start.toISOString()
-            : eventToUpdate.start;
-        const end =
-          eventToUpdate.end instanceof Date
-            ? eventToUpdate.end.toISOString()
-            : eventToUpdate.end;
+        const start = eventToUpdate.start instanceof Date
+          ? eventToUpdate.start.toISOString()
+          : eventToUpdate.start;
+        const end = eventToUpdate.end instanceof Date
+          ? eventToUpdate.end.toISOString()
+          : eventToUpdate.end;
 
         // Fetch the full event data before updating
-        const eventResponse = await axios.get(
-          `${API_URL}/api/events/${eventToUpdate.id}`
-        );
-        const fullEventData = eventResponse.data;
+        const { data: eventData, error: fetchError } = await supabase
+          .from("events")
+          .select("*")
+          .eq("id", eventToUpdate.id)
+          .single();
+
+        if (fetchError) throw fetchError;
+
+        if (!eventData) {
+          throw new Error("No se encontró el evento para actualizar");
+        }
+
+        console.log("Datos del evento antes de la actualización:", eventData);
 
         // Prepare the update data, keeping all fields and updating only the dates
         const updateData = {
-          ...fullEventData,
+          ...eventData,
           start: start,
           end: end,
         };
 
         // Remove any fields that might cause issues
-        delete updateData.id; // The ID is usually in the URL for PUT requests
-        const eventExists = await axios.get(
-          `${API_URL}/api/events/${eventToUpdate.id}`
-        );
-        console.log("eventExists", eventExists.data); // Verifica si el evento se obtiene correctamente
+        delete updateData.id;
 
-        const response = await axios.put(
-          `${API_URL}/api/events/${eventToUpdate.id}`,
-          updateData
-        );
+        const { data: updatedData, error: updateError } = await supabase
+          .from("events")
+          .update(updateData)
+          .eq("id", eventToUpdate.id)
+          .select();
 
-        const updatedEvent = response.data;
+        if (updateError) throw updateError;
+
+        if (!updatedData || updatedData.length === 0) {
+          throw new Error("No se recibieron datos después de la actualización");
+        }
+
+        const updatedEvent = updatedData[0];
+        console.log("Evento actualizado:", updatedEvent);
+
         setEvents((prevEvents) =>
           prevEvents.map((e) => (e.id === updatedEvent.id ? updatedEvent : e))
         );
       } catch (err) {
-        console.error("Error details:", err.response?.data);
+        console.error("Error detallado:", err);
         setError(
-          `Error al actualizar el evento: ${
-            err.response?.data?.error || err.message
-          }. Por favor, inténtelo de nuevo.`
+          `Error al actualizar el evento: ${err.message}. Por favor, inténtelo de nuevo.`
         );
       }
     }
@@ -202,40 +211,57 @@ function EventCalendar({ initialEvents }) {
     try {
       const currentUser = JSON.parse(localStorage.getItem("user"));
 
-      // Convertir las fechas a formato UTC
-      let start = new Date(formData.get("startDate"));
-      let end = new Date(formData.get("endDate"));
+      // Convertir foodPackage a un array de PostgreSQL
+      const foodPackageArray = formData.get("foodPackage") ? formData.get("foodPackage").split(',') : [];
+      const foodPackagePostgres = `{${foodPackageArray.map(item => `"${item}"`).join(',')}}`;
 
-      // Asegúrate de enviar las fechas en UTC (toISOString convierte a UTC)
-      formData.set("start", start.toISOString());
-      formData.set("end", end.toISOString());
-      // Añadir datos adicionales al FormData
-      formData.append("lastModified", new Date().toISOString());
-      formData.append(
-        "lastModifiedBy",
-        currentUser ? currentUser.username : "Usuario desconocido"
-      );
+      const eventData = {
+        start: new Date(formData.get("startDate")).toISOString(),
+        end: new Date(formData.get("endDate")).toISOString(),
+        companyName: formData.get("companyName"),
+        peopleCount: formData.get("peopleCount"),
+        contactName: formData.get("contactName"),
+        foodPackage: foodPackagePostgres, // Usar el formato de array de PostgreSQL
+        contactPhone: formData.get("contactPhone"),
+        email: formData.get("email"),
+        eventLocation: formData.get("eventLocation"),
+        eventDescription: formData.get("eventDescription"),
+        deposit: formData.get("deposit"),
+        pendingAmount: formData.get("pendingAmount"),
+        eventStatus: formData.get("eventStatus"),
+        lastModified: new Date().toISOString(),
+        lastModifiedBy: currentUser ? currentUser.username : "Usuario desconocido",
+        companyGroupId: formData.get("companyGroupId"),
+      };
 
       let response;
       if (formData.get("id")) {
-        response = await axios.put(
-          `${API_URL}/api/events/${formData.get("id")}`,
-          formData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        );
+        const { data, error } = await supabase
+          .from("events")
+          .update(eventData)
+          .eq("id", formData.get("id"))
+          .select();
+        if (error) throw error;
+        response = { data };
       } else {
-        response = await axios.post(`${API_URL}/api/events`, formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
+        const { data, error } = await supabase
+          .from("events")
+          .insert([eventData])
+          .select();
+        if (error) throw error;
+        response = { data };
       }
-      const savedEvent = response.data;
-      const eventWithColor = applyEventColor(savedEvent);
+
+      if (!response.data || response.data.length === 0) {
+        throw new Error("No se recibieron datos después de guardar el evento");
+      }
+
+      const savedEvent = response.data[0];
+      const eventWithColor = applyEventColor({
+        ...savedEvent,
+        start: new Date(savedEvent.start).toISOString(),
+        end: new Date(savedEvent.end).toISOString()
+      });
 
       setEvents((prevEvents) => {
         if (formData.get("id")) {
@@ -249,15 +275,8 @@ function EventCalendar({ initialEvents }) {
 
       setModalOpen(false);
     } catch (err) {
-      if (err.response && err.response.status === 401) {
-        // Token expirado o inválido, redirigir al login
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        window.location.href = "/login";
-      } else {
-        setError("Error al guardar el evento. Por favor, inténtelo de nuevo.");
-        console.error(err);
-      }
+      console.error("Error al guardar el evento:", err);
+      setError(`Error al guardar el evento: ${err.message}`);
     }
   };
 
@@ -265,11 +284,7 @@ function EventCalendar({ initialEvents }) {
     setError(null);
     try {
       const token = localStorage.getItem("token"); // Suponiendo que guardas el token en localStorage
-      await axios.delete(`${API_URL}/api/events/${currentEvent.id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      await supabase.from("events").delete().eq("id", currentEvent.id);
       setEvents((prevEvents) =>
         prevEvents.filter((e) => e.id !== currentEvent.id)
       );
@@ -286,8 +301,6 @@ function EventCalendar({ initialEvents }) {
     if (!token || !storedUser) {
       navigate("/login");
     } else {
-      // Configurar axios con el token
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
       // Establecer el usuario
       setUser(storedUser);
       // Cargar eventos
@@ -297,16 +310,12 @@ function EventCalendar({ initialEvents }) {
 
   const fetchEvents = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/events`);
-      setEvents(response.data);
+      const { data, error } = await supabase.from("events").select("*");
+      if (error) throw error;
+      setEvents(data);
     } catch (error) {
-      if (error.response && error.response.status === 401) {
-        // Token expirado o inválido
-        localStorage.removeItem("token");
-        navigate("/login");
-      } else {
-        console.error("Error fetching events:", error);
-      }
+      console.error("Error fetching events:", error);
+      setError("Error al cargar los eventos. Por favor, inténtelo de nuevo.");
     }
   };
 
@@ -330,8 +339,8 @@ function EventCalendar({ initialEvents }) {
     return {
       ...event,
       backgroundColor: colors.backgroundColor,
-      textColor: colors.textColor,
       borderColor: colors.backgroundColor,
+      textColor: colors.textColor,
     };
   };
 

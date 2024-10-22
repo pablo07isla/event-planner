@@ -1,4 +1,4 @@
-// Importamos axios para hacer las solicitudes
+import { supabase } from "../supabaseClient";
 import ModalCompany from "./ModalCompany";
 import MultiSelectDropdown from "./MultiSelectDropdown";
 import axios from "axios";
@@ -29,7 +29,6 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
     companyGroupId: null,
   });
 
-  const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3001";
   const [isCompanyModalOpen, setCompanyModalOpen] = useState(false);
   const [companyData, setCompanyData] = useState(null);
   const [companies, setCompanies] = useState([]); // Estado para almacenar la lista de empresas
@@ -61,21 +60,19 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
   const fetchCompanyData = async (companyId) => {
     console.log("Iniciando fetchCompanyData para companyId:", companyId);
     try {
-      const response = await axios.get(
-        `${API_URL}/api/companies/${companyId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-      console.log("Datos de la empresa obtenidos:", response.data);
+      const { data, error } = await supabase
+        .from("CompanyGroups")
+        .select("*")
+        .eq("id", companyId)
+        .single();
+      if (error) throw error;
+      console.log("Datos de la empresa obtenidos:", data);
       setFormData((prevState) => ({
         ...prevState,
-        companyName: response.data.companyName,
-        companyGroupId: response.data.id,
+        companyName: data.companyName,
+        companyGroupId: data.id,
       }));
-      setCompanyData(response.data);
+      setCompanyData(data);
     } catch (error) {
       console.error("Error al obtener datos de la empresa:", error);
       setError("No se pudieron obtener los datos de la empresa.");
@@ -88,19 +85,17 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
     if (formData.companyGroupId) {
       console.log("companyGroupId encontrado:", formData.companyGroupId);
       try {
-        const response = await axios.get(
-          `${API_URL}/api/companies/${formData.companyGroupId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
+        const { data, error } = await supabase
+          .from("CompanyGroups")
+          .select("*")
+          .eq("id", formData.companyGroupId)
+          .single();
+        if (error) throw error;
         console.log(
           "Datos de la empresa obtenidos en handleCompanyClick:",
-          response.data
+          data
         );
-        setCompanyData(response.data);
+        setCompanyData(data);
       } catch (error) {
         console.error(
           "Error al obtener datos de la empresa en handleCompanyClick:",
@@ -126,56 +121,78 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
     try {
       let response;
       if (action === "create") {
-        // Crear una nueva empresa
-        response = await axios.post(`${API_URL}/api/companies`, formData, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-        setCompanies((prevCompanies) => [...prevCompanies, response.data]);
+        // Eliminar el campo id si está vacío
+        if (!formData.id) {
+          delete formData.id;
+        }
+        const { data, error } = await supabase
+          .from("CompanyGroups")
+          .insert([formData])
+          .select();
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+          // Si no se devuelven datos, intentamos obtener la empresa recién creada
+          const { data: fetchedData, error: fetchError } = await supabase
+            .from("CompanyGroups")
+            .select("*")
+            .eq("identificationNumber", formData.identificationNumber)
+            .single();
+
+          if (fetchError) throw fetchError;
+
+          if (!fetchedData) {
+            throw new Error("No se pudo obtener la empresa recién creada");
+          }
+
+          response = { data: fetchedData };
+        } else {
+          response = { data: data[0] };
+        }
+
         setMessage("Empresa creada exitosamente.");
         setMessageType("info");
       } else if (action === "edit") {
-        // Editar una empresa existente
-        response = await axios.put(
-          `${API_URL}/api/companies/${formData.id}`,
-          formData,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-        setCompanies((prevCompanies) =>
-          prevCompanies.map((company) =>
-            company.id === response.data.id ? response.data : company
-          )
-        );
-        // Opcional: Mostrar un mensaje de éxito
+        if (!formData.id) {
+          throw new Error("ID de empresa no válido para edición");
+        }
+        const { data, error } = await supabase
+          .from("CompanyGroups")
+          .update(formData)
+          .eq("id", formData.id)
+          .select(); // Añadimos .select() para obtener los datos actualizados
+        if (error) throw error;
+        if (!data || data.length === 0) {
+          throw new Error("No se recibieron datos después de la actualización");
+        }
+        response = { data: data[0] }; // Tomamos el primer elemento del array
         setMessage("Empresa actualizada exitosamente.");
         setMessageType("info");
       }
 
-      // Actualizar formData con los datos de la empresa guardada
+      console.log("Respuesta de Supabase:", response);
+
+      if (!response.data) {
+        console.error("Respuesta de Supabase no contiene datos:", response);
+        throw new Error("Respuesta de Supabase no contiene datos");
+      }
+
       setFormData((prevState) => ({
         ...prevState,
         companyName: response.data.companyName,
         companyGroupId: response.data.id,
       }));
 
-      // Cerrar el modal de empresa después de guardar
       setCompanyModalOpen(false);
-      // Limpiar posibles mensajes de error
       setError(null);
     } catch (error) {
-      console.error("Error al guardar la empresa:", error);
-      // Manejar errores y mostrar mensajes adecuados
+      console.error("Error detallado al guardar la empresa:", error);
       const errorMsg =
-        error.response?.data?.message ||
-        "Ocurrió un error al guardar la empresa.";
+        error.message || "Ocurrió un error al guardar la empresa.";
       setError(errorMsg);
       setMessageType("error");
-      return errorMsg; // Retornar el mensaje de error para que el modal hijo lo maneje
+      return errorMsg;
     }
   };
 
@@ -183,10 +200,13 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
     if (event) {
       setFormData({
         ...event,
+        startDate: event.start
+          ? format(new Date(event.start), "yyyy-MM-dd'T'HH:mm")
+          : "",
+        endDate: event.end
+          ? format(new Date(event.end), "yyyy-MM-dd'T'HH:mm")
+          : "",
         title: event.companyName || "",
-        startDate: formatDateForInput(event.start),
-        endDate: formatDateForInput(event.end),
-        companyName: event.companyName || "",
         foodPackage: Array.isArray(event.foodPackage) ? event.foodPackage : [],
         eventStatus: event.eventStatus || "", // Initialize event status
         email: event.email || "", // Initialize email
@@ -317,15 +337,13 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
     e.preventDefault();
     const formDataToSubmit = new FormData();
 
-    // Añadir todos los campos del formulario al FormData
     Object.keys(formData).forEach((key) => {
-      if (key === "attachments") {
-        formData[key].forEach((file, index) => {
-          formDataToSubmit.append(`attachments[${index}]`, file);
-        });
-      } else if (key === "companyId" || key === "companyName") {
-        // Asegurarse de que companyId y companyName se incluyan en los datos enviados
-        formDataToSubmit.append(key, formData[key]);
+      if (key === "startDate" || key === "endDate") {
+        const date = new Date(formData[key]);
+        formDataToSubmit.append(key, date.toISOString());
+      } else if (key === "foodPackage") {
+        // Enviar foodPackage como una cadena separada por comas
+        formDataToSubmit.append(key, formData[key].join(","));
       } else {
         formDataToSubmit.append(key, formData[key]);
       }
