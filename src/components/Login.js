@@ -16,6 +16,8 @@ const Login = () => {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
+      }, {
+        expiresIn: 3600 // La sesión expirará en 1 hora (3600 segundos)
       });
 
       if (error) throw error;
@@ -30,6 +32,7 @@ const Login = () => {
       if (userError) throw userError;
 
       localStorage.setItem("token", data.session.access_token);
+      localStorage.setItem("sessionExpiresAt", new Date(Date.now() + 3600000).toISOString());
       localStorage.setItem(
         "user",
         JSON.stringify({

@@ -23,6 +23,7 @@ const Sidebar = ({ currentUser, onAddEvent }) => {
       console.error("Error al cerrar sesión:", error);
     } else {
       localStorage.removeItem("token");
+      localStorage.removeItem("sessionExpiresAt");
       localStorage.removeItem("user");
       navigate("/login");
     }
