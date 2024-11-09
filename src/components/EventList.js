@@ -26,30 +26,50 @@ const EventList = ({ events }) => {
       setIsGeneratingPDF(true);
       const pdf = new jsPDF();
       let currentPDFPage = 1;
-
+  
       // Guardar la página actual para restaurarla al final
       const originalPage = currentPage;
-
+  
       // Recorrer cada página de la paginación
       for (let page = 1; page <= totalPages; page++) {
         setCurrentPage(page); // Cambiar a la página actual
         await new Promise((resolve) => setTimeout(resolve, 500)); // Esperar a que la página se renderice
-
+  
         const input = eventListRef.current;
-        const canvas = await html2canvas(input);
+        
+        // Crear un contenedor temporal para la captura
+        const tempContainer = document.createElement('div');
+        tempContainer.style.position = 'absolute';
+        tempContainer.style.left = '-9999px';
+        tempContainer.style.background = 'white';
+        tempContainer.appendChild(input.cloneNode(true));
+        document.body.appendChild(tempContainer);
+  
+        const canvas = await html2canvas(tempContainer.firstChild, {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#FFFFFF',
+          logging: false,
+        });
+  
+        // Eliminar el contenedor temporal
+        document.body.removeChild(tempContainer);
+        
         const imgData = canvas.toDataURL("image/png");
-
+  
         if (currentPDFPage > 1) pdf.addPage();
         pdf.addImage(imgData, "PNG", 10, 10, 190, 0);
-
+  
         currentPDFPage++;
       }
-
+  
       // Restaurar la página original
       setCurrentPage(originalPage);
-
+  
       pdf.save("reporte_eventos.pdf");
     } catch (error) {
+      console.error('Error generando PDF:', error);
       setPdfError("Error al generar el PDF. Por favor, intenta nuevamente.");
     } finally {
       setIsGeneratingPDF(false);
@@ -111,13 +131,22 @@ const EventList = ({ events }) => {
   };
 
   const formatCurrency = (value) => {
-    if (!value) return "N/A";
+    // Verifica si el valor es nulo o indefinido
+    if (value === null || value === undefined) return "0";
+
+    // Convierte el valor a número
+    const numericValue = Number(value);
+
+    // Verifica si el valor es un número válido
+    if (isNaN(numericValue)) return "0";
+
+    // Formatea el valor como moneda
     return new Intl.NumberFormat("es-CO", {
-      style: "currency",
-      currency: "COP",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
+        style: "currency",
+        currency: "COP",
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+    }).format(numericValue);
   };
 
   // Obtener el total de páginas basadas en el número total de eventos
