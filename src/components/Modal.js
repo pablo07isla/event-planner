@@ -211,9 +211,7 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
         eventStatus: event.eventStatus || "", // Initialize event status
         email: event.email || "", // Initialize email
         deposit: event.deposit ? event.deposit.toString() : "",
-        pendingAmount: event.pendingAmount
-          ? event.pendingAmount.toString()
-          : "",
+        pendingAmount: event.pendingAmount !== null ? event.pendingAmount.toString() : "0", // Asegúrate de que sea una cadena
         attachments: Array.isArray(event.attachments) ? event.attachments : [],
         lastModified: event.lastModified || "",
         lastModifiedBy: event.lastModifiedBy || "",
@@ -286,13 +284,22 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
   };
 
   const formatCurrency = (value) => {
-    if (!value) return "";
+    // Verifica si el valor es nulo o indefinido
+    if (value === null || value === undefined) return "0";
+
+    // Convierte el valor a número
+    const numericValue = Number(value);
+
+    // Verifica si el valor es un número válido
+    if (isNaN(numericValue)) return "0";
+
+    // Formatea el valor como moneda
     return new Intl.NumberFormat("es-CO", {
-      style: "currency",
-      currency: "COP",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
+        style: "currency",
+        currency: "COP",
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+    }).format(numericValue);
   };
 
   const handleChange = (e) => {
@@ -338,19 +345,23 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
     const formDataToSubmit = new FormData();
 
     Object.keys(formData).forEach((key) => {
-      if (key === "startDate" || key === "endDate") {
-        const date = new Date(formData[key]);
-        formDataToSubmit.append(key, date.toISOString());
-      } else if (key === "foodPackage") {
-        // Enviar foodPackage como una cadena separada por comas
-        formDataToSubmit.append(key, formData[key].join(","));
-      } else {
-        formDataToSubmit.append(key, formData[key]);
-      }
+        if (key === 'startDate' || key === 'endDate') {
+            const date = new Date(formData[key]);
+            formDataToSubmit.append(key, date.toISOString());
+        } else if (key === 'foodPackage') {
+            // Enviar foodPackage como una cadena separada por comas
+            formDataToSubmit.append(key, formData[key].join(','));
+        } else if (key === 'pendingAmount') {
+            // Verificar si pendingAmount está vacío y establecerlo en 0
+            const value = formData[key] === "" ? "0" : formData[key];
+            formDataToSubmit.append(key, value);
+        } else {
+            formDataToSubmit.append(key, formData[key]);
+        }
     });
 
     onSave(formDataToSubmit);
-  };
+};
 
   // const renderFilePreview = (file, index) => {
   //   const isFileObject = file instanceof File || file instanceof Blob;
@@ -555,7 +566,7 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
                 onChange={handleChange}
                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                 placeholder="Lugar del Evento"
-                required
+                
               />
             </div>
             <div className="col-span-2">
@@ -638,7 +649,7 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
                   type="text"
                   id="pendingAmount"
                   name="pendingAmount"
-                  value={formatCurrency(formData.pendingAmount)}
+                  value={formatCurrency(formData.pendingAmount) || "0"}
                   onChange={handleMoneyChange}
                   className="pl-7 pr-12 block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                   placeholder="0"
