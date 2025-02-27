@@ -16,13 +16,14 @@ import { supabase } from "../supabaseClient";
 import Sidebar from "./Sidebar";
 // needs additional webpack config!
 import bootstrapPlugin from "@fullcalendar/bootstrap";
-import { Modal, Button } from "react-bootstrap";
+import { Modal, Button, Toast } from "react-bootstrap";
 import "./EventCalendar.css";
 import EventList from "./EventList";
 import { parseISO, format } from "date-fns";
 import { FaPrint } from "react-icons/fa";
 // Asegúrate de que la ruta sea correcta
 import { useNavigate } from "react-router-dom";
+import { getEventColor, applyEventColor } from "../utils/eventHelpers";
 
 function EventCalendar({ initialEvents }) {
   const [events, setEvents] = useState(initialEvents);
@@ -37,6 +38,7 @@ function EventCalendar({ initialEvents }) {
   const [showModal, setShowModal] = useState(false); // Estado para controlar el modal
   const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3001";
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
+  const [cargando, setCargando] = useState(false);
 
   const handleDateSelect = (selectInfo) => {
     // Convertir las fechas a la zona horaria local
@@ -63,8 +65,6 @@ function EventCalendar({ initialEvents }) {
     });
     setModalOpen(true);
   };
-
-  console.log("events", events);
 
   const handleEventClick = (clickInfo) => {
     const start = parseISO(clickInfo.event.startStr);
@@ -257,11 +257,7 @@ function EventCalendar({ initialEvents }) {
       }
 
       const savedEvent = response.data[0];
-      const eventWithColor = applyEventColor({
-        ...savedEvent,
-        start: new Date(savedEvent.start).toISOString(),
-        end: new Date(savedEvent.end).toISOString()
-      });
+      const eventWithColor = applyEventColor(savedEvent);
 
       setEvents((prevEvents) => {
         if (formData.get("id")) {
@@ -310,51 +306,19 @@ function EventCalendar({ initialEvents }) {
 
   const fetchEvents = async () => {
     try {
+      setCargando(true);
       const { data, error } = await supabase.from("events").select("*");
       if (error) throw error;
       setEvents(data);
     } catch (error) {
       console.error("Error fetching events:", error);
       setError("Error al cargar los eventos. Por favor, inténtelo de nuevo.");
+    } finally {
+      setCargando(false);
     }
-  };
-
-  const getEventColor = (status) => {
-    switch (status) {
-      case "Pendiente":
-        return { backgroundColor: "#FFA500", textColor: "#1F2937" };
-      case "Con Abono":
-        return { backgroundColor: "#4CAF50", textColor: "#FFFFFF" };
-      case "Pago Total":
-        return { backgroundColor: "#2196F3", textColor: "#FFFFFF" };
-      case "Cancelado":
-        return { backgroundColor: "#F44336", textColor: "#FFFFFF" };
-      default:
-        return { backgroundColor: "#9E9E9E", textColor: "#FFFFFF" };
-    }
-  };
-
-  const applyEventColor = (event) => {
-    const colors = getEventColor(event.eventStatus);
-    return {
-      ...event,
-      backgroundColor: colors.backgroundColor,
-      borderColor: colors.backgroundColor,
-      textColor: colors.textColor,
-    };
   };
 
   const preparedEvents = useMemo(() => {
-    const applyEventColor = (event) => {
-      const colors = getEventColor(event.eventStatus);
-      return {
-        ...event,
-        backgroundColor: colors.backgroundColor,
-        textColor: colors.textColor,
-        borderColor: colors.backgroundColor,
-      };
-    };
-
     const isValidDate = (date) => {
       return date instanceof Date && !isNaN(date);
     };
@@ -364,20 +328,14 @@ function EventCalendar({ initialEvents }) {
       let start = parseISO(preparedEvent.start);
       let end = parseISO(preparedEvent.end);
 
-      // If end date is invalid, set it to start date + 1 day
       if (!isValidDate(end)) {
-        console.warn(
-          `Invalid end date for event: ${preparedEvent.id}. Using start date + 1 day.`
-        );
+        console.warn(`Invalid end date for event: ${preparedEvent.id}. Using start date + 1 day.`);
         end = new Date(start);
         end.setDate(end.getDate() + 1);
       }
 
-      // Ensure start date is valid
       if (!isValidDate(start)) {
-        console.warn(
-          `Invalid start date for event: ${preparedEvent.id}. Using current date.`
-        );
+        console.warn(`Invalid start date for event: ${preparedEvent.id}. Using current date.`);
         start = new Date();
         end = new Date(start);
         end.setDate(end.getDate() + 1);
@@ -390,7 +348,7 @@ function EventCalendar({ initialEvents }) {
         allDay: true,
       };
     });
-  }, [events]); // Only re-run the memoization if events changes
+  }, [events]);
 
   //const calendarRef = useRef(null);
 
@@ -447,11 +405,19 @@ function EventCalendar({ initialEvents }) {
             <div className="p-4 lg:p-6 flex-grow">
               <button
                 onClick={handleShowModal}
-                className="fixed bottom-6 right-6 z-10 bg-indigo-600 hover:bg-indigo-700 text-white p-4 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50"
+                className="fixed bottom-6 right-6 z-10 bg-indigo-600 hover:bg-indigo-700 text-white p-4 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50"
                 aria-label="Exportar PDF"
               >
                 <FaPrint size={24} />
               </button>
+
+              {cargando && (
+                <div className="flex justify-center items-center p-4">
+                  <div className="spinner-border text-indigo-600" role="status">
+                    <span className="sr-only">Cargando...</span>
+                  </div>
+                </div>
+              )}
 
               <Modal
                 show={showModal}
@@ -605,13 +571,18 @@ function EventCalendar({ initialEvents }) {
             </div>
           </div>
           {error && (
-            <div
-              className="mt-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-r-md"
-              role="alert"
+            <Toast
+              onClose={() => setError(null)}
+              show={true}
+              delay={5000}
+              autohide
+              style={{ position: 'absolute', top: 20, right: 20, minWidth: '250px' }}
             >
-              <p className="font-bold">Error</p>
-              <p>{error}</p>
-            </div>
+              <Toast.Header>
+                <strong className="mr-auto text-danger">Error</strong>
+              </Toast.Header>
+              <Toast.Body>{error}</Toast.Body>
+            </Toast>
           )}
         </div>
       </div>

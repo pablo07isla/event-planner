@@ -5,11 +5,12 @@ import axios from "axios";
 import { parseISO, format } from "date-fns";
 import PropTypes from "prop-types";
 import React, { useState, useEffect } from "react";
+import useModalForm from "../hooks/useModalForm";
 
 // Asegúrate de importar el nuevo modal
 
 function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
-  const [formData, setFormData] = useState({
+  const initialFormState = {
     startDate: "",
     endDate: "",
     companyName: "",
@@ -17,17 +18,19 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
     contactName: "",
     foodPackage: [],
     contactPhone: "",
-    email: "", // New field for email
+    email: "",
     eventLocation: "",
     eventDescription: "",
     deposit: "",
     pendingAmount: "",
     attachments: [],
-    eventStatus: "", // New field for event status
+    eventStatus: "",
     lastModified: "",
     lastModifiedBy: "",
-    companyGroupId: null,
-  });
+    companyGroupId: null
+  };
+
+  const { formData, setFormData, handleChange, handleMoneyChange } = useModalForm(initialFormState);
 
   const [isCompanyModalOpen, setCompanyModalOpen] = useState(false);
   const [companyData, setCompanyData] = useState(null);
@@ -39,26 +42,25 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    console.log("ModalEvent useEffect - event:", event);
-    if (event && event.companyGroupId) {
-      console.log(
-        "Llamando a fetchCompanyData con companyGroupId:",
-        event.companyGroupId
-      );
-      fetchCompanyData(event.companyGroupId);
-    } else {
-      console.log("No hay companyGroupId, estableciendo companyData a null");
-      setCompanyData(null);
-      setFormData((prevState) => ({
-        ...prevState,
-        companyName: "",
-        companyGroupId: null,
-      }));
+    if (event) {
+      setFormData({
+        ...event,
+        startDate: event.start ? format(new Date(event.start), "yyyy-MM-dd'T'HH:mm") : "",
+        endDate: event.end ? format(new Date(event.end), "yyyy-MM-dd'T'HH:mm") : "",
+        title: event.companyName || "",
+        foodPackage: Array.isArray(event.foodPackage) ? event.foodPackage : [],
+        eventStatus: event.eventStatus || "",
+        email: event.email || "",
+        deposit: event.deposit ? event.deposit.toString() : "",
+        pendingAmount: event.pendingAmount !== null ? event.pendingAmount.toString() : "0",
+        attachments: Array.isArray(event.attachments) ? event.attachments : [],
+        lastModified: event.lastModified || "",
+        lastModifiedBy: event.lastModifiedBy || "",
+      });
     }
-  }, [event]);
+  }, [event, setFormData]);
 
   const fetchCompanyData = async (companyId) => {
-    console.log("Iniciando fetchCompanyData para companyId:", companyId);
     try {
       const { data, error } = await supabase
         .from("CompanyGroups")
@@ -66,7 +68,6 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
         .eq("id", companyId)
         .single();
       if (error) throw error;
-      console.log("Datos de la empresa obtenidos:", data);
       setFormData((prevState) => ({
         ...prevState,
         companyName: data.companyName,
@@ -74,16 +75,13 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
       }));
       setCompanyData(data);
     } catch (error) {
-      console.error("Error al obtener datos de la empresa:", error);
       setError("No se pudieron obtener los datos de la empresa.");
       setCompanyData(null);
     }
   };
 
   const handleCompanyClick = async () => {
-    console.log("handleCompanyClick iniciado, formData:", formData);
     if (formData.companyGroupId) {
-      console.log("companyGroupId encontrado:", formData.companyGroupId);
       try {
         const { data, error } = await supabase
           .from("CompanyGroups")
@@ -91,33 +89,17 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
           .eq("id", formData.companyGroupId)
           .single();
         if (error) throw error;
-        console.log(
-          "Datos de la empresa obtenidos en handleCompanyClick:",
-          data
-        );
         setCompanyData(data);
       } catch (error) {
-        console.error(
-          "Error al obtener datos de la empresa en handleCompanyClick:",
-          error
-        );
         setCompanyData(null);
       }
     } else {
-      console.log("No hay companyGroupId, estableciendo companyData a null");
       setCompanyData(null);
     }
-    console.log("Abriendo modal de compañía");
     setCompanyModalOpen(true);
   };
 
   const handleCompanySave = async (formData, action) => {
-    console.log(
-      "handleCompanySave iniciado, formData:",
-      formData,
-      "acción:",
-      action
-    );
     try {
       let response;
       if (action === "create") {
@@ -171,10 +153,7 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
         setMessageType("info");
       }
 
-      console.log("Respuesta de Supabase:", response);
-
       if (!response.data) {
-        console.error("Respuesta de Supabase no contiene datos:", response);
         throw new Error("Respuesta de Supabase no contiene datos");
       }
 
@@ -187,7 +166,6 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
       setCompanyModalOpen(false);
       setError(null);
     } catch (error) {
-      console.error("Error detallado al guardar la empresa:", error);
       const errorMsg =
         error.message || "Ocurrió un error al guardar la empresa.";
       setError(errorMsg);
@@ -195,75 +173,6 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
       return errorMsg;
     }
   };
-
-  useEffect(() => {
-    if (event) {
-      setFormData({
-        ...event,
-        startDate: event.start
-          ? format(new Date(event.start), "yyyy-MM-dd'T'HH:mm")
-          : "",
-        endDate: event.end
-          ? format(new Date(event.end), "yyyy-MM-dd'T'HH:mm")
-          : "",
-        title: event.companyName || "",
-        foodPackage: Array.isArray(event.foodPackage) ? event.foodPackage : [],
-        eventStatus: event.eventStatus || "", // Initialize event status
-        email: event.email || "", // Initialize email
-        deposit: event.deposit ? event.deposit.toString() : "",
-        pendingAmount: event.pendingAmount !== null ? event.pendingAmount.toString() : "0", // Asegúrate de que sea una cadena
-        attachments: Array.isArray(event.attachments) ? event.attachments : [],
-        lastModified: event.lastModified || "",
-        lastModifiedBy: event.lastModifiedBy || "",
-      });
-    }
-  }, [event]);
-
-  // const handleFileChange = (e) => {
-  //   const files = Array.from(e.target.files);
-  //   setFormData((prevState) => ({
-  //     ...prevState,
-  //     attachments: [...prevState.attachments, ...files],
-  //   }));
-  // };
-
-  // const downloadAttachment = async (filename) => {
-  //   try {
-  //     const response = await axios.get(`${API_URL}/uploads/${filename}`, {
-  //       responseType: "blob",
-  //     });
-
-  //     const url = window.URL.createObjectURL(new Blob([response.data]));
-  //     const link = document.createElement("a");
-  //     link.href = url;
-  //     link.setAttribute("download", filename);
-  //     document.body.appendChild(link);
-  //     link.click();
-  //     link.remove();
-  //   } catch (error) {
-  //     console.error("Error al descargar el archivo:", error);
-  //   }
-  // };
-
-  // const removeAttachment = async (filename, index) => {
-  //   try {
-  //     // Elimina el prefijo 'uploads/' si está presente
-  //     const cleanFilename = filename.replace(/^uploads\//, "");
-
-  //     await axios.delete(
-  //       `${API_URL}/api/events/${event.id}/attachments/${encodeURIComponent(
-  //         cleanFilename
-  //       )}`
-  //     );
-
-  //     setFormData((prevState) => ({
-  //       ...prevState,
-  //       attachments: prevState.attachments.filter((_, i) => i !== index),
-  //     }));
-  //   } catch (error) {
-  //     console.error("Error al eliminar el archivo:", error);
-  //   }
-  // };
 
   const formatDateForInput = (dateString) => {
     if (!dateString) return "";
@@ -302,42 +211,11 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
     }).format(numericValue);
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prevState) => ({
-      ...prevState,
-      [name]: value,
-    }));
-  };
-
   const handleFoodPackageChange = (selectedOptions) => {
     setFormData((prevState) => ({
       ...prevState,
       foodPackage: selectedOptions,
     }));
-  };
-
-  const handleMoneyChange = (e) => {
-    const { name, value } = e.target;
-
-    // Limpiar el valor para dejar solo números
-    const numericValue = value.replace(/[^\d]/g, "");
-    if (!numericValue) {
-      setFormData((prevState) => ({
-        ...prevState,
-        [name]: "",
-      }));
-      return;
-    }
-
-    // Actualizar el estado con el valor limpio (sin formato)
-    setFormData((prevState) => ({
-      ...prevState,
-      [name]: numericValue,
-    }));
-
-    // Formatear el valor como moneda y actualizar el campo de entrada
-    e.target.value = formatCurrency(numericValue);
   };
 
   const handleSubmit = (e) => {
@@ -363,41 +241,6 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
     onSave(formDataToSubmit);
 };
 
-  // const renderFilePreview = (file, index) => {
-  //   const isFileObject = file instanceof File || file instanceof Blob;
-  //   const fileName = isFileObject ? file.name : file.split("/").pop();
-
-  //   // if (isImage) {
-  //   //   return (
-  //   //     <img
-  //   //       src={filePath}
-  //   //       alt="Preview"
-  //   //       className="w-32 h-32 object-cover rounded"
-  //   //     />
-  //   //   );
-  //   // } else if (isVideo) {
-  //   //   return (
-  //   //     <video
-  //   //       src={filePath}
-  //   //       controls
-  //   //       className="w-32 h-32 object-cover rounded"
-  //   //     />
-  //   //   );
-  //   // } else {
-
-  //   // }
-  //   return (
-  //     <a
-  //       href="#"
-  //       onClick={() => downloadAttachment(fileName)}
-  //       className="text-indigo-600 hover:underline"
-  //     >
-  //       {fileName}
-  //     </a>
-  //   );
-  // };
-
-  console.log("submit", formData);
   if (!isOpen) return null;
 
   return (
@@ -427,7 +270,7 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
                 htmlFor="startDate"
                 className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
               >
-                Fecha Inicio
+                Fecha Inicio <span className="text-red-500 ml-1">*</span>
               </label>
               <input
                 type="datetime-local"
@@ -445,7 +288,7 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
                 htmlFor="endDate"
                 className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
               >
-                Fecha Fin
+                Fecha Fin <span className="text-red-500 ml-1">*</span>
               </label>
               <input
                 type="datetime-local"
@@ -464,7 +307,7 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
                 htmlFor="companyName"
                 className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
               >
-                Nombre Empresa/Grupo
+                Nombre Empresa/Grupo <span className="text-red-500 ml-1">*</span>
               </label>
               <input
                 type="text"
@@ -484,7 +327,7 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
                 htmlFor="contactName"
                 className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
               >
-                Nombre Responsable/Contacto
+                Nombre Responsable/Contacto <span className="text-red-500 ml-1">*</span>
               </label>
               <input
                 type="text"
@@ -502,7 +345,7 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
                 htmlFor="contactPhone"
                 className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
               >
-                Teléfono de Contacto
+                Teléfono de Contacto <span className="text-red-500 ml-1">*</span>
               </label>
               <input
                 type="tel"
@@ -520,7 +363,7 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
                 htmlFor="email"
                 className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
               >
-                Email
+                Email <span className="text-red-500 ml-1">*</span>
               </label>
               <input
                 type="email"
@@ -538,7 +381,7 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
                 htmlFor="peopleCount"
                 className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
               >
-                N° de personas
+                N° de personas <span className="text-red-500 ml-1">*</span>
               </label>
               <input
                 type="number"
