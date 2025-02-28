@@ -8,79 +8,120 @@ import {
   PlusCircle,
   User,
   LogOut,
+  Settings,
+  Bell,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import PropTypes from "prop-types";
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate, NavLink } from "react-router-dom";
 
 const Sidebar = ({ currentUser, onAddEvent }) => {
-  console.log("currentUser:", currentUser); // Agregar este log
   const navigate = useNavigate();
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error("Error al cerrar sesión:", error);
-    } else {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Error signing out:", error);
+        return;
+      }
+      
+      // Clear local storage items
       localStorage.removeItem("token");
       localStorage.removeItem("sessionExpiresAt");
       localStorage.removeItem("user");
+      
+      // Navigate to login page
       navigate("/login");
+    } catch (err) {
+      console.error("Unexpected error during sign out:", err);
     }
   };
 
+  const navItems = [
+    { path: "/", icon: Calendar, label: "Calendar" },
+    { path: "/search", icon: Search, label: "Search" },
+    { path: "/marketing", icon: Megaphone, label: "Marketing" },
+    { path: "/notifications", icon: Bell, label: "Notifications" },
+    { path: "/settings", icon: Settings, label: "Settings" },
+  ];
+
   return (
-    <div className="w-64 h-screen bg-gradient-to-br from-indigo-700 via-indigo-800 to-indigo-900 text-white flex flex-col shadow-xl">
+    <div 
+      className={`relative ${isCollapsed ? 'w-30' : 'w-64'} h-screen bg-gradient-to-br from-indigo-700 via-indigo-800 to-indigo-900 text-white flex flex-col shadow-xl transition-all duration-300`}
+    >
       <div className="p-6">
-        <h2 className="text-3xl font-bold mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-indigo-200 to-indigo-100">
-          EventPlanner
+        <h2 className={`text-3xl font-bold mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-indigo-200 to-indigo-100 ${isCollapsed ? 'text-xl' : 'text-3xl'}`}>
+          {isCollapsed ? "EP" : "EventPlanner"}
         </h2>
+        
+        <button 
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="absolute top-6 right-2 text-indigo-300 hover:text-white focus:outline-none"
+        >
+          {isCollapsed ? <ChevronRight className="h-6 w-6" /> : <ChevronLeft className="h-6 w-6" />}
+        </button>
+        
         <nav>
-          <ul className="space-y-2">
-            {[
-              { href: "/", icon: Calendar, label: "Calendario" },
-              { href: "/search", icon: Search, label: "Buscar" },
-              { href: "/marketing", icon: Megaphone, label: "Marketing" },
-            ].map(({ href, icon: Icon, label }) => (
-              <li key={href}>
-                <a
-                  href={href}
-                  className="flex items-center space-x-3 p-3 rounded-lg transition duration-200 ease-in-out text-indigo-100 hover:text-white hover:bg-indigo-600/50 group"
+          
+            {navItems.map(({ path, icon: Icon, label }) => (
+             
+                <NavLink
+                  to={path}
+                  className={({ isActive }) => 
+                    `flex items-center ${isCollapsed ? 'justify-center' : 'space-x-3'} p-3 rounded-lg transition duration-200 ease-in-out no-underline
+                    ${isActive ? 'bg-indigo-600 text-white' : 'text-indigo-100 hover:text-white hover:bg-indigo-600/50'} group`
+                  }
                 >
-                  <Icon className="h-5 w-5 transition-transform group-hover:scale-110" />
-                  <span className="font-medium">{label}</span>
-                </a>
-              </li>
+                  <Icon className={`${isCollapsed ? 'h-6 w-6' : 'h-5 w-5'} transition-transform group-hover:scale-110`} />
+                  {!isCollapsed && <span className="font-medium">{label}</span>}
+                </NavLink>
+             
             ))}
-          </ul>
+         
         </nav>
       </div>
+      
       <div className="mt-auto p-6 space-y-6">
         <button
           onClick={onAddEvent}
-          className="w-full bg-indigo-500 text-white font-bold py-3 px-4 rounded-lg transition duration-200 ease-in-out hover:bg-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:ring-opacity-50 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2"
+          className={`w-full bg-indigo-500 text-white font-bold py-3 ${isCollapsed ? 'px-0' : 'px-4'} rounded-lg transition duration-200 ease-in-out 
+          hover:bg-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:ring-opacity-50 
+          shadow-lg hover:shadow-xl flex items-center justify-center ${isCollapsed ? 'space-x-0' : 'space-x-2'}`}
         >
-          <PlusCircle className="h-5 w-5" />
-          <span>Agregar Evento</span>
+          <PlusCircle className={`${isCollapsed ? 'h-6 w-6' : 'h-5 w-5'}`} />
+          {!isCollapsed && <span>Add Event</span>}
         </button>
+        
         <Separator.Root className="bg-indigo-400/30 h-px" />
-        <div className="flex items-center space-x-4">
-          <Avatar.Root className="bg-indigo-400 inline-flex h-12 w-12 select-none items-center justify-center overflow-hidden rounded-full align-middle transition duration-200 ease-in-out hover:bg-indigo-300">
+        
+        <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'space-x-4'}`}>
+          <Avatar.Root className="bg-indigo-400 inline-flex h-12 w-12 select-none items-center justify-center overflow-hidden rounded-full align-middle 
+            transition duration-200 ease-in-out hover:bg-indigo-300 border-2 border-indigo-300">
             <Avatar.Fallback className="text-indigo-100 text-sm font-medium">
               {currentUser ? currentUser.charAt(0).toUpperCase() : "?"}
             </Avatar.Fallback>
           </Avatar.Root>
-          <div>
-            <p className="font-medium text-indigo-100">{currentUser}</p>
-            <p className="text-xs text-indigo-300">Administrador</p>
-          </div>
+          
+          {!isCollapsed && (
+            <div>
+              <p className="font-medium text-indigo-100">{currentUser}</p>
+              <p className="text-xs text-indigo-300">Administrator</p>
+            </div>
+          )}
         </div>
+        
         <button
           onClick={handleLogout}
-          className="w-full flex items-center justify-center space-x-2 text-sm text-indigo-300 hover:text-white transition duration-200 ease-in-out p-2 rounded-lg hover:bg-indigo-600/50 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:ring-opacity-50"
+          className={`w-full flex items-center justify-center ${isCollapsed ? 'space-x-0' : 'space-x-2'} text-sm text-indigo-300 hover:text-white 
+          transition duration-200 ease-in-out p-2 rounded-lg hover:bg-indigo-600/50 focus:outline-none 
+          focus:ring-2 focus:ring-indigo-300 focus:ring-opacity-50`}
         >
           <LogOut className="h-4 w-4" />
-          <span>Cerrar sesión</span>
+          {!isCollapsed && <span>Sign Out</span>}
         </button>
       </div>
     </div>

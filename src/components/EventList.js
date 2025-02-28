@@ -8,267 +8,299 @@ import {
   FaPhoneAlt,
   FaMoneyBillWave,
   FaUtensils,
+  FaFilePdf,
+  FaCalendarAlt
 } from "react-icons/fa";
-import { Button, Pagination } from "react-bootstrap";
+import { Button, Pagination, Card, Alert, Badge, Spinner } from "react-bootstrap";
 
+// Constants
 const EVENTS_PER_PAGE = 3;
 
+// Utility functions
+const formatDate = (dateString) => {
+  const date = new Date(dateString + "T00:00:00");
+  return date.toLocaleDateString("es-ES", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+};
+
+const formatCurrency = (value) => {
+  if (value === null || value === undefined) return "0";
+  const numericValue = Number(value);
+  if (isNaN(numericValue)) return "0";
+  
+  return new Intl.NumberFormat("es-CO", {
+    style: "currency",
+    currency: "COP",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(numericValue);
+};
+
+// Sub-components
+const EventCard = ({ event }) => (
+  <Card className="mb-4 shadow-sm border-0 hover:shadow-md transition-shadow duration-300">
+    <Card.Header className="bg-primary text-white d-flex justify-content-between align-items-center">
+      <h3 className="mb-0 fs-5">{event.extendedProps?.companyName || "Evento sin nombre"}</h3>
+      <Badge bg="light" text="dark" pill>
+        {event.extendedProps?.peopleCount || "N/A"} pax
+      </Badge>
+    </Card.Header>
+    <Card.Body className="p-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <p className="mb-2 d-flex align-items-center">
+            <FaMapMarkerAlt className="text-secondary me-2" />
+            <span className="fw-bold me-1">Lugar:</span>
+            {event.extendedProps?.eventLocation || "No especificado"}
+          </p>
+          <p className="mb-2 d-flex align-items-center">
+            <FaUsers className="text-secondary me-2" />
+            <span className="fw-bold me-1">Responsable:</span>
+            {event.extendedProps?.contactName || "N/A"}
+          </p>
+          <p className="mb-2 d-flex align-items-center">
+            <FaPhoneAlt className="text-secondary me-2" />
+            <span className="fw-bold me-1">Teléfonos:</span>
+            {event.extendedProps?.contactPhone || "N/A"}
+          </p>
+        </div>
+        <div>
+          <p className="mb-2 d-flex align-items-center">
+            <FaMoneyBillWave className="text-success me-2" />
+            <span className="fw-bold me-1">Consignación:</span>
+            {formatCurrency(event.extendedProps.deposit)}
+          </p>
+          <p className="mb-2 d-flex align-items-center">
+            <FaMoneyBillWave className="text-danger me-2" />
+            <span className="fw-bold me-1">Saldo Pendiente:</span>
+            {formatCurrency(event.extendedProps.pendingAmount)}
+          </p>
+          <p className="mb-2 d-flex align-items-center">
+            <FaUtensils className="text-secondary me-2" />
+            <span className="fw-bold me-1">Alimentación:</span>
+            {(event.extendedProps?.foodPackage || []).join(", ") || "No especificado"}
+          </p>
+        </div>
+      </div>
+      
+      <div className="mt-3 pt-3 border-top">
+        <p className="fw-bold mb-1">Descripción:</p>
+        <p className="text-muted" style={{ whiteSpace: "pre-wrap" }}>
+          {event.extendedProps?.eventDescription || "No hay descripción disponible"}
+        </p>
+      </div>
+    </Card.Body>
+  </Card>
+);
+
+EventCard.propTypes = {
+  event: PropTypes.object.isRequired
+};
+
+// Main component
 const EventList = ({ events }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const eventListRef = useRef();
-  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
-  const [pdfError, setPdfError] = useState(null);
+  const [pdfState, setPdfState] = useState({
+    isGenerating: false,
+    error: null
+  });
 
-  // Generar PDF sincronizado con la paginación del modal
+  // PDF Generation with improved error handling
   const generatePDF = async () => {
     try {
-      setIsGeneratingPDF(true);
+      setPdfState({ isGenerating: true, error: null });
       const pdf = new jsPDF();
       let currentPDFPage = 1;
-  
-      // Guardar la página actual para restaurarla al final
       const originalPage = currentPage;
-  
-      // Recorrer cada página de la paginación
+      
       for (let page = 1; page <= totalPages; page++) {
-        setCurrentPage(page); // Cambiar a la página actual
-        await new Promise((resolve) => setTimeout(resolve, 500)); // Esperar a que la página se renderice
+        setCurrentPage(page);
+        // Wait for React to update the DOM
+        await new Promise(resolve => setTimeout(resolve, 300));
   
         const input = eventListRef.current;
         
-        // Crear un contenedor temporal para la captura
+        // Create a clean copy for capturing
         const tempContainer = document.createElement('div');
         tempContainer.style.position = 'absolute';
         tempContainer.style.left = '-9999px';
+        tempContainer.style.width = '800px'; // Fixed width for PDF
         tempContainer.style.background = 'white';
         tempContainer.appendChild(input.cloneNode(true));
         document.body.appendChild(tempContainer);
   
-        const canvas = await html2canvas(tempContainer.firstChild, {
-          scale: 2,
-          useCORS: true,
-          allowTaint: true,
-          backgroundColor: '#FFFFFF',
-          logging: false,
-        });
-  
-        // Eliminar el contenedor temporal
-        document.body.removeChild(tempContainer);
-        
-        const imgData = canvas.toDataURL("image/png");
-  
-        if (currentPDFPage > 1) pdf.addPage();
-        pdf.addImage(imgData, "PNG", 10, 10, 190, 0);
-  
-        currentPDFPage++;
+        try {
+          const canvas = await html2canvas(tempContainer.firstChild, {
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: '#FFFFFF',
+            logging: false,
+          });
+          
+          const imgData = canvas.toDataURL("image/png");
+          
+          if (currentPDFPage > 1) pdf.addPage();
+          pdf.addImage(imgData, "PNG", 10, 10, 190, 0);
+          
+          currentPDFPage++;
+        } finally {
+          // Always clean up the DOM
+          document.body.removeChild(tempContainer);
+        }
       }
   
-      // Restaurar la página original
+      // Restore the original page
       setCurrentPage(originalPage);
-  
       pdf.save("reporte_eventos.pdf");
     } catch (error) {
       console.error('Error generando PDF:', error);
-      setPdfError("Error al generar el PDF. Por favor, intenta nuevamente.");
-    } finally {
-      setIsGeneratingPDF(false);
+      setPdfState({
+        isGenerating: false,
+        error: "Error al generar el PDF. Por favor, intenta nuevamente."
+      });
+      return;
     }
+    
+    setPdfState({ isGenerating: false, error: null });
   };
 
-  // Ordenar y agrupar los eventos por fecha
-  const groupAndSortEventsByDate = (events) => {
-    const grouped = {};
-    events.forEach((event) => {
-      const eventDate = new Date(event.start);
-
-      // Ajustar el uso de la fecha en UTC para evitar problemas de zona horaria
-      const dateString = eventDate.toISOString().split("T")[0]; // Mantener la fecha exacta del evento, sin desajustes
-      if (!grouped[dateString]) {
-        grouped[dateString] = [];
-      }
-      grouped[dateString].push(event);
-    });
-
-    // Ordenar fechas
-    const sortedDates = Object.keys(grouped).sort(
-      (a, b) => new Date(a) - new Date(b)
-    );
-
-    // Crear un nuevo objeto con fechas ordenadas
-    const sortedGrouped = {};
-    sortedDates.forEach((date) => {
-      sortedGrouped[date] = grouped[date];
-    });
-
-    return sortedGrouped;
-  };
-
-  const paginatedEvents = useMemo(() => {
-    const allEvents = events.sort((a, b) => new Date(a.start) - new Date(b.start));
+  // Event processing logic
+  const processEvents = useMemo(() => {
+    // Sort all events by date
+    const sortedEvents = [...events].sort((a, b) => new Date(a.start) - new Date(b.start));
+    
+    // Create paginated array
     const pages = [];
-    for (let i = 0; i < allEvents.length; i += EVENTS_PER_PAGE) {
-      pages.push(allEvents.slice(i, i + EVENTS_PER_PAGE));
+    for (let i = 0; i < sortedEvents.length; i += EVENTS_PER_PAGE) {
+      pages.push(sortedEvents.slice(i, i + EVENTS_PER_PAGE));
     }
-    return pages;
+    
+    // Group events for the current page by date
+    const groupEventsByDate = (eventsToGroup) => {
+      const grouped = {};
+      
+      eventsToGroup.forEach((event) => {
+        const dateString = new Date(event.start).toISOString().split("T")[0];
+        if (!grouped[dateString]) {
+          grouped[dateString] = [];
+        }
+        grouped[dateString].push(event);
+      });
+      
+      return grouped;
+    };
+    
+    return {
+      pages,
+      total: pages.length,
+      getGroupedEvents: (pageIdx) => {
+        const pageEvents = pages[pageIdx] || [];
+        return groupEventsByDate(pageEvents);
+      }
+    };
   }, [events]);
 
-  const currentPageEvents = paginatedEvents[currentPage - 1] || [];
-
-  const groupedEvents = useMemo(() => {
-    return groupAndSortEventsByDate(currentPageEvents);
-  }, [currentPageEvents]);
-
-  // Formatear la fecha correctamente para mostrarla
-  const formatDateForDisplay = (dateString) => {
-    const date = new Date(dateString + "T00:00:00"); // Forzar la fecha a medianoche en UTC para evitar desajustes
-    return date.toLocaleDateString("es-ES", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
-  };
-
-  const formatCurrency = (value) => {
-    // Verifica si el valor es nulo o indefinido
-    if (value === null || value === undefined) return "0";
-
-    // Convierte el valor a número
-    const numericValue = Number(value);
-
-    // Verifica si el valor es un número válido
-    if (isNaN(numericValue)) return "0";
-
-    // Formatea el valor como moneda
-    return new Intl.NumberFormat("es-CO", {
-        style: "currency",
-        currency: "COP",
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-    }).format(numericValue);
-  };
-
-  // Obtener el total de páginas basadas en el número total de eventos
+  // Set total pages when events change
   useEffect(() => {
-    setTotalPages(Math.ceil(events.length / EVENTS_PER_PAGE));
-  }, [events]);
+    setTotalPages(processEvents.total);
+  }, [processEvents.total]);
 
-  // Obtener las fechas ordenadas para la página actual
-  const sortedDates = Object.keys(groupedEvents).sort((a, b) => new Date(a) - new Date(b));
+  // Get events for current page, grouped by date
+  const currentGroupedEvents = useMemo(() => {
+    return processEvents.getGroupedEvents(currentPage - 1);
+  }, [processEvents, currentPage]);
+
+  // Get sorted dates for current page
+  const sortedDates = useMemo(() => {
+    return Object.keys(currentGroupedEvents).sort((a, b) => new Date(a) - new Date(b));
+  }, [currentGroupedEvents]);
 
   return (
     <div className="w-full">
-      {pdfError && <div className="alert alert-danger">{pdfError}</div>}
-      <Button
-        onClick={generatePDF}
-        variant="success"
-        className="mb-4"
-        disabled={isGeneratingPDF}
-      >
-        {isGeneratingPDF ? "Generando PDF..." : "Descargar PDF"}
-      </Button>
-
-      <div ref={eventListRef} className="bg-white p-4 shadow rounded w-full">
-        {sortedDates.map((date) => (
-          <div key={date} className="mb-6">
-            <h2 className="text-xl font-bold mb-3 border-b pb-2">
-              {formatDateForDisplay(date)}
-            </h2>
-            {groupedEvents[date].map((event) => (
-              <div
-                key={event.id}
-                className="mb-4 p-3 border rounded shadow-sm text-sm"
-              >
-                <h3 className="text-lg font-bold mb-2">
-                  {event.extendedProps?.companyName || "Evento sin nombre"}
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                  <div>
-                    <p>
-                      <FaUsers className="inline mr-1" />{" "}
-                      <strong>N° de personas:</strong>{" "}
-                      {event.extendedProps?.peopleCount || "N/A"} pax
-                    </p>
-                    <p>
-                      <FaMapMarkerAlt className="inline mr-1" />{" "}
-                      <strong>Lugar:</strong>{" "}
-                      {event.extendedProps?.eventLocation || "No especificado"}
-                    </p>
-                  </div>
-                  <div>
-                    <p>
-                      <strong>Responsable:</strong>{" "}
-                      {event.extendedProps?.contactName || "N/A"}
-                    </p>
-                    <p>
-                      <FaMoneyBillWave className="inline mr-1" />{" "}
-                      <strong>Consignación:</strong>{" "}
-                      {formatCurrency(event.extendedProps.deposit)}
-                    </p>
-                  </div>
-                  <div>
-                    <p>
-                      <FaPhoneAlt className="inline mr-1" />{" "}
-                      <strong>Teléfonos:</strong>{" "}
-                      {event.extendedProps?.contactPhone || "N/A"}
-                    </p>
-
-                    <p>
-                      <FaMoneyBillWave className="inline mr-1" />{" "}
-                      <strong>Saldo Pendiente:</strong>{" "}
-                      {formatCurrency(event.extendedProps.pendingAmount)}
-                    </p>
-                  </div>
-                </div>
-                <div className="mt-2">
-                  <p>
-                    <FaUtensils className="inline mr-1" />{" "}
-                    <strong>Paquete de alimentación:</strong>{" "}
-                    {(event.extendedProps?.foodPackage || []).join(", ") ||
-                      "No especificado"}
-                  </p>
-                  <strong>Descripción:</strong>
-                  <p className="text-xs" style={{ whiteSpace: "pre-wrap" }}>
-                    {event.extendedProps?.eventDescription ||
-                      "No hay descripción disponible"}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        ))}
+      {pdfState.error && (
+        <Alert variant="danger" dismissible onClose={() => setPdfState(prev => ({ ...prev, error: null }))}>
+          {pdfState.error}
+        </Alert>
+      )}
+      
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h2 className="mb-0">
+                  Lista de Eventos
+        </h2>
+        <Button
+          onClick={generatePDF}
+          variant="primary"
+          className="d-flex align-items-center"
+          disabled={pdfState.isGenerating}
+        >
+          {pdfState.isGenerating ? (
+            <>
+              <Spinner animation="border" size="sm" className="me-2" />
+              Generando PDF...
+            </>
+          ) : (
+            <>
+              <FaFilePdf className="me-2" />
+              Descargar PDF
+            </>
+          )}
+        </Button>
       </div>
 
-      <Pagination className="mt-4 justify-content-center">
-        <Pagination.First
-          onClick={() => setCurrentPage(1)}
-          disabled={currentPage === 1}
-        />
-        <Pagination.Prev
-          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-          disabled={currentPage === 1}
-        />
-        {[...Array(totalPages)].map((_, index) => (
-          <Pagination.Item
-            key={index + 1}
-            active={index + 1 === currentPage}
-            onClick={() => setCurrentPage(index + 1)}
-          >
-            {index + 1}
-          </Pagination.Item>
-        ))}
-        <Pagination.Next
-          onClick={() =>
-            setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-          }
-          disabled={currentPage === totalPages}
-        />
-        <Pagination.Last
-          onClick={() => setCurrentPage(totalPages)}
-          disabled={currentPage === totalPages}
-        />
-      </Pagination>
+      <div ref={eventListRef} className="bg-white p-4 shadow-sm rounded w-full">
+        {sortedDates.length > 0 ? (
+          sortedDates.map((date) => (
+            <div key={date} className="mb-6">
+              <h2 className="fs-4 fw-bold mb-3 pb-2 border-bottom text-primary d-flex align-items-center">
+                <FaCalendarAlt className="me-2" />
+                {formatDate(date)}
+              </h2>
+              {currentGroupedEvents[date].map((event) => (
+                <EventCard key={event.id} event={event} />
+              ))}
+            </div>
+          ))
+        ) : (
+          <Alert variant="info">No hay eventos para mostrar en esta página.</Alert>
+        )}
+      </div>
+
+      {totalPages > 1 && (
+        <Pagination className="mt-4 justify-content-center">
+          <Pagination.First
+            onClick={() => setCurrentPage(1)}
+            disabled={currentPage === 1}
+          />
+          <Pagination.Prev
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+          />
+          {Array.from({ length: totalPages }, (_, i) => (
+            <Pagination.Item
+              key={i + 1}
+              active={i + 1 === currentPage}
+              onClick={() => setCurrentPage(i + 1)}
+            >
+              {i + 1}
+            </Pagination.Item>
+          ))}
+          <Pagination.Next
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+          />
+          <Pagination.Last
+            onClick={() => setCurrentPage(totalPages)}
+            disabled={currentPage === totalPages}
+          />
+        </Pagination>
+      )}
     </div>
   );
 };
@@ -292,6 +324,7 @@ EventList.propTypes = {
         ]),
         eventDescription: PropTypes.string,
         foodPackage: PropTypes.arrayOf(PropTypes.string),
+        companyName: PropTypes.string,
       }),
     })
   ).isRequired,
