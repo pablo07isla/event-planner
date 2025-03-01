@@ -9,6 +9,7 @@ import {
 import Login from "./components/Login";
 import Register from "./components/Register";
 import EventCalendar from "./components/EventCalendar";
+import SearchEvents from "./components/SearchEvents";
 import ProtectedRoute from "./components/ProtectedRoute";
 import "bootstrap/dist/css/bootstrap.min.css";
 
@@ -23,6 +24,14 @@ const App = () => {
           element={
             <ProtectedRoute>
               <EventCalendar />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/search"
+          element={
+            <ProtectedRoute>
+              <SearchEvents />
             </ProtectedRoute>
           }
         />

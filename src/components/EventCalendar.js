@@ -70,6 +70,33 @@ function EventCalendar({ initialEvents }) {
     const start = parseISO(clickInfo.event.startStr);
     const end = parseISO(clickInfo.event.endStr);
 
+    // Procesar los attachments
+    let attachments = [];
+    try {
+      const rawAttachments = clickInfo.event.extendedProps.attachments;
+      if (rawAttachments) {
+        // Si es una cadena, intentar parsearlo
+        if (typeof rawAttachments === 'string') {
+          attachments = JSON.parse(rawAttachments);
+        } 
+        // Si ya es un array, usarlo directamente
+        else if (Array.isArray(rawAttachments)) {
+          attachments = rawAttachments;
+        }
+        // Asegurarse de que cada attachment tenga la estructura correcta
+        attachments = attachments.map(attachment => ({
+          name: attachment.name,
+          url: attachment.url,
+          path: attachment.path
+        }));
+      }
+    } catch (e) {
+      console.error("Error processing attachments:", e);
+      attachments = [];
+    }
+
+    console.log("Processed attachments:", attachments);
+
     setCurrentEvent({
       id: clickInfo.event.id,
       start: format(start, "yyyy-MM-dd'T'HH:mm"),
@@ -80,12 +107,12 @@ function EventCalendar({ initialEvents }) {
       contactName: clickInfo.event.extendedProps.contactName || "",
       foodPackage: clickInfo.event.extendedProps.foodPackage || [],
       contactPhone: clickInfo.event.extendedProps.contactPhone || "",
-      email: clickInfo.event.extendedProps.email || "", // New field for email
+      email: clickInfo.event.extendedProps.email || "",
       eventLocation: clickInfo.event.extendedProps.eventLocation || "",
       eventDescription: clickInfo.event.extendedProps.eventDescription || "",
       deposit: clickInfo.event.extendedProps.deposit || "",
       pendingAmount: clickInfo.event.extendedProps.pendingAmount || "",
-      attachments: clickInfo.event.extendedProps.attachments || [],
+      attachments: attachments,
       eventStatus: clickInfo.event.extendedProps.eventStatus || "Pendiente",
       lastModified: clickInfo.event.extendedProps.lastModified || "",
       lastModifiedBy: clickInfo.event.extendedProps.lastModifiedBy || "",
@@ -215,24 +242,49 @@ function EventCalendar({ initialEvents }) {
       const foodPackageArray = formData.get("foodPackage") ? formData.get("foodPackage").split(',') : [];
       const foodPackagePostgres = `{${foodPackageArray.map(item => `"${item}"`).join(',')}}`;
 
+      // Parsear los archivos adjuntos y asegurarse de que sea un array válido
+      let attachments = [];
+      try {
+        const attachmentsStr = formData.get("attachments");
+        if (attachmentsStr) {
+          attachments = JSON.parse(attachmentsStr);
+          attachments = attachments.map(attachment => ({
+            name: attachment.name,
+            url: attachment.url,
+            path: attachment.path
+          }));
+        }
+      } catch (e) {
+        console.error("Error parsing attachments:", e);
+        attachments = [];
+      }
+
+      // Manejar campos numéricos
+      const deposit = formData.get("deposit");
+      const pendingAmount = formData.get("pendingAmount");
+      const peopleCount = formData.get("peopleCount");
+
       const eventData = {
         start: new Date(formData.get("startDate")).toISOString(),
         end: new Date(formData.get("endDate")).toISOString(),
         companyName: formData.get("companyName"),
-        peopleCount: formData.get("peopleCount"),
+        peopleCount: peopleCount ? parseInt(peopleCount, 10) || 0 : 0,
         contactName: formData.get("contactName"),
-        foodPackage: foodPackagePostgres, // Usar el formato de array de PostgreSQL
+        foodPackage: foodPackagePostgres,
         contactPhone: formData.get("contactPhone"),
         email: formData.get("email"),
         eventLocation: formData.get("eventLocation"),
         eventDescription: formData.get("eventDescription"),
-        deposit: formData.get("deposit"),
-        pendingAmount: formData.get("pendingAmount"),
+        deposit: deposit ? parseFloat(deposit.replace(/[^\d.-]/g, '')) || 0 : 0,
+        pendingAmount: pendingAmount ? parseFloat(pendingAmount.replace(/[^\d.-]/g, '')) || 0 : 0,
         eventStatus: formData.get("eventStatus"),
         lastModified: new Date().toISOString(),
         lastModifiedBy: currentUser ? currentUser.username : "Usuario desconocido",
         companyGroupId: formData.get("companyGroupId"),
+        attachments: attachments
       };
+
+      console.log("Saving event with data:", eventData);
 
       let response;
       if (formData.get("id")) {
@@ -257,6 +309,7 @@ function EventCalendar({ initialEvents }) {
       }
 
       const savedEvent = response.data[0];
+      console.log("Saved event:", savedEvent);
       const eventWithColor = applyEventColor(savedEvent);
 
       setEvents((prevEvents) => {
@@ -271,7 +324,7 @@ function EventCalendar({ initialEvents }) {
 
       setModalOpen(false);
     } catch (err) {
-      console.error("Error al guardar el evento:", err);
+      console.error("Error detallado al guardar el evento:", err);
       setError(`Error al guardar el evento: ${err.message}`);
     }
   };
