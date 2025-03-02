@@ -14,7 +14,7 @@ import {
 import { Button, Pagination, Card, Alert, Badge, Spinner } from "react-bootstrap";
 
 // Constants
-const EVENTS_PER_PAGE = 3;
+const EVENTS_PER_PAGE = 2;
 
 // Utility functions
 const formatDate = (dateString) => {
@@ -42,7 +42,7 @@ const formatCurrency = (value) => {
 
 // Sub-components
 const EventCard = ({ event }) => (
-  <Card className="mb-4 shadow-sm border-0 hover:shadow-md transition-shadow duration-300">
+  <Card className="mb-4 shadow-sm border-10 hover:shadow-md transition-shadow duration-300">
     <Card.Header className="bg-primary text-white d-flex justify-content-between align-items-center">
       <h3 className="mb-0 fs-5">{event.extendedProps?.companyName || "Evento sin nombre"}</h3>
       <Badge bg="light" text="dark" pill>
