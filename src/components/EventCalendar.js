@@ -479,11 +479,7 @@ function EventCalendar({ initialEvents }) {
                 centered
                 className="rounded-lg"
               >
-                <Modal.Header closeButton className="bg-indigo-600 text-white">
-                  <Modal.Title className="text-xl font-semibold">
-                    Lista de Eventos
-                  </Modal.Title>
-                </Modal.Header>
+                
                 <Modal.Body className="p-6">
                   <EventList events={visibleEvents} />
                 </Modal.Body>
