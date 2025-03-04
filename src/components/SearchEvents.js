@@ -24,13 +24,24 @@ import {
   TableRow,
 } from "./ui/table";
 import { Badge } from "./ui/badge";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { cn } from "../lib/utils";
+import { Calendar as CalendarUI } from "./ui/calendar";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "./ui/select";
+
 
 const SearchEvents = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [companyId, setCompanyId] = useState("");
-  const [singleDate, setSingleDate] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [singleDate, setSingleDate] = useState(null);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -105,8 +116,8 @@ const SearchEvents = () => {
 
       // Filtrar por fecha única (solo eventos en esa fecha)
       if (singleDate && searchMode === "singleDate") {
-        // Corregir el problema de zona horaria para fecha única
-        const dateOnly = singleDate.split('T')[0]; // Asegurarnos de tener solo la fecha
+        // Formatear correctamente la fecha
+        const dateOnly = format(singleDate, 'yyyy-MM-dd');
         
         // Crear fechas en UTC para evitar problemas de zona horaria
         const startOfDay = new Date(`${dateOnly}T00:00:00.000Z`);
@@ -123,9 +134,9 @@ const SearchEvents = () => {
       
       // Filtrar por rango de fechas (solo considerando fecha de inicio)
       if (startDate && endDate && searchMode === "dateRange") {
-        // Corregir el problema de zona horaria para rango de fechas
-        const startDateOnly = startDate.split('T')[0];
-        const endDateOnly = endDate.split('T')[0];
+        // Formatear correctamente las fechas
+        const startDateOnly = format(startDate, 'yyyy-MM-dd');
+        const endDateOnly = format(endDate, 'yyyy-MM-dd');
         
         // Crear fechas en UTC para evitar problemas de zona horaria
         const startOfStartDate = new Date(`${startDateOnly}T00:00:00.000Z`);
@@ -396,8 +407,8 @@ const SearchEvents = () => {
                   variant={searchMode === "singleDate" ? "default" : "outline"}
                   onClick={() => {
                     setSearchMode("singleDate");
-                    setStartDate("");
-                    setEndDate("");
+                    setStartDate(null);
+                    setEndDate(null);
                   }}
                   className="flex items-center"
                 >
@@ -408,7 +419,7 @@ const SearchEvents = () => {
                   variant={searchMode === "dateRange" ? "default" : "outline"}
                   onClick={() => {
                     setSearchMode("dateRange");
-                    setSingleDate("");
+                    setSingleDate(null);
                   }}
                   className="flex items-center"
                 >
@@ -424,7 +435,6 @@ const SearchEvents = () => {
                       Nombre de Empresa
                     </label>
                     <div className="relative">
-                      
                       <Input
                         type="text"
                         value={searchTerm}
@@ -432,6 +442,7 @@ const SearchEvents = () => {
                         placeholder="Buscar por nombre..."
                         className="pl-10"
                       />
+                      
                     </div>
                   </div>
                   
@@ -440,7 +451,6 @@ const SearchEvents = () => {
                       N° Identificación de Empresa
                     </label>
                     <div className="relative">
-                     
                       <Input
                         type="text"
                         value={companyId}
@@ -448,6 +458,7 @@ const SearchEvents = () => {
                         placeholder="Buscar por N° identificación..."
                         className="pl-10"
                       />
+                     
                     </div>
                   </div>
                 </div>
@@ -458,15 +469,29 @@ const SearchEvents = () => {
                   <label className="text-sm font-medium">
                     Fecha del Evento
                   </label>
-                  <div className="relative">
-                    
-                    <Input
-                    
-                      type="date"
-                      value={singleDate}
-                      onChange={(e) => setSingleDate(e.target.value)}
-                      className="pl-10"
-                    />
+                  <div>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !singleDate && "text-muted-foreground"
+                          )}
+                        >
+                          <Calendar className="mr-2 h-4 w-4" />
+                          {singleDate ? format(singleDate, "PPP") : "Seleccionar fecha"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <CalendarUI
+                          mode="single"
+                          selected={singleDate}
+                          onSelect={setSingleDate}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
                   </div>
                 </div>
               )}
@@ -477,14 +502,30 @@ const SearchEvents = () => {
                     <label className="text-sm font-medium">
                       Fecha Inicio
                     </label>
-                    <div className="relative">
-                     
-                      <Input
-                        type="date"
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                        className="pl-10"
-                      />
+                    <div>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full justify-start text-left font-normal",
+                              !startDate && "text-muted-foreground"
+                            )}
+                          >
+                            <Calendar className="mr-2 h-4 w-4" />
+                            {startDate ? format(startDate, "PPP") : "Fecha inicio"}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                          <CalendarUI
+                            mode="single"
+                            selected={startDate}
+                            onSelect={setStartDate}
+                            initialFocus
+                            disabled={(date) => (endDate && date > endDate)}
+                          />
+                        </PopoverContent>
+                      </Popover>
                     </div>
                   </div>
                   
@@ -492,14 +533,30 @@ const SearchEvents = () => {
                     <label className="text-sm font-medium">
                       Fecha Fin
                     </label>
-                    <div className="relative">
-                     
-                      <Input
-                        type="date"
-                        value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
-                        className="pl-10"
-                      />
+                    <div>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full justify-start text-left font-normal",
+                              !endDate && "text-muted-foreground"
+                            )}
+                          >
+                            <Calendar className="mr-2 h-4 w-4" />
+                            {endDate ? format(endDate, "PPP") : "Fecha fin"}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                          <CalendarUI
+                            mode="single"
+                            selected={endDate}
+                            onSelect={setEndDate}
+                            initialFocus
+                            disabled={(date) => (startDate && date < startDate)}
+                          />
+                        </PopoverContent>
+                      </Popover>
                     </div>
                   </div>
                 </div>
