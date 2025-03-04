@@ -6,6 +6,25 @@ import { useNavigate } from "react-router-dom";
 import ModalEvent from "./Modal";
 import Sidebar from "./Sidebar";
 
+// Importaciones de shadcn/ui
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "./ui/table";
+import { Badge } from "./ui/badge";
+
 const SearchEvents = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [companyId, setCompanyId] = useState("");
@@ -351,279 +370,239 @@ const SearchEvents = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar */}
+    <div className="flex min-h-screen bg-background">
       <Sidebar />
       
-      {/* Contenido principal */}
-      <div className="flex-1 p-6 lg:p-10">
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold text-indigo-800 mb-2">Búsqueda de Eventos</h1>
-          <p className="text-gray-600">Encuentra y gestiona eventos por empresa o fecha</p>
-        </header>
+      <div className="flex-1 p-8">
+        <h1 className="text-4xl font-bold tracking-tight mb-2">Búsqueda de Eventos</h1>
+        <p className="text-muted-foreground mb-8">Encuentra y gestiona eventos por empresa o fecha</p>
         
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8 transition-all duration-300 hover:shadow-md">
-          <div className="mb-8">
-            <div className="flex flex-wrap gap-3 mb-8">
-              <button
-                onClick={() => setSearchMode("company")}
-                className={`flex items-center px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 ${
-                  searchMode === "company" 
-                    ? "bg-indigo-600 text-white shadow-md" 
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                <Building className="h-4 w-4 mr-2" />
-                Por Empresa
-              </button>
-              <button
-                onClick={() => {
-                  setSearchMode("singleDate");
-                  setStartDate("");
-                  setEndDate("");
-                }}
-                className={`flex items-center px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 ${
-                  searchMode === "singleDate" 
-                    ? "bg-indigo-600 text-white shadow-md" 
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                <Calendar className="h-4 w-4 mr-2" />
-                Fecha Específica
-              </button>
-              <button
-                onClick={() => {
-                  setSearchMode("dateRange");
-                  setSingleDate("");
-                }}
-                className={`flex items-center px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 ${
-                  searchMode === "dateRange" 
-                    ? "bg-indigo-600 text-white shadow-md" 
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                <Filter className="h-4 w-4 mr-2" />
-                Rango de Fechas
-              </button>
-            </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Filtros de Búsqueda</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              <div className="flex flex-wrap gap-3">
+                <Button
+                  variant={searchMode === "company" ? "default" : "outline"}
+                  onClick={() => setSearchMode("company")}
+                  className="flex items-center"
+                >
+                  <Building className="h-4 w-4 mr-2" />
+                  Por Empresa
+                </Button>
+                <Button
+                  variant={searchMode === "singleDate" ? "default" : "outline"}
+                  onClick={() => {
+                    setSearchMode("singleDate");
+                    setStartDate("");
+                    setEndDate("");
+                  }}
+                  className="flex items-center"
+                >
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Fecha Específica
+                </Button>
+                <Button
+                  variant={searchMode === "dateRange" ? "default" : "outline"}
+                  onClick={() => {
+                    setSearchMode("dateRange");
+                    setSingleDate("");
+                  }}
+                  className="flex items-center"
+                >
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Rango de Fechas
+                </Button>
+              </div>
 
-            {searchMode === "company" && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Búsqueda por nombre de empresa */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Nombre de Empresa
-                  </label>
-                  <div className="relative group">
-                    <input
-                      type="text"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      placeholder="Buscar por nombre..."
-                      className="pl-10 pr-4 py-3 w-full border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-gray-50 focus:bg-white"
-                    />
-                    <Building className="absolute left-3 top-3.5 h-4 w-4 text-gray-400 group-focus-within:text-indigo-500 transition-colors duration-200" />
+              {searchMode === "company" && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">
+                      Nombre de Empresa
+                    </label>
+                    <div className="relative">
+                      
+                      <Input
+                        type="text"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        placeholder="Buscar por nombre..."
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">
+                      N° Identificación de Empresa
+                    </label>
+                    <div className="relative">
+                     
+                      <Input
+                        type="text"
+                        value={companyId}
+                        onChange={(e) => setCompanyId(e.target.value)}
+                        placeholder="Buscar por N° identificación..."
+                        className="pl-10"
+                      />
+                    </div>
                   </div>
                 </div>
-                
-                {/* Búsqueda por número de identificación */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    N° Identificación de Empresa
-                  </label>
-                  <div className="relative group">
-                    <input
-                      type="text"
-                      value={companyId}
-                      onChange={(e) => setCompanyId(e.target.value)}
-                      placeholder="Buscar por N° identificación..."
-                      className="pl-10 pr-4 py-3 w-full border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-gray-50 focus:bg-white"
-                    />
-                    <Hash className="absolute left-3 top-3.5 h-4 w-4 text-gray-400 group-focus-within:text-indigo-500 transition-colors duration-200" />
-                  </div>
-                </div>
-              </div>
-            )}
+              )}
 
-            {searchMode === "singleDate" && (
-              <div className="max-w-md mx-auto md:mx-0 space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Fecha del Evento
-                </label>
-                <div className="relative group">
-                  <input
-                    type="date"
-                    value={singleDate}
-                    onChange={(e) => setSingleDate(e.target.value)}
-                    className="pl-10 pr-4 py-3 w-full border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-gray-50 focus:bg-white"
-                  />
-                  <Calendar className="absolute left-3 top-3.5 h-4 w-4 text-gray-400 group-focus-within:text-indigo-500 transition-colors duration-200" />
-                </div>
-              </div>
-            )}
-
-            {searchMode === "dateRange" && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Fecha de inicio */}
+              {searchMode === "singleDate" && (
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Fecha Inicio
+                  <label className="text-sm font-medium">
+                    Fecha del Evento
                   </label>
-                  <div className="relative group">
-                    <input
+                  <div className="relative">
+                    
+                    <Input
+                    
                       type="date"
-                      value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
-                      className="pl-10 pr-4 py-3 w-full border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-gray-50 focus:bg-white"
+                      value={singleDate}
+                      onChange={(e) => setSingleDate(e.target.value)}
+                      className="pl-10"
                     />
-                    <Calendar className="absolute left-3 top-3.5 h-4 w-4 text-gray-400 group-focus-within:text-indigo-500 transition-colors duration-200" />
                   </div>
                 </div>
-                
-                {/* Fecha de fin */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Fecha Fin
-                  </label>
-                  <div className="relative group">
-                    <input
-                      type="date"
-                      value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
-                      className="pl-10 pr-4 py-3 w-full border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-gray-50 focus:bg-white"
-                    />
-                    <Calendar className="absolute left-3 top-3.5 h-4 w-4 text-gray-400 group-focus-within:text-indigo-500 transition-colors duration-200" />
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-          
-          <div className="flex justify-center">
-            <button
-              onClick={handleSearch}
-              className="flex items-center justify-center px-8 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 transition-all duration-300 transform hover:scale-105 shadow-md"
-            >
-              <Search className="h-5 w-5 mr-2" />
-              Buscar
-            </button>
-          </div>
-        </div>
-        
-        {loading && (
-          <div className="flex justify-center items-center my-12">
-            <div className="relative">
-              <div className="h-16 w-16 rounded-full border-t-4 border-b-4 border-indigo-500 animate-spin"></div>
-              <div className="absolute inset-0 flex items-center justify-center text-indigo-700 font-medium">
-                <span className="animate-pulse">...</span>
-              </div>
-            </div>
-          </div>
-        )}
-        
-        {error && (
-          <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-5 rounded-lg my-8 animate-fadeIn shadow-sm">
-            <div className="flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-red-500" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-              </svg>
-              <p className="font-medium">{error}</p>
-            </div>
-          </div>
-        )}
-        
-        {searchResults.length > 0 ? (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden transition-all duration-300 hover:shadow-md animate-fadeIn">
-            <div className="overflow-x-auto">
-              <table className="w-full divide-y divide-gray-200">
-                <thead>
-                  <tr className="bg-gray-50">
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                      Empresa
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                      Contacto
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              )}
+
+              {searchMode === "dateRange" && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">
                       Fecha Inicio
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    </label>
+                    <div className="relative">
+                     
+                      <Input
+                        type="date"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">
                       Fecha Fin
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                      Estado
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                      Acciones
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-100">
-                  {searchResults.map((event) => {
-                    const statusColors = getStatusColor(event.eventStatus);
-                    return (
-                      <tr 
-                        key={event.id} 
-                        className="hover:bg-gray-50 transition-colors duration-150"
-                      >
-                        <td className="px-6 py-4">
-                          <div className="text-sm font-medium text-gray-900">{event.companyName}</div>
-                          <div className="text-xs text-gray-500 mt-1 flex items-center">
-                            <span className="flex items-center justify-center bg-indigo-50 text-indigo-700 rounded-full h-5 w-5 mr-1">
-                              <span className="text-xs">{event.peopleCount}</span>
-                            </span>
-                            personas
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="text-sm font-medium text-gray-900">{event.contactName}</div>
-                          <div className="text-xs text-gray-500 mt-1">{event.contactPhone}</div>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-500">
-                          {formatDate(event.start)}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-500">
-                          {formatDate(event.end)}
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors.bg} ${statusColors.text}`}>
-                            <span className={`h-1.5 w-1.5 rounded-full ${statusColors.dot} mr-1.5`}></span>
-                            {event.eventStatus}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-sm font-medium">
-                          <button
-                            onClick={() => handleViewEvent(event)}
-                            className="flex items-center text-indigo-600 hover:text-indigo-900 transition-colors duration-200 group"
-                          >
-                            <Eye className="h-4 w-4 mr-1.5 group-hover:scale-110 transition-transform duration-200" />
-                            <span className="group-hover:underline">Ver detalles</span>
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        ) : !loading && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center transition-all duration-300 hover:shadow-md animate-fadeIn">
-            <div className="max-w-md mx-auto">
-              <div className="rounded-full bg-gray-100 h-16 w-16 flex items-center justify-center mx-auto mb-5">
-                <Search className="h-6 w-6 text-gray-400" />
+                    </label>
+                    <div className="relative">
+                     
+                      <Input
+                        type="date"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex justify-center mt-6">
+                <Button onClick={handleSearch} className="w-full sm:w-auto">
+                  <Search className="h-5 w-5 mr-2" />
+                  Buscar
+                </Button>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No hay resultados que mostrar</h3>
-              <p className="text-gray-500">
+            </div>
+          </CardContent>
+        </Card>
+
+        {loading && (
+          <div className="flex justify-center my-8">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+          </div>
+        )}
+
+        {error && (
+          <Card className="mt-8 border-destructive">
+            <CardContent className="pt-6">
+              <p className="text-destructive">{error}</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {searchResults.length > 0 ? (
+          <Card className="mt-8">
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Empresa</TableHead>
+                    <TableHead>Contacto</TableHead>
+                    <TableHead>Fecha Inicio</TableHead>
+                    <TableHead>Fecha Fin</TableHead>
+                    <TableHead>Estado</TableHead>
+                    <TableHead>Acciones</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {searchResults.map((event) => (
+                    <TableRow key={event.id}>
+                      <TableCell>
+                        <div className="font-medium">{event.companyName}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {event.peopleCount} personas
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div>{event.contactName}</div>
+                        <div className="text-sm text-muted-foreground">{event.contactPhone}</div>
+                      </TableCell>
+                      <TableCell>{formatDate(event.start)}</TableCell>
+                      <TableCell>{formatDate(event.end)}</TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            event.eventStatus === 'Pendiente' ? 'warning' :
+                            event.eventStatus === 'Con Abono' ? 'secondary' :
+                            event.eventStatus === 'Pago Total' ? 'success' :
+                            'destructive'
+                          }
+                        >
+                          {event.eventStatus}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleViewEvent(event)}
+                          className="flex items-center"
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          Ver
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        ) : !loading && (
+          <Card className="mt-8">
+            <CardContent className="text-center py-6">
+              <div className="rounded-full bg-muted w-12 h-12 flex items-center justify-center mx-auto mb-4">
+                <Search className="h-6 w-6 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-medium mb-2">No hay resultados que mostrar</h3>
+              <p className="text-muted-foreground">
                 {searchResults.length === 0 && (singleDate || startDate || endDate || searchTerm || companyId)
                   ? "No se encontraron eventos que coincidan con tu búsqueda. Intenta con otros criterios."
                   : "Utiliza los filtros para buscar eventos por empresa o fecha."}
               </p>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         )}
 
-        {/* Modal para ver/editar evento */}
         <ModalEvent
           isOpen={modalOpen}
           onClose={() => setModalOpen(false)}
