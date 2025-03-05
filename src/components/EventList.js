@@ -42,59 +42,90 @@ const formatCurrency = (value) => {
 
 // Sub-components
 const EventCard = ({ event }) => (
-  <Card className="mb-4 shadow-sm border-10 hover:shadow-md transition-shadow duration-300">
-    <Card.Header className="bg-primary text-white d-flex justify-content-between align-items-center">
-      <h3 className="mb-0 fs-5">{event.extendedProps?.companyName || "Evento sin nombre"}</h3>
-      <Badge bg="light" text="dark" pill>
-        {event.extendedProps?.peopleCount || "N/A"} pax
-      </Badge>
-    </Card.Header>
-    <Card.Body className="p-3">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div>
-          <p className="mb-2 d-flex align-items-center">
-            <FaMapMarkerAlt className="text-secondary me-2" />
-            <span className="fw-bold me-1">Lugar:</span>
-            {event.extendedProps?.eventLocation || "No especificado"}
-          </p>
-          <p className="mb-2 d-flex align-items-center">
-            <FaUsers className="text-secondary me-2" />
-            <span className="fw-bold me-1">Responsable:</span>
-            {event.extendedProps?.contactName || "N/A"}
-          </p>
-          <p className="mb-2 d-flex align-items-center">
-            <FaPhoneAlt className="text-secondary me-2" />
-            <span className="fw-bold me-1">Teléfonos:</span>
-            {event.extendedProps?.contactPhone || "N/A"}
-          </p>
+  <div className="bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg">
+      {/* Encabezado */}
+      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-4 flex justify-between items-center">
+      <h3 className="text-xl font-bold w-full">
+          {event.extendedProps?.companyName || "Evento sin nombre"}
+        </h3>
+        <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-semibold ml-2 flex-shrink-0">
+          {event.extendedProps?.peopleCount || "N/A"} pax
+        </span>
+      </div>
+
+      {/* Cuerpo del Card */}
+      <div className="mt-3 p-4">
+        <div className="grid md:grid-cols-2 gap-4">
+          {/* Columna Izquierda */}
+          <div>
+            <DetailItem 
+              Icon={FaMapMarkerAlt} 
+              label="Lugar" 
+              value={event.extendedProps?.eventLocation || "No especificado"} 
+              iconColor="text-blue-500"
+            />
+            <DetailItem 
+              Icon={FaUsers} 
+              label="Responsable" 
+              value={event.extendedProps?.contactName || "N/A"} 
+              iconColor="text-blue-500"
+            />
+            <DetailItem 
+              Icon={FaPhoneAlt} 
+              label="Teléfonos" 
+              value={event.extendedProps?.contactPhone || "N/A"} 
+              iconColor="text-blue-500"
+            />
+          </div>
+
+          {/* Columna Derecha */}
+          <div>
+            <DetailItem 
+              Icon={FaMoneyBillWave} 
+              label="Consignación" 
+              value={formatCurrency(event.extendedProps.deposit)} 
+              iconColor="text-green-500"
+            />
+            <DetailItem 
+              Icon={FaMoneyBillWave} 
+              label="Saldo Pendiente" 
+              value={formatCurrency(event.extendedProps.pendingAmount)} 
+              iconColor="text-red-500"
+            />
+            <DetailItem 
+              Icon={FaUtensils} 
+              label="Alimentación" 
+              value={(event.extendedProps?.foodPackage || []).join(", ") || "No especificado"} 
+              iconColor="text-blue-500"
+            />
+          </div>
         </div>
-        <div>
-          <p className="mb-2 d-flex align-items-center">
-            <FaMoneyBillWave className="text-success me-2" />
-            <span className="fw-bold me-1">Consignación:</span>
-            {formatCurrency(event.extendedProps.deposit)}
-          </p>
-          <p className="mb-2 d-flex align-items-center">
-            <FaMoneyBillWave className="text-danger me-2" />
-            <span className="fw-bold me-1">Saldo Pendiente:</span>
-            {formatCurrency(event.extendedProps.pendingAmount)}
-          </p>
-          <p className="mb-2 d-flex align-items-center">
-            <FaUtensils className="text-secondary me-2" />
-            <span className="fw-bold me-1">Alimentación:</span>
-            {(event.extendedProps?.foodPackage || []).join(", ") || "No especificado"}
-          </p>
+
+        {/* Sección de Descripción */}
+        <div className="mt-2 pt-4 border-t border-gray-200">
+          <h4 className="text-lg font-semibold text-gray-700 mb-2">Descripción</h4>
+          <div className="text-gray-600">
+            {event.extendedProps?.eventDescription 
+              ? event.extendedProps.eventDescription.split('\n').map((line, index) => (
+                <p key={index} className="mb-1">{line}</p>
+              ))
+              : <p className="italic">No hay descripción disponible</p>
+            }
+          </div>
         </div>
       </div>
-      
-      <div className="mt-3 pt-3 border-top">
-        <p className="fw-bold mb-1">Descripción:</p>
-        <p className="text-muted" style={{ whiteSpace: "pre-wrap" }}>
-          {event.extendedProps?.eventDescription || "No hay descripción disponible"}
-        </p>
-      </div>
-    </Card.Body>
-  </Card>
+    </div>
+);
+
+// Componente auxiliar para mostrar detalles con ícono
+const DetailItem = ({ Icon, label, value, iconColor = "text-gray-500" }) => (
+  <div className="flex items-center mb-3">
+    <Icon className={`${iconColor} mr-3 text-xl flex-shrink-0`} />
+    <div>
+      <span className="font-semibold text-gray-700 mr-2">{label}:</span>
+      <span className="text-gray-600">{value}</span>
+    </div>
+  </div>
 );
 
 EventCard.propTypes = {
