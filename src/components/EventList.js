@@ -54,7 +54,7 @@ const EventCard = ({ event }) => (
       </div>
 
       {/* Cuerpo del Card */}
-      <div className="mt-3 p-4">
+      <div className="mt-3 p-3">
         <div className="grid md:grid-cols-2 gap-4">
           {/* Columna Izquierda */}
           <div>
@@ -254,83 +254,123 @@ const EventList = ({ events }) => {
   }, [currentGroupedEvents]);
 
   return (
-    <div className="w-full">
+    <div className="w-full max-w-7xl mx-auto px-4 py-6">
+      {/* Manejo de Errores */}
       {pdfState.error && (
-        <Alert variant="danger" dismissible onClose={() => setPdfState(prev => ({ ...prev, error: null }))}>
-          {pdfState.error}
-        </Alert>
+        <div 
+          className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" 
+          role="alert"
+        >
+          <span className="block sm:inline">{pdfState.error}</span>
+          <span 
+            className="absolute top-0 bottom-0 right-0 px-4 py-3"
+            onClick={() => setPdfState(prev => ({ ...prev, error: null }))}
+          >
+            <svg className="fill-current h-6 w-6 text-red-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+              <title>Close</title>
+              <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/>
+            </svg>
+          </span>
+        </div>
       )}
       
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="mb-0">
-                  Lista de Eventos
-        </h2>
-        <Button
+      {/* Encabezado y Botón de PDF */}
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-gray-800">
+          Lista de Eventos
+        </h1>
+        <button
           onClick={generatePDF}
-          variant="primary"
-          className="d-flex align-items-center"
           disabled={pdfState.isGenerating}
+          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-300 disabled:opacity-50"
         >
           {pdfState.isGenerating ? (
             <>
-              <Spinner animation="border" size="sm" className="me-2" />
+              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
               Generando PDF...
             </>
           ) : (
             <>
-              <FaFilePdf className="me-2" />
+              <FaFilePdf className="mr-2" />
               Descargar PDF
             </>
           )}
-        </Button>
+        </button>
       </div>
 
-      <div ref={eventListRef} className="bg-white p-4 shadow-sm rounded w-full">
+      {/* Lista de Eventos */}
+      <div ref={eventListRef} className="space-y-6">
         {sortedDates.length > 0 ? (
           sortedDates.map((date) => (
-            <div key={date} className="mb-6">
-              <h2 className="fs-4 fw-bold mb-3 pb-2 border-bottom text-primary d-flex align-items-center">
-                <FaCalendarAlt className="me-2" />
-                {formatDate(date)}
-              </h2>
-              {currentGroupedEvents[date].map((event) => (
-                <EventCard key={event.id} event={event} />
-              ))}
+            <div key={date} className="bg-white rounded-xl shadow-lg overflow-hidden">
+              <div className="bg-gray-100 px-4 py-3 border-b border-gray-200 flex items-center">
+                <FaCalendarAlt className="mr-4 text-xl" />
+                <h2 className="text-xl font-semibold">
+                  {formatDate(date)}
+                </h2>
+              </div>
+              <div className="p-4 space-y-4">
+                {currentGroupedEvents[date].map((event) => (
+                  <EventCard key={event.id} event={event} />
+                ))}
+              </div>
             </div>
           ))
         ) : (
-          <Alert variant="info">No hay eventos para mostrar en esta página.</Alert>
+          <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded relative" role="alert">
+            No hay eventos para mostrar en esta página.
+          </div>
         )}
       </div>
 
+      {/* Paginación */}
       {totalPages > 1 && (
-        <Pagination className="mt-4 justify-content-center">
-          <Pagination.First
+        <div className="flex justify-center items-center space-x-2 mt-6">
+          <button
             onClick={() => setCurrentPage(1)}
             disabled={currentPage === 1}
-          />
-          <Pagination.Prev
+            className="px-3 py-2 bg-white text-gray-700 border rounded-lg disabled:opacity-50 hover:bg-gray-100"
+          >
+            Primera
+          </button>
+          <button
             onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
             disabled={currentPage === 1}
-          />
+            className="px-3 py-2 bg-white text-gray-700 border rounded-lg disabled:opacity-50 hover:bg-gray-100"
+          >
+            Anterior
+          </button>
           {Array.from({ length: totalPages }, (_, i) => (
-            <Pagination.Item
+            <button
               key={i + 1}
-              active={i + 1 === currentPage}
               onClick={() => setCurrentPage(i + 1)}
+              className={`px-3 py-2 rounded-lg ${
+                i + 1 === currentPage 
+                  ? 'bg-blue-600 text-white' 
+                  : 'bg-white text-gray-700 border hover:bg-gray-100'
+              }`}
             >
               {i + 1}
-            </Pagination.Item>
+            </button>
           ))}
-          <Pagination.Next
+          <button
             onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
             disabled={currentPage === totalPages}
-          />
-          <Pagination.Last
+            className="px-3 py-2 bg-white text-gray-700 border rounded-lg disabled:opacity-50 hover:bg-gray-100"
+          >
+            Siguiente
+          </button>
+          <button
             onClick={() => setCurrentPage(totalPages)}
             disabled={currentPage === totalPages}
-          />
-        </Pagination>
+            className="px-3 py-2 bg-white text-gray-700 border rounded-lg disabled:opacity-50 hover:bg-gray-100"
+          >
+            Última
+          </button>
+        </div>
       )}
     </div>
   );
