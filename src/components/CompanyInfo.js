@@ -1,72 +1,83 @@
 // EventsCalendar/event-planner/src/components/CompanyInfo.js
 import React from "react";
 import PropTypes from "prop-types";
-import { PlusCircleIcon, PhoneIcon, UserIcon, BuildingOfficeIcon, EnvelopeIcon, MapPinIcon } from "@heroicons/react/24/outline";
+import { Plus, Phone, User, Building, Mail, MapPin } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Button } from "./ui/button";
+import { Badge } from "./ui/badge";
 
 const CompanyInfo = ({ company, onAdd }) => {
   return (
-    <div className="relative bg-blue-50 border border-blue-400 rounded-lg shadow-sm p-5 transition-all hover:shadow-md">
-      <div className="flex justify-between items-start mb-4">
-        <h3 className="text-xl font-semibold text-gray-800">
+    <Card className="bg-blue-50 border-blue-200 transition-all hover:shadow-md">
+      <CardHeader className="flex flex-row items-start justify-between pb-2 space-y-0">
+        <CardTitle className="text-xl font-semibold text-gray-800">
           Información de la Empresa
-        </h3>
-        <button
+        </CardTitle>
+        <Button
           onClick={() => onAdd(company)}
-          className="text-blue-600 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-full transition-colors p-1"
+          variant="ghost"
+          size="icon"
+          className="text-blue-600 hover:text-blue-800 hover:bg-blue-100"
           title="Agregar esta empresa al formulario"
           aria-label="Agregar empresa"
         >
-          <PlusCircleIcon className="h-6 w-6" />
-        </button>
-      </div>
+          <Plus className="h-5 w-5" />
+        </Button>
+      </CardHeader>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div className="flex items-start space-x-2">
-          <BuildingOfficeIcon className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-          <div className="flex flex-col">
-            <span className="text-sm font-medium text-gray-600">Nombre:</span>
-            <span className="text-base text-gray-800 font-medium">{company.companyName}</span>
-          </div>
-        </div>
-
-        <div className="flex items-start space-x-2">
-          <UserIcon className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-          <div className="flex flex-col">
-            <span className="text-sm font-medium text-gray-600">Contacto:</span>
-            <span className="text-base text-gray-800">{company.contactPerson}</span>
-          </div>
-        </div>
-
-        <div className="flex items-start space-x-2">
-          <PhoneIcon className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-          <div className="flex flex-col">
-            <span className="text-sm font-medium text-gray-600">Teléfono:</span>
-            <span className="text-base text-gray-800">{company.phone}</span>
-          </div>
-        </div>
-
-        {company.email && (
-          <div className="flex items-start space-x-2">
-            <EnvelopeIcon className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+      <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="flex items-start space-x-3">
+            <Building className="h-4 w-4 text-blue-600 mt-1 flex-shrink-0" />
             <div className="flex flex-col">
-              <span className="text-sm font-medium text-gray-600">Email:</span>
-              <span className="text-base text-gray-800">{company.email}</span>
+              <span className="text-sm font-medium text-gray-500">Nombre:</span>
+              <span className="text-sm font-medium text-gray-900">{company.companyName}</span>
             </div>
           </div>
-        )}
 
-        {company.address && (
-          <div className="flex items-start space-x-2">
-            <MapPinIcon className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+          <div className="flex items-start space-x-3">
+            <User className="h-4 w-4 text-blue-600 mt-1 flex-shrink-0" />
             <div className="flex flex-col">
-              <span className="text-sm font-medium text-gray-600">Dirección:</span>
-              <span className="text-base text-gray-800">{company.address}</span>
-              {company.city && <span className="text-sm text-gray-700">{company.city}</span>}
+              <span className="text-sm font-medium text-gray-500">Contacto:</span>
+              <span className="text-sm text-gray-700">{company.contactPerson}</span>
             </div>
           </div>
-        )}
-      </div>
-    </div>
+
+          <div className="flex items-start space-x-3">
+            <Phone className="h-4 w-4 text-blue-600 mt-1 flex-shrink-0" />
+            <div className="flex flex-col">
+              <span className="text-sm font-medium text-gray-500">Teléfono:</span>
+              <span className="text-sm text-gray-700">{company.phone}</span>
+            </div>
+          </div>
+
+          {company.email && (
+            <div className="flex items-start space-x-3">
+              <Mail className="h-4 w-4 text-blue-600 mt-1 flex-shrink-0" />
+              <div className="flex flex-col">
+                <span className="text-sm font-medium text-gray-500">Email:</span>
+                <span className="text-sm text-gray-700">{company.email}</span>
+              </div>
+            </div>
+          )}
+
+          {company.address && (
+            <div className="flex items-start space-x-3">
+              <MapPin className="h-4 w-4 text-blue-600 mt-1 flex-shrink-0" />
+              <div className="flex flex-col">
+                <span className="text-sm font-medium text-gray-500">Dirección:</span>
+                <span className="text-sm text-gray-700">{company.address}</span>
+                {company.city && (
+                  <Badge variant="outline" className="mt-1 text-xs font-normal bg-blue-50">
+                    {company.city}
+                  </Badge>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

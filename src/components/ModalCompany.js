@@ -1,8 +1,30 @@
 import { supabase } from "../supabaseClient";
 import CompanyInfo from "./CompanyInfo";
-import { PlusCircleIcon, XMarkIcon, MagnifyingGlassIcon } from "@heroicons/react/24/solid";
+import { PlusCircle, X, Search } from "lucide-react";
 import PropTypes from "prop-types";
 import React, { useState, useEffect, useCallback } from "react";
+
+// Importando componentes de shadcn/ui
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "./ui/dialog";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
+import { Card, CardContent } from "./ui/card";
+import { Separator } from "./ui/separator";
 
 const ModalCompany = ({ isOpen, onClose, onSave, companyData }) => {
   const initialFormState = {
@@ -53,6 +75,11 @@ const ModalCompany = ({ isOpen, onClose, onSave, companyData }) => {
 
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
+    setFormData((prevData) => ({ ...prevData, [name]: value }));
+    setTouched((prev) => ({ ...prev, [name]: true }));
+  }, []);
+
+  const handleSelectChange = useCallback((value, name) => {
     setFormData((prevData) => ({ ...prevData, [name]: value }));
     setTouched((prev) => ({ ...prev, [name]: true }));
   }, []);
@@ -200,389 +227,307 @@ const ModalCompany = ({ isOpen, onClose, onSave, companyData }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-gray-800 bg-opacity-70 overflow-y-auto h-full w-full flex items-center justify-center z-[9999]" 
-         role="dialog" 
-         aria-modal="true" 
-         aria-labelledby="modal-title">
-      <div className="bg-white p-8 rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-6 border-b pb-4">
-          <h2 id="modal-title" className="text-2xl font-bold text-gray-800">
+    <Dialog open={isOpen} onOpenChange={handleClose} >
+      <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto z-[9999]">
+        <DialogHeader>
+          <DialogTitle>
             {formData.id ? "Editar Compañía" : "Nueva Compañía"}
-          </h2>
-          <button
-            onClick={handleClose}
-            className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full p-2 transition-colors"
-            aria-label="Cerrar"
-          >
-            <XMarkIcon className="h-6 w-6" />
-          </button>
-        </div>
+          </DialogTitle>
+        </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {notification.message && (
-            <div
-              className={`flex items-center px-4 py-3 rounded relative ${
-                notification.type === "error"
-                  ? "bg-red-100 border-l-4 border-red-500 text-red-700"
-                  : notification.type === "info"
-                  ? "bg-blue-100 border-l-4 border-blue-500 text-blue-700"
-                  : "bg-green-100 border-l-4 border-green-500 text-green-700"
-              }`}
-              role="alert"
+            <Alert 
+              variant={
+                notification.type === "error" 
+                  ? "destructive" 
+                  : notification.type === "info" 
+                    ? "default" 
+                    : "success"
+              }
             >
-              <strong className="font-bold mr-2">
-                {notification.type === "error" && "Error: "}
-                {notification.type === "info" && "Información: "}
-                {notification.type === "success" && "Éxito: "}
-              </strong>
-              <span className="block sm:inline">{notification.message}</span>
-            </div>
+              <AlertTitle>
+                {notification.type === "error" && "Error"}
+                {notification.type === "info" && "Información"}
+                {notification.type === "success" && "Éxito"}
+              </AlertTitle>
+              <AlertDescription>{notification.message}</AlertDescription>
+            </Alert>
           )}
 
           {/* Campo de búsqueda */}
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <label
-              htmlFor="searchIdentificationNumber"
-              className="block mb-2 text-sm font-medium text-gray-700"
-            >
-              Buscar por Número de Identificación
-            </label>
-            <div className="flex gap-2">
-              <div className="relative flex-grow">
-                <input
-                  type="text"
-                  id="searchIdentificationNumber"
-                  name="identificationNumber"
-                  value={formData.identificationNumber}
-                  onChange={handleChange}
-                  className="border border-gray-300 rounded-lg pl-3 pr-10 py-2.5 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                  aria-label="Número de identificación"
-                  placeholder="Ingrese número de identificación"
-                />
+          <Card className="bg-muted/40">
+            <CardContent className="pt-6">
+              <div className="space-y-2">
+                <Label htmlFor="searchIdentificationNumber">
+                  Buscar por Número de Identificación
+                </Label>
+                <div className="flex gap-2">
+                  <Input
+                    type="text"
+                    id="searchIdentificationNumber"
+                    name="identificationNumber"
+                    value={formData.identificationNumber}
+                    onChange={handleChange}
+                    className="flex-grow"
+                    placeholder="Ingrese número de identificación"
+                  />
+                  <Button 
+                    type="button" 
+                    onClick={handleSearch} 
+                    disabled={isLoading}
+                    variant="default"
+                  >
+                    {isLoading ? (
+                      <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent" />
+                    ) : (
+                      <Search className="mr-2 h-4 w-4" />
+                    )}
+                    Buscar
+                  </Button>
+                </div>
               </div>
-              <button
-                type="button"
-                onClick={handleSearch}
-                disabled={isLoading}
-                className={`bg-blue-600 text-white rounded-lg px-4 py-2.5 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors flex items-center ${
-                  isLoading ? "opacity-70 cursor-not-allowed" : ""
-                }`}
-                aria-label="Buscar empresa"
-              >
-                {isLoading ? (
-                  <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent mr-2" />
-                ) : (
-                  <MagnifyingGlassIcon className="h-5 w-5 mr-2" />
-                )}
-                Buscar
-              </button>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
           {/* Opción para Crear Nueva Empresa/Grupo/Persona */}
-          <div className="border-t border-b py-4">
-            <button
+          <div className="py-2">
+            <Separator className="my-2" />
+            <Button
               type="button"
               onClick={() => {
                 resetForm();
                 setIsFormVisible(true);
                 setIsCreating(true);
               }}
-              className="flex items-center text-blue-600 hover:text-blue-800 font-medium focus:outline-none focus:underline transition-colors"
-              aria-label="Crear nueva empresa"
+              variant="link"
+              className="p-0 h-auto text-primary font-medium"
             >
-              <PlusCircleIcon className="h-5 w-5 mr-2" />
+              <PlusCircle className="h-4 w-4 mr-2" />
               Crear nueva Empresa/Grupo/Persona
-            </button>
+            </Button>
+            <Separator className="my-2" />
           </div>
 
           {/* Mostrar resultado de búsqueda */}
           {searchResult && !isFormVisible && (
-            <div className="mt-4 border rounded-lg p-4 bg-blue-50">
-              <CompanyInfo company={searchResult} onAdd={handleAddCompany} />
-            </div>
+            <Card className="bg-blue-50 border-blue-200">
+              <CardContent className="pt-6">
+                <CompanyInfo company={searchResult} onAdd={handleAddCompany} />
+              </CardContent>
+            </Card>
           )}
 
           {/* Mostrar el formulario solo si isFormVisible es true */}
           {isFormVisible && (
-            <div className="mt-6">
+            <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label
-                    htmlFor="companyName"
-                    className="block mb-2 text-sm font-medium text-gray-700"
-                  >
+                <div className="space-y-2">
+                  <Label htmlFor="companyName">
                     Nombre de la Compañía*
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     type="text"
                     id="companyName"
                     name="companyName"
                     value={formData.companyName}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    className={`border rounded-lg p-2.5 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                      touched.companyName && !formData.companyName
-                        ? "border-red-500 bg-red-50"
-                        : "border-gray-300"
-                    }`}
+                    className={touched.companyName && !formData.companyName ? "border-red-500" : ""}
                     required
-                    aria-required="true"
-                    aria-invalid={touched.companyName && !formData.companyName}
-                    aria-describedby={
-                      touched.companyName && !formData.companyName
-                        ? "companyName-error"
-                        : undefined
-                    }
                   />
                   {touched.companyName && !formData.companyName && (
-                    <p
-                      id="companyName-error"
-                      className="mt-1 text-sm text-red-600"
-                    >
+                    <p className="text-sm text-red-600">
                       El nombre de la compañía es requerido
                     </p>
                   )}
                 </div>
 
-                <div>
-                  <label
-                    htmlFor="identificationType"
-                    className="block mb-2 text-sm font-medium text-gray-700"
-                  >
-                    Tipo de Identificación*
-                  </label>
-                  <select
-                    id="identificationType"
-                    name="identificationType"
-                    value={formData.identificationType}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    className="border border-gray-300 rounded-lg p-2.5 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    required
-                    aria-required="true"
-                  >
-                    <option value="CC">Cédula de Ciudadanía (CC)</option>
-                    <option value="NIT">NIT</option>
-                    <option value="CE">Cédula de Extranjería (CE)</option>
-                    <option value="PP">Pasaporte (PP)</option>
-                  </select>
-                </div>
+                
+<div className="space-y-2">
+  <Label htmlFor="identificationType">
+    Tipo de Identificación*
+  </Label>
+  <Select 
+    defaultValue={formData.identificationType} 
+    onValueChange={(value) => handleSelectChange(value, "identificationType")}
+    name="identificationType"
+  >
+    <SelectTrigger id="identificationType" className="w-full">
+      <SelectValue placeholder="Seleccione un tipo" />
+    </SelectTrigger>
+    <SelectContent position="popper" className="z-[9999]">
+      <SelectItem value="CC">Cédula de Ciudadanía (CC)</SelectItem>
+      <SelectItem value="NIT">NIT</SelectItem>
+      <SelectItem value="CE">Cédula de Extranjería (CE)</SelectItem>
+      <SelectItem value="PP">Pasaporte (PP)</SelectItem>
+    </SelectContent>
+  </Select>
+</div>
 
-                <div>
-                  <label
-                    htmlFor="identificationNumber"
-                    className="block mb-2 text-sm font-medium text-gray-700"
-                  >
+                <div className="space-y-2">
+                  <Label htmlFor="identificationNumber">
                     Número de Identificación*
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     type="text"
                     id="identificationNumber"
                     name="identificationNumber"
                     value={formData.identificationNumber}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    className={`border rounded-lg p-2.5 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                      touched.identificationNumber && !formData.identificationNumber
-                        ? "border-red-500 bg-red-50"
-                        : "border-gray-300"
-                    }`}
+                    className={touched.identificationNumber && !formData.identificationNumber ? "border-red-500" : ""}
                     required
-                    aria-required="true"
-                    aria-invalid={touched.identificationNumber && !formData.identificationNumber}
                   />
                   {touched.identificationNumber && !formData.identificationNumber && (
-                    <p className="mt-1 text-sm text-red-600">
+                    <p className="text-sm text-red-600">
                       El número de identificación es requerido
                     </p>
                   )}
                 </div>
 
-                <div>
-                  <label
-                    htmlFor="contactPerson"
-                    className="block mb-2 text-sm font-medium text-gray-700"
-                  >
+                <div className="space-y-2">
+                  <Label htmlFor="contactPerson">
                     Persona de Contacto*
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     type="text"
                     id="contactPerson"
                     name="contactPerson"
                     value={formData.contactPerson}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    className={`border rounded-lg p-2.5 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                      touched.contactPerson && !formData.contactPerson
-                        ? "border-red-500 bg-red-50"
-                        : "border-gray-300"
-                    }`}
+                    className={touched.contactPerson && !formData.contactPerson ? "border-red-500" : ""}
                     required
-                    aria-required="true"
                   />
                   {touched.contactPerson && !formData.contactPerson && (
-                    <p className="mt-1 text-sm text-red-600">
+                    <p className="text-sm text-red-600">
                       La persona de contacto es requerida
                     </p>
                   )}
                 </div>
 
-                <div>
-                  <label
-                    htmlFor="phone"
-                    className="block mb-2 text-sm font-medium text-gray-700"
-                  >
+                <div className="space-y-2">
+                  <Label htmlFor="phone">
                     Teléfono*
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     type="tel"
                     id="phone"
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    className={`border rounded-lg p-2.5 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                      touched.phone && (!formData.phone || getFieldError("phone"))
-                        ? "border-red-500 bg-red-50"
-                        : "border-gray-300"
-                    }`}
+                    className={touched.phone && (!formData.phone || getFieldError("phone")) ? "border-red-500" : ""}
                     required
-                    aria-required="true"
-                    aria-invalid={touched.phone && (!formData.phone || getFieldError("phone"))}
                   />
                   {touched.phone && getFieldError("phone") && (
-                    <p className="mt-1 text-sm text-red-600">
+                    <p className="text-sm text-red-600">
                       {getFieldError("phone")}
                     </p>
                   )}
                   {touched.phone && !formData.phone && !getFieldError("phone") && (
-                    <p className="mt-1 text-sm text-red-600">
+                    <p className="text-sm text-red-600">
                       El teléfono es requerido
                     </p>
                   )}
                 </div>
 
-                <div>
-                  <label
-                    htmlFor="email"
-                    className="block mb-2 text-sm font-medium text-gray-700"
-                  >
+                <div className="space-y-2">
+                  <Label htmlFor="email">
                     Email*
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     type="email"
                     id="email"
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    className={`border rounded-lg p-2.5 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                      touched.email && (!formData.email || getFieldError("email"))
-                        ? "border-red-500 bg-red-50"
-                        : "border-gray-300"
-                    }`}
+                    className={touched.email && (!formData.email || getFieldError("email")) ? "border-red-500" : ""}
                     required
-                    aria-required="true"
-                    aria-invalid={touched.email && (!formData.email || getFieldError("email"))}
                   />
                   {touched.email && getFieldError("email") && (
-                    <p className="mt-1 text-sm text-red-600">
+                    <p className="text-sm text-red-600">
                       {getFieldError("email")}
                     </p>
                   )}
                   {touched.email && !formData.email && !getFieldError("email") && (
-                    <p className="mt-1 text-sm text-red-600">
+                    <p className="text-sm text-red-600">
                       El email es requerido
                     </p>
                   )}
                 </div>
 
-                <div>
-                  <label
-                    htmlFor="address"
-                    className="block mb-2 text-sm font-medium text-gray-700"
-                  >
+                <div className="space-y-2">
+                  <Label htmlFor="address">
                     Dirección*
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     type="text"
                     id="address"
                     name="address"
                     value={formData.address}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    className={`border rounded-lg p-2.5 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                      touched.address && !formData.address
-                        ? "border-red-500 bg-red-50"
-                        : "border-gray-300"
-                    }`}
+                    className={touched.address && !formData.address ? "border-red-500" : ""}
                     required
-                    aria-required="true"
                   />
                   {touched.address && !formData.address && (
-                    <p className="mt-1 text-sm text-red-600">
+                    <p className="text-sm text-red-600">
                       La dirección es requerida
                     </p>
                   )}
                 </div>
 
-                <div>
-                  <label
-                    htmlFor="city"
-                    className="block mb-2 text-sm font-medium text-gray-700"
-                  >
+                <div className="space-y-2">
+                  <Label htmlFor="city">
                     Ciudad*
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     type="text"
                     id="city"
                     name="city"
                     value={formData.city}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    className={`border rounded-lg p-2.5 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                      touched.city && !formData.city
-                        ? "border-red-500 bg-red-50"
-                        : "border-gray-300"
-                    }`}
+                    className={touched.city && !formData.city ? "border-red-500" : ""}
                     required
-                    aria-required="true"
                   />
                   {touched.city && !formData.city && (
-                    <p className="mt-1 text-sm text-red-600">
+                    <p className="text-sm text-red-600">
                       La ciudad es requerida
                     </p>
                   )}
                 </div>
               </div>
 
-              <div className="flex justify-end space-x-3 pt-6 mt-6 border-t">
-                <button
+              <Separator className="my-4" />
+
+              <DialogFooter>
+                <Button
                   type="button"
                   onClick={handleClose}
-                  className="px-5 py-2.5 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors focus:ring-2 focus:ring-gray-300 focus:ring-offset-2"
+                  variant="outline"
                 >
                   Cancelar
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
                   disabled={isLoading}
-                  className={`px-5 py-2.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors flex items-center ${
-                    isLoading ? "opacity-70 cursor-not-allowed" : ""
-                  }`}
+                  variant="default"
                 >
                   {isLoading && (
-                    <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent mr-2" />
+                    <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent" />
                   )}
                   {isCreating ? "Crear" : "Guardar"}
-                </button>
-              </div>
+                </Button>
+              </DialogFooter>
             </div>
           )}
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
