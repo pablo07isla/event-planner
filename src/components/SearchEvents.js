@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "../supabaseClient";
 import { format, parseISO } from "date-fns";
+import { es } from "date-fns/locale"; // Importamos la localización en español
 import { Calendar, Search, Building, Eye, Hash, Filter } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import ModalEvent from "./Modal";
@@ -343,12 +344,18 @@ const SearchEvents = () => {
     }
   };
 
+  // Función para formatear fechas con localización en español
   const formatDate = (dateString) => {
     try {
-      return format(parseISO(dateString), "dd/MM/yyyy HH:mm");
+      return format(parseISO(dateString), "dd/MM/yyyy HH:mm", { locale: es });
     } catch (error) {
       return "Fecha inválida";
     }
+  };
+
+  // Función para formatear fechas en el botón con locale español
+  const formatButtonDate = (date) => {
+    return format(date, "PPP", { locale: es });
   };
 
   const getStatusColor = (status) => {
@@ -480,7 +487,7 @@ const SearchEvents = () => {
                           )}
                         >
                           <Calendar className="mr-2 h-4 w-4" />
-                          {singleDate ? format(singleDate, "PPP") : "Seleccionar fecha"}
+                          {singleDate ? formatButtonDate(singleDate) : "Seleccionar fecha"}
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0">
@@ -489,6 +496,7 @@ const SearchEvents = () => {
                           selected={singleDate}
                           onSelect={setSingleDate}
                           initialFocus
+                          locale={es} // Configuramos locale español
                         />
                       </PopoverContent>
                     </Popover>
@@ -513,7 +521,7 @@ const SearchEvents = () => {
                             )}
                           >
                             <Calendar className="mr-2 h-4 w-4" />
-                            {startDate ? format(startDate, "PPP") : "Fecha inicio"}
+                            {startDate ? formatButtonDate(startDate) : "Fecha inicio"}
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0">
@@ -523,6 +531,7 @@ const SearchEvents = () => {
                             onSelect={setStartDate}
                             initialFocus
                             disabled={(date) => (endDate && date > endDate)}
+                            locale={es} // Configuramos locale español
                           />
                         </PopoverContent>
                       </Popover>
@@ -544,7 +553,7 @@ const SearchEvents = () => {
                             )}
                           >
                             <Calendar className="mr-2 h-4 w-4" />
-                            {endDate ? format(endDate, "PPP") : "Fecha fin"}
+                            {endDate ? formatButtonDate(endDate) : "Fecha fin"}
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0">
@@ -554,6 +563,7 @@ const SearchEvents = () => {
                             onSelect={setEndDate}
                             initialFocus
                             disabled={(date) => (startDate && date < startDate)}
+                            locale={es} // Configuramos locale español
                           />
                         </PopoverContent>
                       </Popover>
