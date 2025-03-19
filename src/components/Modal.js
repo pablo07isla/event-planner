@@ -9,6 +9,11 @@ import { Modal, Button, Toast } from "react-bootstrap";
 import ReactDOM from "react-dom";
 import {
   FaFilePdf,
+  FaFileAlt,
+  FaFileImage,
+  FaFileDownload,
+  FaTrash,
+  FaPaperclip
 } from "react-icons/fa";
 
 // Hook personalizado para obtener datos de la empresa según el companyGroupId
@@ -68,6 +73,7 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false); // Estado para controlar el modal
   const [eventForPDF, setEventForPDF] = useState(null); // Estado para almacenar el evento para el PDF
+  const [uploadingFiles, setUploadingFiles] = useState(false); // Estado para controlar la carga de archivos
 
   // Usamos el hook personalizado para obtener datos de la empresa según el event.companyGroupId
   const { companyData: fetchedCompanyData } = useCompanyData(event?.companyGroupId);
@@ -273,6 +279,205 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
     }));
   };
 
+  // Función para manejar la carga de archivos
+  const handleFileUpload = async (e) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    setUploadingFiles(true);
+    setError(null);
+    
+    try {
+      // El bucket 'event-images' ya existe en Supabase, no intentamos crearlo
+      const newAttachments = [...formData.attachments];
+      
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+        const filePath = `${event?.id || 'new-event'}/${fileName}`;
+        
+        console.log("Subiendo archivo:", file.name, "a la ruta:", filePath);
+        
+        // Subir archivo a Supabase Storage
+        const { data, error } = await supabase.storage
+          .from('event-images')
+          .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: false
+          });
+          
+        if (error) {
+          console.error("Error al subir archivo:", error);
+          throw error;
+        }
+        
+        console.log("Archivo subido correctamente, obteniendo URL pública");
+        
+        // Obtener URL pública del archivo
+        const { data: urlData } = supabase.storage
+          .from('event-images')
+          .getPublicUrl(filePath);
+          
+        const publicUrl = urlData.publicUrl;
+        console.log("URL pública generada:", publicUrl);
+        
+        // Agregar el archivo a los adjuntos
+        newAttachments.push({
+          name: file.name,
+          url: publicUrl,
+          path: filePath,
+          type: file.type
+        });
+      }
+      
+      setFormData(prevState => ({
+        ...prevState,
+        attachments: newAttachments
+      }));
+      
+      setMessage("Archivos adjuntados correctamente");
+      setMessageType("success");
+    } catch (err) {
+      console.error("Error al subir archivos:", err);
+      setError(`Error al subir archivos: ${err.message}`);
+    } finally {
+      setUploadingFiles(false);
+      // Limpiar el input de archivos
+      e.target.value = null;
+    }
+  };
+
+  // Función para eliminar un archivo adjunto
+  const handleRemoveAttachment = async (index) => {
+    try {
+      const attachmentToRemove = formData.attachments[index];
+      console.log("Eliminando archivo:", attachmentToRemove);
+      
+      // Si el archivo ya está en Supabase, eliminarlo
+      if (attachmentToRemove.path) {
+        console.log("Intentando eliminar archivo de Supabase:", attachmentToRemove.path);
+        
+        try {
+          const { error } = await supabase.storage
+            .from('event-images')
+            .remove([attachmentToRemove.path]);
+            
+          if (error) {
+            console.error("Error al eliminar archivo de Supabase:", error);
+            // Continuar con la eliminación local incluso si hay error en Supabase
+          } else {
+            console.log("Archivo eliminado correctamente de Supabase");
+          }
+        } catch (storageErr) {
+          console.error("Error al intentar eliminar archivo de Supabase:", storageErr);
+          // Continuar con la eliminación local incluso si hay error en Supabase
+        }
+      }
+      
+      // Eliminar el archivo de los adjuntos
+      const newAttachments = [...formData.attachments];
+      newAttachments.splice(index, 1);
+      
+      setFormData(prevState => ({
+        ...prevState,
+        attachments: newAttachments
+      }));
+      
+      setMessage("Archivo eliminado correctamente");
+      setMessageType("success");
+    } catch (err) {
+      console.error("Error al eliminar archivo:", err);
+      setError(`Error al eliminar archivo: ${err.message}`);
+    }
+  };
+
+  // Función para descargar un archivo adjunto
+  const handleDownloadAttachment = async (url, fileName) => {
+    try {
+      setError(null);
+      
+      // Verificar si la URL es válida
+      if (!url) {
+        throw new Error("URL de descarga no válida");
+      }
+      
+      console.log("Intentando descargar archivo:", fileName, "URL:", url);
+      
+      // Extraer la ruta del archivo de la URL pública
+      let filePath = '';
+      try {
+        // Intentar extraer la ruta del archivo de la URL
+        if (url.includes('event-images/')) {
+          filePath = url.split('event-images/')[1];
+        } else if (url.includes('/storage/v1/object/public/')) {
+          filePath = url.split('/storage/v1/object/public/event-images/')[1];
+        }
+        
+        console.log("Ruta del archivo extraída:", filePath);
+      } catch (e) {
+        console.error("Error extracting file path from URL:", e);
+      }
+      
+      // Si tenemos la ruta del archivo, intentar obtener el archivo directamente
+      if (filePath) {
+        try {
+          // Intentar descargar el archivo directamente
+          const { data, error } = await supabase.storage
+            .from('event-images')
+            .download(filePath);
+            
+          if (error) {
+            console.error("Error downloading file directly:", error);
+            // Si hay error, intentar con la URL pública
+          } else if (data) {
+            // Crear un objeto URL para el blob
+            const blob = new Blob([data]);
+            const blobUrl = URL.createObjectURL(blob);
+            
+            // Crear un enlace temporal para la descarga
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = fileName || 'archivo';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Liberar el objeto URL
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+            
+            setMessage("Archivo descargado correctamente");
+            setMessageType("success");
+            return;
+          }
+        } catch (e) {
+          console.error("Error downloading file:", e);
+        }
+      }
+      
+      // Si no pudimos descargar directamente, intentar con la URL pública
+      console.log("Intentando descargar con URL pública:", url);
+      
+      // Crear un enlace temporal para la descarga
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName || 'archivo';
+      link.target = '_blank'; // Abrir en una nueva pestaña si la descarga directa falla
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      setMessage("Descarga iniciada");
+      setMessageType("success");
+    } catch (err) {
+      console.error("Error al descargar archivo:", err);
+      setError(`Error al descargar archivo: ${err.message}`);
+      
+      // Intentar abrir la URL en una nueva pestaña como alternativa
+      window.open(url, '_blank');
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const formDataToSubmit = new FormData();
@@ -285,6 +490,8 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
       } else if (key === "pendingAmount") {
         const value = formData[key] === "" ? "0" : formData[key];
         formDataToSubmit.append(key, value);
+      } else if (key === "attachments") {
+        formDataToSubmit.append(key, JSON.stringify(formData[key]));
       } else {
         formDataToSubmit.append(key, formData[key]);
       }
@@ -619,6 +826,83 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
                 </select>
               </div>
             </div>
+            
+            {/* Sección de archivos adjuntos */}
+            <div className="col-span-2">
+              <label htmlFor="attachments" className="block mb-2 text-sm font-medium text-gray-900 flex items-center">
+                <FaPaperclip className="mr-2" /> Archivos Adjuntos
+              </label>
+              
+              {/* Lista de archivos adjuntos */}
+              {formData.attachments && formData.attachments.length > 0 && (
+                <div className="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                  <ul className="divide-y divide-gray-200">
+                    {formData.attachments.map((attachment, index) => (
+                      <li key={index} className="py-3 flex items-center justify-between">
+                        <div className="flex items-center">
+                          {attachment.type && attachment.type.includes('image') ? (
+                            <FaFileImage className="text-blue-500 mr-2" />
+                          ) : (
+                            <FaFileAlt className="text-gray-500 mr-2" />
+                          )}
+                          <span 
+                            className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                            onClick={() => handleDownloadAttachment(attachment.url, attachment.name)}
+                          >
+                            {attachment.name}
+                          </span>
+                        </div>
+                        <div className="flex space-x-2">
+                          <button
+                            type="button"
+                            onClick={() => handleDownloadAttachment(attachment.url, attachment.name)}
+                            className="text-blue-500 hover:text-blue-700"
+                            title="Descargar archivo"
+                          >
+                            <FaFileDownload />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveAttachment(index)}
+                            className="text-red-500 hover:text-red-700"
+                            title="Eliminar archivo"
+                          >
+                            <FaTrash />
+                          </button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
+              {/* Input para subir archivos */}
+              <div className="mt-2">
+                <label htmlFor="file-upload" className="cursor-pointer inline-flex items-center px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-md transition duration-150 ease-in-out text-sm">
+                  <FaPaperclip className="mr-2" />
+                  {uploadingFiles ? "Subiendo archivos..." : "Adjuntar archivos"}
+                </label>
+                <input
+                  id="file-upload"
+                  type="file"
+                  multiple
+                  onChange={handleFileUpload}
+                  className="hidden"
+                  disabled={uploadingFiles}
+                />
+                <span className="ml-2 text-xs text-gray-500">
+                  Se permiten imágenes y documentos
+                </span>
+              </div>
+            </div>
+            
+            {/* Mensajes de éxito o error */}
+            {message && (
+              <div className={`p-4 rounded-lg ${messageType === 'error' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                {message}
+              </div>
+            )}
+            
             <div className="flex justify-end space-x-2 pt-4">
               {event && event.id && (
                 <button

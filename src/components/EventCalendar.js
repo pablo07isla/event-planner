@@ -85,9 +85,10 @@ function EventCalendar({ initialEvents }) {
         }
         // Asegurarse de que cada attachment tenga la estructura correcta
         attachments = attachments.map(attachment => ({
-          name: attachment.name,
-          url: attachment.url,
-          path: attachment.path
+          name: attachment.name || 'archivo',
+          url: attachment.url || '',
+          path: attachment.path || '',
+          type: attachment.type || ''
         }));
       }
     } catch (e) {
@@ -248,11 +249,9 @@ function EventCalendar({ initialEvents }) {
         const attachmentsStr = formData.get("attachments");
         if (attachmentsStr) {
           attachments = JSON.parse(attachmentsStr);
-          attachments = attachments.map(attachment => ({
-            name: attachment.name,
-            url: attachment.url,
-            path: attachment.path
-          }));
+          if (!Array.isArray(attachments)) {
+            attachments = [];
+          }
         }
       } catch (e) {
         console.error("Error parsing attachments:", e);
@@ -322,6 +321,29 @@ function EventCalendar({ initialEvents }) {
         }
       });
 
+      // Si es un evento nuevo y tiene archivos adjuntos, necesitamos actualizar las rutas
+      // ya que inicialmente se guardaron con 'new-event' como prefijo
+      if (attachments.length > 0) {
+        const updatedAttachments = await updateAttachments(savedEvent.id, attachments);
+        if (updatedAttachments.length > 0) {
+          try {
+            const { data: updateData, error: updateError } = await supabase
+              .from("events")
+              .update({ attachments: updatedAttachments })
+              .eq("id", savedEvent.id)
+              .select();
+            
+            if (updateError) {
+              console.error("Error updating event with new attachments:", updateError);
+            } else if (updateData) {
+              console.log("Evento actualizado correctamente con nuevos attachments");
+            }
+          } catch (err) {
+            console.error("Error updating event with new attachments:", err);
+          }
+        }
+      }
+
       setModalOpen(false);
     } catch (err) {
       console.error("Error detallado al guardar el evento:", err);
@@ -329,10 +351,101 @@ function EventCalendar({ initialEvents }) {
     }
   };
 
+  const updateAttachments = async (eventId, attachments) => {
+    const updatedAttachments = [];
+    try {
+      for (const attachment of attachments) {
+        if (attachment.path && attachment.path.startsWith('new-event/')) {
+          // Crear una nueva ruta con el ID del evento
+          const newPath = attachment.path.replace('new-event/', `${eventId}/`);
+          console.log("Copiando archivo de", attachment.path, "a", newPath);
+          
+          try {
+            // Copiar el archivo a la nueva ubicación
+            const { data: copyData, error: copyError } = await supabase.storage
+              .from('event-images')
+              .copy(attachment.path, newPath);
+              
+            if (copyError) {
+              console.error("Error copying file:", copyError);
+              // Si hay error, mantener el attachment original
+              updatedAttachments.push(attachment);
+              continue;
+            }
+            
+            console.log("Archivo copiado correctamente, eliminando original");
+            
+            try {
+              // Eliminar el archivo original
+              const { error: removeError } = await supabase.storage
+                .from('event-images')
+                .remove([attachment.path]);
+                
+              if (removeError) {
+                console.error("Error removing original file:", removeError);
+              }
+            } catch (removeErr) {
+              console.error("Error al intentar eliminar archivo original:", removeErr);
+            }
+            
+            console.log("Obteniendo URL pública para el nuevo archivo");
+            
+            // Obtener la nueva URL pública
+            const { data: urlData } = supabase.storage
+              .from('event-images')
+              .getPublicUrl(newPath);
+              
+            console.log("Nueva URL pública:", urlData.publicUrl);
+            
+            // Actualizar el attachment
+            updatedAttachments.push({
+              ...attachment,
+              path: newPath,
+              url: urlData.publicUrl
+            });
+          } catch (copyErr) {
+            console.error("Error al intentar copiar archivo:", copyErr);
+            // Si hay error, mantener el attachment original
+            updatedAttachments.push(attachment);
+          }
+        } else {
+          updatedAttachments.push(attachment);
+        }
+      }
+    } catch (err) {
+      console.error("Error updating attachments:", err);
+      // En caso de error, mantener los attachments originales
+      updatedAttachments.push(...attachments);
+    }
+    return updatedAttachments;
+  };
+
   const handleDeleteEvent = async () => {
     setError(null);
     try {
-      const token = localStorage.getItem("token"); // Suponiendo que guardas el token en localStorage
+      // Si el evento tiene archivos adjuntos, eliminarlos primero
+      if (currentEvent.attachments && currentEvent.attachments.length > 0) {
+        const filePaths = currentEvent.attachments
+          .filter(attachment => attachment.path)
+          .map(attachment => attachment.path);
+          
+        if (filePaths.length > 0) {
+          try {
+            const { error: storageError } = await supabase.storage
+              .from('event-images')
+              .remove(filePaths);
+              
+            if (storageError) {
+              console.error("Error al eliminar archivos:", storageError);
+            }
+          } catch (err) {
+            console.error("Error al intentar eliminar archivos:", err);
+            // Continuar con la eliminación del evento incluso si hay error al eliminar archivos
+          }
+        }
+      }
+      
+      // Eliminar el evento
       await supabase.from("events").delete().eq("id", currentEvent.id);
       setEvents((prevEvents) =>
         prevEvents.filter((e) => e.id !== currentEvent.id)
@@ -394,16 +507,31 @@ function EventCalendar({ initialEvents }) {
         end.setDate(end.getDate() + 1);
       }
 
+      // Asegurarse de que attachments sea un array
+      let attachments = preparedEvent.attachments;
+      if (!attachments) {
+        attachments = [];
+      } else if (typeof attachments === 'string') {
+        try {
+          attachments = JSON.parse(attachments);
+        } catch (e) {
+          attachments = [];
+        }
+      }
+      
+      if (!Array.isArray(attachments)) {
+        attachments = [];
+      }
+
       return {
         ...preparedEvent,
         start: format(start, "yyyy-MM-dd'T'HH:mm:ss"),
         end: format(end, "yyyy-MM-dd'T'HH:mm:ss"),
         allDay: true,
+        attachments: attachments
       };
     });
   }, [events]);
-
-  //const calendarRef = useRef(null);
 
   const handleAddEvent = () => {
     setCurrentEvent({
