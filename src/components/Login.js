@@ -22,7 +22,7 @@ const Login = () => {
   // Clear any error when user modifies inputs
   useEffect(() => {
     if (error) setError("");
-  }, [email, password]);
+  }, [email, error, password]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

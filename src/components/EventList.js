@@ -11,7 +11,6 @@ import {
   FaFilePdf,
   FaCalendarAlt
 } from "react-icons/fa";
-import { Button, Pagination, Card, Alert, Badge, Spinner } from "react-bootstrap";
 
 // Constants
 const EVENTS_PER_PAGE = 2;

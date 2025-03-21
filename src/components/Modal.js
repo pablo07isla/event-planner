@@ -1,11 +1,11 @@
 import { supabase } from "../supabaseClient";
 import ModalCompany from "./ModalCompany";
 import MultiSelectDropdown from "./MultiSelectDropdown";
-import { parseISO, format } from "date-fns";
+import { format } from "date-fns";
 import PropTypes from "prop-types";
 import React, { useState, useEffect } from "react";
 import EventList from "./EventList";
-import { Modal, Button, Toast } from "react-bootstrap";
+import { Modal } from "react-bootstrap";
 import ReactDOM from "react-dom";
 import {
   FaFilePdf,
@@ -70,7 +70,7 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
   const [isCompanyModalOpen, setCompanyModalOpen] = useState(false);
   const [message, setMessage] = useState(null);
   const [messageType, setMessageType] = useState("error");
-  const [error, setError] = useState(null);
+  const [, setError] = useState(null);
   const [showModal, setShowModal] = useState(false); // Estado para controlar el modal
   const [eventForPDF, setEventForPDF] = useState(null); // Estado para almacenar el evento para el PDF
   const [uploadingFiles, setUploadingFiles] = useState(false); // Estado para controlar la carga de archivos
@@ -130,6 +130,11 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
   // Actualiza el estado del formulario cuando cambia la propiedad "event"
   useEffect(() => {
     if (event) {
+      // Resetear mensajes cuando se abre un nuevo evento
+      setMessage(null);
+      setMessageType("error");
+      setError(null);
+      
       setFormData({
         ...event,
         startDate: event.start ? format(new Date(event.start), "yyyy-MM-dd'T'HH:mm") : "",
@@ -158,7 +163,7 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
     }
   }, [fetchedCompanyData]);
 
-  const [visibleEvents, setVisibleEvents] = useState([]);
+  
 
   const handleCompanyClick = () => {
     // Abre el modal de compañía (la obtención de datos se maneja en el hook)
@@ -286,6 +291,7 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
     
     setUploadingFiles(true);
     setError(null);
+    setMessage(null); // Limpiar mensajes anteriores
     
     try {
       // El bucket 'event-images' ya existe en Supabase, no intentamos crearlo
@@ -300,7 +306,7 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
         console.log("Subiendo archivo:", file.name, "a la ruta:", filePath);
         
         // Subir archivo a Supabase Storage
-        const { data, error } = await supabase.storage
+        const { error } = await supabase.storage
           .from('event-images')
           .upload(filePath, file, {
             cacheControl: '3600',
@@ -351,6 +357,7 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
   // Función para eliminar un archivo adjunto
   const handleRemoveAttachment = async (index) => {
     try {
+      setMessage(null); // Limpiar mensajes anteriores
       const attachmentToRemove = formData.attachments[index];
       console.log("Eliminando archivo:", attachmentToRemove);
       
@@ -396,6 +403,7 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
   const handleDownloadAttachment = async (url, fileName) => {
     try {
       setError(null);
+      setMessage(null); // Limpiar mensajes anteriores
       
       // Verificar si la URL es válida
       if (!url) {
@@ -478,9 +486,27 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
     }
   };
 
+  // Efecto para auto-ocultar los mensajes de éxito después de unos segundos
+  useEffect(() => {
+    let timer;
+    if (message && messageType === "success") {
+      timer = setTimeout(() => {
+        setMessage(null);
+      }, 5000); // 5 segundos
+    }
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [message, messageType]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const formDataToSubmit = new FormData();
+    
+    // Limpiar mensajes anteriores
+    setMessage(null);
+    setError(null);
+    
     Object.keys(formData).forEach((key) => {
       if (key === "startDate" || key === "endDate") {
         const date = new Date(formData[key]);
@@ -496,6 +522,12 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
         formDataToSubmit.append(key, formData[key]);
       }
     });
+    
+    // Si estamos editando un evento existente, incluir su ID
+    if (event && event.id) {
+      formDataToSubmit.append("id", event.id);
+    }
+    
     onSave(formDataToSubmit);
   };
 
@@ -528,6 +560,16 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
   };
   
   const handleCloseModal = () => setShowModal(false);
+
+  const handleClose = () => {
+    // Resetear mensajes cuando se cierra el modal
+    setMessage(null);
+    setMessageType("error");
+    setError(null);
+    
+    // Llamar a la función onClose pasada como prop
+    onClose();
+  };
 
   if (!isOpen) return null;
 
@@ -577,7 +619,7 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
               {event?.id ? "Editar Evento" : "Nuevo Evento"}
             </h2>
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="text-gray-500 hover:text-gray-700 text-2xl font-bold transition duration-150 ease-in-out"
             >
               &times;
@@ -829,7 +871,7 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
             
             {/* Sección de archivos adjuntos */}
             <div className="col-span-2">
-              <label htmlFor="attachments" className="block mb-2 text-sm font-medium text-gray-900 flex items-center">
+              <label htmlFor="attachments" className="block mb-2 text-sm font-medium text-gray-900 items-center">
                 <FaPaperclip className="mr-2" /> Archivos Adjuntos
               </label>
               
@@ -931,7 +973,7 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
               )}
               <button
                 type="button"
-                onClick={onClose}
+                onClick={handleClose}
                 className="px-6 py-3 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 transition duration-150 ease-in-out text-sm"
               >
                 Cancelar

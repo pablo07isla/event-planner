@@ -36,8 +36,8 @@ function EventCalendar({ initialEvents }) {
   const navigate = useNavigate();
   const calendarRef = useRef(null);
   const [showModal, setShowModal] = useState(false); // Estado para controlar el modal
-  const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3001";
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
+  
+ 
   const [cargando, setCargando] = useState(false);
 
   const handleDateSelect = (selectInfo) => {
@@ -362,7 +362,7 @@ function EventCalendar({ initialEvents }) {
           
           try {
             // Copiar el archivo a la nueva ubicación
-            const { data: copyData, error: copyError } = await supabase.storage
+            const { error: copyError } = await supabase.storage
               .from('event-images')
               .copy(attachment.path, newPath);
               

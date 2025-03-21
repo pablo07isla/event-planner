@@ -1,6 +1,6 @@
 import { supabase } from "../supabaseClient";
 import CompanyInfo from "./CompanyInfo";
-import { PlusCircle, X, Search } from "lucide-react";
+import { PlusCircle, Search } from "lucide-react";
 import PropTypes from "prop-types";
 import React, { useState, useEffect, useCallback } from "react";
 
