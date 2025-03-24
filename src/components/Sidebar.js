@@ -6,7 +6,6 @@ import {
   Search,
   Megaphone,
   PlusCircle,
-  User,
   LogOut,
   Settings,
   Bell,
@@ -16,8 +15,10 @@ import {
 import PropTypes from "prop-types";
 import React, { useState } from "react";
 import { useNavigate, NavLink } from "react-router-dom";
+import { useTranslation } from 'react-i18next'; 
 
 const Sidebar = ({ currentUser, onAddEvent }) => {
+  const { t } = useTranslation(); 
   const navigate = useNavigate();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -42,11 +43,11 @@ const Sidebar = ({ currentUser, onAddEvent }) => {
   };
 
   const navItems = [
-    { path: "/", icon: Calendar, label: "Calendar" },
-    { path: "/search", icon: Search, label: "Search" },
-    { path: "/marketing", icon: Megaphone, label: "Marketing" },
-    { path: "/notifications", icon: Bell, label: "Notifications" },
-    { path: "/settings", icon: Settings, label: "Settings" },
+    { path: "/", icon: Calendar, label: t('sidebar.calendar') },
+    { path: "/search", icon: Search, label: t('sidebar.search') },
+    { path: "/marketing", icon: Megaphone, label: t('sidebar.marketing') },
+    { path: "/notifications", icon: Bell, label: t('sidebar.notifications') },
+    { path: "/settings", icon: Settings, label: t('sidebar.settings') },
   ];
 
   return (
@@ -55,7 +56,7 @@ const Sidebar = ({ currentUser, onAddEvent }) => {
     >
       <div className="p-6">
         <h2 className={`text-3xl font-bold mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-indigo-200 to-indigo-100 ${isCollapsed ? 'text-xl' : 'text-3xl'}`}>
-          {isCollapsed ? "EP" : "EventPlanner"}
+          {isCollapsed ? "EP" : t('sidebar.eventPlanner')}
         </h2>
         
         <button 
@@ -70,6 +71,7 @@ const Sidebar = ({ currentUser, onAddEvent }) => {
             {navItems.map(({ path, icon: Icon, label }) => (
              
                 <NavLink
+                  key={path}
                   to={path}
                   className={({ isActive }) => 
                     `flex items-center ${isCollapsed ? 'justify-center' : 'space-x-3'} p-3 rounded-lg transition duration-200 ease-in-out no-underline
@@ -93,7 +95,7 @@ const Sidebar = ({ currentUser, onAddEvent }) => {
           shadow-lg hover:shadow-xl flex items-center justify-center ${isCollapsed ? 'space-x-0' : 'space-x-2'}`}
         >
           <PlusCircle className={`${isCollapsed ? 'h-6 w-6' : 'h-5 w-5'}`} />
-          {!isCollapsed && <span>Add Event</span>}
+          {!isCollapsed && <span>{t('sidebar.addEvent')}</span>}
         </button>
         
         <Separator.Root className="bg-indigo-400/30 h-px" />
@@ -109,7 +111,7 @@ const Sidebar = ({ currentUser, onAddEvent }) => {
           {!isCollapsed && (
             <div>
               <p className="font-medium text-indigo-100">{currentUser}</p>
-              <p className="text-xs text-indigo-300">Administrator</p>
+              <p className="text-xs text-indigo-300">{t('sidebar.administrator')}</p>
             </div>
           )}
         </div>
@@ -121,7 +123,7 @@ const Sidebar = ({ currentUser, onAddEvent }) => {
           focus:ring-2 focus:ring-indigo-300 focus:ring-opacity-50`}
         >
           <LogOut className="h-4 w-4" />
-          {!isCollapsed && <span>Sign Out</span>}
+          {!isCollapsed && <span>{t('sidebar.signOut')}</span>}
         </button>
       </div>
     </div>
