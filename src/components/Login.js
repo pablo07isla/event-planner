@@ -22,24 +22,62 @@ const Login = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
 
-  // Clear any error when user modifies inputs
+  // Solo limpiar el error cuando el usuario modifica los campos de entrada
   useEffect(() => {
     if (error) setError("");
-  }, [email, error, password]);
+  }, [email, password]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setError("");
+    setError(""); // Limpiar cualquier error previo
+
+    // Validación básica del lado del cliente
+    if (!email || !password) {
+      setError("Por favor ingrese su correo electrónico y contraseña");
+      setIsLoading(false);
+      return;
+    }
 
     try {
+      console.log("Intentando iniciar sesión con:", { email });
+      
       // Sign in with Supabase
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) throw error;
+      // Manejar errores de autenticación
+      if (authError) {
+        console.error("Error de autenticación:", authError);
+        
+        // Mapear mensajes de error específicos
+        if (authError.message.includes("Invalid login credentials")) {
+          setError("Correo electrónico o contraseña incorrecta");
+        } else if (authError.message.includes("Email not confirmed")) {
+          setError("Por favor confirme su correo electrónico antes de iniciar sesión");
+        } else if (authError.message.includes("Invalid email")) {
+          setError("Formato de correo electrónico inválido");
+        } else if (authError.message.includes("rate limit")) {
+          setError("Demasiados intentos. Por favor, inténtelo más tarde");
+        } else {
+          setError(authError.message || "Error de autenticación");
+        }
+        
+        setIsLoading(false);
+        return;
+      }
+
+      // Verificar que tenemos datos de usuario
+      if (!data || !data.user) {
+        console.error("No se recibieron datos de usuario después de la autenticación");
+        setError("Error al iniciar sesión. Por favor, inténtelo de nuevo.");
+        setIsLoading(false);
+        return;
+      }
+
+      console.log("Autenticación exitosa, obteniendo datos de usuario...");
 
       // Get additional user information from 'users' table
       const { data: userData, error: userError } = await supabase
@@ -48,7 +86,12 @@ const Login = () => {
         .eq("id", data.user.id)
         .single();
 
-      if (userError) throw userError;
+      if (userError) {
+        console.error("Error al obtener datos de usuario:", userError);
+        setError("Error al obtener datos del usuario");
+        setIsLoading(false);
+        return;
+      }
 
       // Store session data securely
       const expiresAt = new Date(Date.now() + 3600000).toISOString();
@@ -67,16 +110,24 @@ const Login = () => {
         })
       );
 
+      console.log("Inicio de sesión exitoso, redirigiendo...");
       // Navigate to dashboard
       navigate("/");
     } catch (err) {
-      // Handle different error types
+      // Handle unexpected errors
+      console.error("Error inesperado durante el inicio de sesión:", err);
+      
+      // Intentar proporcionar un mensaje de error útil
       if (err.status === 400) {
-        setError(t('login.invalidCredentials'));
+        setError("Credenciales inválidas");
+      } else if (err.status === 422) {
+        setError("Datos de inicio de sesión inválidos");
+      } else if (err.status === 429) {
+        setError("Demasiados intentos. Por favor, inténtelo más tarde");
       } else if (err.status === 500) {
-        setError(t('login.serverError'));
+        setError("Error del servidor. Por favor, inténtelo más tarde");
       } else {
-        setError(err.message || t('login.unknownError'));
+        setError(err.message || "Error desconocido al iniciar sesión");
       }
     } finally {
       setIsLoading(false);
@@ -128,10 +179,11 @@ const Login = () => {
             </p>
           </div>
 
+          {/* Mostrar mensaje de error si existe */}
           {error && (
-            <div className="mb-6 bg-red-50 text-red-700 p-3 rounded-md flex items-center">
-              <AlertCircle className="h-5 w-5 mr-2" />
-              <span>{error}</span>
+            <div className="mb-6 bg-red-50 text-red-700 p-3 rounded-md flex items-center border border-red-200">
+              <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0" />
+              <span className="text-sm">{error}</span>
             </div>
           )}
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { supabase } from "../supabaseClient";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale"; // Importamos la localización en español
-import { Calendar, Search, Building, Eye, Hash, Filter } from "lucide-react";
+import { Calendar, Search, Building, Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import ModalEvent from "./Modal";
 import Sidebar from "./Sidebar";
@@ -28,14 +28,6 @@ import { Badge } from "./ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { cn } from "../lib/utils";
 import { Calendar as CalendarUI } from "./ui/calendar";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "./ui/select";
-
 
 const SearchEvents = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -46,24 +38,24 @@ const SearchEvents = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [companies, setCompanies] = useState([]);
   const [selectedCompany, setSelectedCompany] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [currentEvent, setCurrentEvent] = useState(null);
   const [searchMode, setSearchMode] = useState("company");
+  // El navigate se usa en handleViewEvent más adelante
   const navigate = useNavigate();
 
   // Cargar la lista de empresas al iniciar
   useEffect(() => {
     const fetchCompanies = async () => {
       try {
-        const { data, error } = await supabase
+        const { error } = await supabase
           .from("CompanyGroups")
           .select("id, identificationNumber, companyName")
           .order("companyName");
         
         if (error) throw error;
-        setCompanies(data || []);
+        // Los datos de las empresas no se utilizan actualmente
       } catch (err) {
         console.error("Error al cargar empresas:", err);
         setError("No se pudieron cargar las empresas");
@@ -184,8 +176,13 @@ const SearchEvents = () => {
         }
       }
       
-      setSearchResults(data || []);
-      console.log("Resultados de búsqueda:", data);
+      // Ordenar los resultados por fecha de inicio (de menor a mayor)
+      const sortedData = data ? [...data].sort((a, b) => {
+        return new Date(a.start) - new Date(b.start);
+      }) : [];
+      
+      setSearchResults(sortedData);
+      console.log("Resultados de búsqueda:", sortedData);
     } catch (err) {
       console.error("Error en la búsqueda:", err);
       setError(`Error al realizar la búsqueda: ${err.message}`);
@@ -347,7 +344,7 @@ const SearchEvents = () => {
   // Función para formatear fechas con localización en español
   const formatDate = (dateString) => {
     try {
-      return format(parseISO(dateString), "dd/MM/yyyy HH:mm", { locale: es });
+      return format(parseISO(dateString), "dd/MM/yyyy", { locale: es });
     } catch (error) {
       return "Fecha inválida";
     }
@@ -362,21 +359,22 @@ const SearchEvents = () => {
     switch (status) {
       case 'Pendiente':
         return {
-          bg: 'bg-amber-100',
+          bg: 'bg-amber-200',
           text: 'text-amber-800',
           dot: 'bg-amber-500'
         };
       case 'Con Abono':
         return {
-          bg: 'bg-blue-100',
-          text: 'text-blue-800',
-          dot: 'bg-blue-500'
+          bg: 'bg-emerald-200',
+          text: 'text-emerald-800',
+          dot: 'bg-emerald-500'
+          
         };
       case 'Pago Total':
         return {
-          bg: 'bg-emerald-100',
-          text: 'text-emerald-800',
-          dot: 'bg-emerald-500'
+          bg: 'bg-blue-200',
+          text: 'text-blue-800',
+          dot: 'bg-blue-500'
         };
       default:
         return {
@@ -389,9 +387,12 @@ const SearchEvents = () => {
 
   return (
     <div className="flex min-h-screen bg-background">
-      <Sidebar />
+      {/* Sidebar fijo con posición sticky */}
+      <div className="sticky top-0 h-screen">
+        <Sidebar />
+      </div>
       
-      <div className="flex-1 p-8">
+      <div className="flex-1 p-8 overflow-auto">
         <h1 className="text-4xl font-bold tracking-tight mb-2">Búsqueda de Eventos</h1>
         <p className="text-muted-foreground mb-8">Encuentra y gestiona eventos por empresa o fecha</p>
         
@@ -508,7 +509,7 @@ const SearchEvents = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-sm font-medium">
-                      Fecha Inicio
+                      Desde
                     </label>
                     <div>
                       <Popover>
@@ -540,7 +541,7 @@ const SearchEvents = () => {
                   
                   <div className="space-y-2">
                     <label className="text-sm font-medium">
-                      Fecha Fin
+                      Hasta
                     </label>
                     <div>
                       <Popover>
@@ -604,8 +605,8 @@ const SearchEvents = () => {
                   <TableRow>
                     <TableHead>Empresa</TableHead>
                     <TableHead>Contacto</TableHead>
-                    <TableHead>Fecha Inicio</TableHead>
-                    <TableHead>Fecha Fin</TableHead>
+                    <TableHead>Fecha del Evento</TableHead>
+                    <TableHead>Correo electrónico</TableHead>
                     <TableHead>Estado</TableHead>
                     <TableHead>Acciones</TableHead>
                   </TableRow>
@@ -624,15 +625,10 @@ const SearchEvents = () => {
                         <div className="text-sm text-muted-foreground">{event.contactPhone}</div>
                       </TableCell>
                       <TableCell>{formatDate(event.start)}</TableCell>
-                      <TableCell>{formatDate(event.end)}</TableCell>
+                      <TableCell>{event.email}</TableCell>
                       <TableCell>
                         <Badge
-                          variant={
-                            event.eventStatus === 'Pendiente' ? 'warning' :
-                            event.eventStatus === 'Con Abono' ? 'secondary' :
-                            event.eventStatus === 'Pago Total' ? 'success' :
-                            'destructive'
-                          }
+                          className={`${getStatusColor(event.eventStatus).bg} ${getStatusColor(event.eventStatus).text}`}
                         >
                           {event.eventStatus}
                         </Badge>
