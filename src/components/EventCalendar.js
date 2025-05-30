@@ -36,8 +36,7 @@ function EventCalendar({ initialEvents }) {
   const navigate = useNavigate();
   const calendarRef = useRef(null);
   const [showModal, setShowModal] = useState(false); // Estado para controlar el modal
-  
- 
+
   const [cargando, setCargando] = useState(false);
 
   const handleDateSelect = (selectInfo) => {
@@ -76,19 +75,19 @@ function EventCalendar({ initialEvents }) {
       const rawAttachments = clickInfo.event.extendedProps.attachments;
       if (rawAttachments) {
         // Si es una cadena, intentar parsearlo
-        if (typeof rawAttachments === 'string') {
+        if (typeof rawAttachments === "string") {
           attachments = JSON.parse(rawAttachments);
-        } 
+        }
         // Si ya es un array, usarlo directamente
         else if (Array.isArray(rawAttachments)) {
           attachments = rawAttachments;
         }
         // Asegurarse de que cada attachment tenga la estructura correcta
-        attachments = attachments.map(attachment => ({
-          name: attachment.name || 'archivo',
-          url: attachment.url || '',
-          path: attachment.path || '',
-          type: attachment.type || ''
+        attachments = attachments.map((attachment) => ({
+          name: attachment.name || "archivo",
+          url: attachment.url || "",
+          path: attachment.path || "",
+          type: attachment.type || "",
         }));
       }
     } catch (e) {
@@ -150,12 +149,14 @@ function EventCalendar({ initialEvents }) {
       try {
         console.log("eventToUpdate.id:", eventToUpdate.id);
 
-        const start = eventToUpdate.start instanceof Date
-          ? eventToUpdate.start.toISOString()
-          : eventToUpdate.start;
-        const end = eventToUpdate.end instanceof Date
-          ? eventToUpdate.end.toISOString()
-          : eventToUpdate.end;
+        const start =
+          eventToUpdate.start instanceof Date
+            ? eventToUpdate.start.toISOString()
+            : eventToUpdate.start;
+        const end =
+          eventToUpdate.end instanceof Date
+            ? eventToUpdate.end.toISOString()
+            : eventToUpdate.end;
 
         // Fetch the full event data before updating
         const { data: eventData, error: fetchError } = await supabase
@@ -240,8 +241,12 @@ function EventCalendar({ initialEvents }) {
       const currentUser = JSON.parse(localStorage.getItem("user"));
 
       // Convertir foodPackage a un array de PostgreSQL
-      const foodPackageArray = formData.get("foodPackage") ? formData.get("foodPackage").split(',') : [];
-      const foodPackagePostgres = `{${foodPackageArray.map(item => `"${item}"`).join(',')}}`;
+      const foodPackageArray = formData.get("foodPackage")
+        ? formData.get("foodPackage").split(",")
+        : [];
+      const foodPackagePostgres = `{${foodPackageArray
+        .map((item) => `"${item}"`)
+        .join(",")}}`;
 
       // Parsear los archivos adjuntos y asegurarse de que sea un array válido
       let attachments = [];
@@ -274,13 +279,17 @@ function EventCalendar({ initialEvents }) {
         email: formData.get("email"),
         eventLocation: formData.get("eventLocation"),
         eventDescription: formData.get("eventDescription"),
-        deposit: deposit ? parseFloat(deposit.replace(/[^\d.-]/g, '')) || 0 : 0,
-        pendingAmount: pendingAmount ? parseFloat(pendingAmount.replace(/[^\d.-]/g, '')) || 0 : 0,
+        deposit: deposit ? parseFloat(deposit.replace(/[^\d.-]/g, "")) || 0 : 0,
+        pendingAmount: pendingAmount
+          ? parseFloat(pendingAmount.replace(/[^\d.-]/g, "")) || 0
+          : 0,
         eventStatus: formData.get("eventStatus"),
         lastModified: new Date().toISOString(),
-        lastModifiedBy: currentUser ? currentUser.username : "Usuario desconocido",
+        lastModifiedBy: currentUser
+          ? currentUser.username
+          : "Usuario desconocido",
         companyGroupId: formData.get("companyGroupId"),
-        attachments: attachments
+        attachments: attachments,
       };
 
       console.log("Saving event with data:", eventData);
@@ -324,7 +333,10 @@ function EventCalendar({ initialEvents }) {
       // Si es un evento nuevo y tiene archivos adjuntos, necesitamos actualizar las rutas
       // ya que inicialmente se guardaron con 'new-event' como prefijo
       if (attachments.length > 0) {
-        const updatedAttachments = await updateAttachments(savedEvent.id, attachments);
+        const updatedAttachments = await updateAttachments(
+          savedEvent.id,
+          attachments
+        );
         if (updatedAttachments.length > 0) {
           try {
             const { data: updateData, error: updateError } = await supabase
@@ -332,11 +344,16 @@ function EventCalendar({ initialEvents }) {
               .update({ attachments: updatedAttachments })
               .eq("id", savedEvent.id)
               .select();
-            
+
             if (updateError) {
-              console.error("Error updating event with new attachments:", updateError);
+              console.error(
+                "Error updating event with new attachments:",
+                updateError
+              );
             } else if (updateData) {
-              console.log("Evento actualizado correctamente con nuevos attachments");
+              console.log(
+                "Evento actualizado correctamente con nuevos attachments"
+              );
             }
           } catch (err) {
             console.error("Error updating event with new attachments:", err);
@@ -355,53 +372,56 @@ function EventCalendar({ initialEvents }) {
     const updatedAttachments = [];
     try {
       for (const attachment of attachments) {
-        if (attachment.path && attachment.path.startsWith('new-event/')) {
+        if (attachment.path && attachment.path.startsWith("new-event/")) {
           // Crear una nueva ruta con el ID del evento
-          const newPath = attachment.path.replace('new-event/', `${eventId}/`);
+          const newPath = attachment.path.replace("new-event/", `${eventId}/`);
           console.log("Copiando archivo de", attachment.path, "a", newPath);
-          
+
           try {
             // Copiar el archivo a la nueva ubicación
             const { error: copyError } = await supabase.storage
-              .from('event-images')
+              .from("event-images")
               .copy(attachment.path, newPath);
-              
+
             if (copyError) {
               console.error("Error copying file:", copyError);
               // Si hay error, mantener el attachment original
               updatedAttachments.push(attachment);
               continue;
             }
-            
+
             console.log("Archivo copiado correctamente, eliminando original");
-            
+
             try {
               // Eliminar el archivo original
               const { error: removeError } = await supabase.storage
-                .from('event-images')
+                .from("event-images")
                 .remove([attachment.path]);
-                
+
               if (removeError) {
                 console.error("Error removing original file:", removeError);
               }
             } catch (removeErr) {
-              console.error("Error al intentar eliminar archivo original:", removeErr);
+              console.error(
+                "Error al intentar eliminar archivo original:",
+                removeErr
+              );
             }
-            
+
             console.log("Obteniendo URL pública para el nuevo archivo");
-            
+
             // Obtener la nueva URL pública
             const { data: urlData } = supabase.storage
-              .from('event-images')
+              .from("event-images")
               .getPublicUrl(newPath);
-              
+
             console.log("Nueva URL pública:", urlData.publicUrl);
-            
+
             // Actualizar el attachment
             updatedAttachments.push({
               ...attachment,
               path: newPath,
-              url: urlData.publicUrl
+              url: urlData.publicUrl,
             });
           } catch (copyErr) {
             console.error("Error al intentar copiar archivo:", copyErr);
@@ -426,15 +446,15 @@ function EventCalendar({ initialEvents }) {
       // Si el evento tiene archivos adjuntos, eliminarlos primero
       if (currentEvent.attachments && currentEvent.attachments.length > 0) {
         const filePaths = currentEvent.attachments
-          .filter(attachment => attachment.path)
-          .map(attachment => attachment.path);
-          
+          .filter((attachment) => attachment.path)
+          .map((attachment) => attachment.path);
+
         if (filePaths.length > 0) {
           try {
             const { error: storageError } = await supabase.storage
-              .from('event-images')
+              .from("event-images")
               .remove(filePaths);
-              
+
             if (storageError) {
               console.error("Error al eliminar archivos:", storageError);
             }
@@ -444,7 +464,7 @@ function EventCalendar({ initialEvents }) {
           }
         }
       }
-      
+
       // Eliminar el evento
       await supabase.from("events").delete().eq("id", currentEvent.id);
       setEvents((prevEvents) =>
@@ -461,11 +481,11 @@ function EventCalendar({ initialEvents }) {
     const token = localStorage.getItem("token");
     const storedUser = JSON.parse(localStorage.getItem("user"));
     if (!token || !storedUser) {
+      setUser(null);
+      setEvents([]);
       navigate("/login");
     } else {
-      // Establecer el usuario
       setUser(storedUser);
-      // Cargar eventos
       fetchEvents();
     }
   }, [navigate]);
@@ -495,13 +515,17 @@ function EventCalendar({ initialEvents }) {
       let end = parseISO(preparedEvent.end);
 
       if (!isValidDate(end)) {
-        console.warn(`Invalid end date for event: ${preparedEvent.id}. Using start date + 1 day.`);
+        console.warn(
+          `Invalid end date for event: ${preparedEvent.id}. Using start date + 1 day.`
+        );
         end = new Date(start);
         end.setDate(end.getDate() + 1);
       }
 
       if (!isValidDate(start)) {
-        console.warn(`Invalid start date for event: ${preparedEvent.id}. Using current date.`);
+        console.warn(
+          `Invalid start date for event: ${preparedEvent.id}. Using current date.`
+        );
         start = new Date();
         end = new Date(start);
         end.setDate(end.getDate() + 1);
@@ -511,14 +535,14 @@ function EventCalendar({ initialEvents }) {
       let attachments = preparedEvent.attachments;
       if (!attachments) {
         attachments = [];
-      } else if (typeof attachments === 'string') {
+      } else if (typeof attachments === "string") {
         try {
           attachments = JSON.parse(attachments);
         } catch (e) {
           attachments = [];
         }
       }
-      
+
       if (!Array.isArray(attachments)) {
         attachments = [];
       }
@@ -528,7 +552,7 @@ function EventCalendar({ initialEvents }) {
         start: format(start, "yyyy-MM-dd'T'HH:mm:ss"),
         end: format(end, "yyyy-MM-dd'T'HH:mm:ss"),
         allDay: true,
-        attachments: attachments
+        attachments: attachments,
       };
     });
   }, [events]);
@@ -579,7 +603,10 @@ function EventCalendar({ initialEvents }) {
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-100">
-      <Sidebar currentUser={user?.username} onAddEvent={handleAddEvent} />
+      <Sidebar
+        currentUser={user ? user.username : ""}
+        onAddEvent={handleAddEvent}
+      />
       <div className="flex-1 flex flex-col overflow-hidden transition-all duration-300 ">
         <div className="flex-1 overflow-auto p-4 lg:p-6">
           <div className="bg-white shadow-2xl rounded-3xl h-full overflow-hidden flex flex-col">
@@ -607,7 +634,6 @@ function EventCalendar({ initialEvents }) {
                 centered
                 className="rounded-lg"
               >
-                
                 <Modal.Body className="p-6">
                   <EventList events={visibleEvents} />
                 </Modal.Body>
@@ -753,7 +779,12 @@ function EventCalendar({ initialEvents }) {
               show={true}
               delay={5000}
               autohide
-              style={{ position: 'absolute', top: 20, right: 20, minWidth: '250px' }}
+              style={{
+                position: "absolute",
+                top: 20,
+                right: 20,
+                minWidth: "250px",
+              }}
             >
               <Toast.Header>
                 <strong className="mr-auto text-danger">Error</strong>

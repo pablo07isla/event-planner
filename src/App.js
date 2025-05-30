@@ -11,15 +11,16 @@ import Register from "./components/Register";
 import EventCalendar from "./components/EventCalendar";
 import SearchEvents from "./components/SearchEvents";
 import ProtectedRoute from "./components/ProtectedRoute";
+import SessionManager from "./components/SessionManager";
 
 import "bootstrap/dist/css/bootstrap.min.css";
-import './i18n'; // Importamos i18n para inicializarlo
+import "./i18n"; // Importamos i18n para inicializarlo
 
 const App = () => {
   return (
     <Router>
+      <SessionManager />
       <div className="relative">
-        
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
