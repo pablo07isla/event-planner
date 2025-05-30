@@ -1,0 +1,686 @@
+{
+  "login.noAccount": {
+    "translation": "¿No tienes una cuenta? <0>Regístrate ahora</0>",
+    "message": "¿No tienes una cuenta? <0>Regístrate ahora</0>",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/Login.js",
+        336
+      ]
+    ]
+  },
+  "common.forgotPassword": {
+    "translation": "¿Olvidaste tu contraseña?",
+    "message": "¿Olvidaste tu contraseña?",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/Login.js",
+        247
+      ]
+    ]
+  },
+  "welcome.whyChoose": {
+    "translation": "¿Por qué elegirnos?",
+    "message": "¿Por qué elegirnos?",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/Login.js",
+        157
+      ]
+    ]
+  },
+  "login.subtitle": {
+    "translation": "Accede a tu cuenta para continuar",
+    "message": "Accede a tu cuenta para continuar",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/Login.js",
+        195
+      ]
+    ]
+  },
+  "3igsBN": {
+    "translation": "Agregar Evento",
+    "message": "Add Event",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/Sidebar.js",
+        112
+      ]
+    ]
+  },
+  "Faptqt": {
+    "translation": "Administrador",
+    "message": "Administrator",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/Sidebar.js",
+        137
+      ]
+    ]
+  },
+  "welcome.title": {
+    "translation": "Bienvenido a nuestra plataforma",
+    "message": "Bienvenido a nuestra plataforma",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/Login.js",
+        148
+      ]
+    ]
+  },
+  "8ybi+Y": {
+    "translation": "Buscar",
+    "message": "Buscar",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/ModalCompany.js",
+        301
+      ]
+    ]
+  },
+  "eBIB+r": {
+    "translation": "Buscar por Número de Identificación",
+    "message": "Buscar por Número de Identificación",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/ModalCompany.js",
+        278
+      ]
+    ]
+  },
+  "AjVXBS": {
+    "translation": "Calendario",
+    "message": "Calendar",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/Sidebar.js",
+        38
+      ]
+    ]
+  },
+  "ytcDq7": {
+    "translation": "Cancelar",
+    "message": "Cancelar",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/ModalCompany.js",
+        563
+      ]
+    ]
+  },
+  "vLrl4w": {
+    "translation": "Ciudad*",
+    "message": "Ciudad*",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/ModalCompany.js",
+        537
+      ]
+    ]
+  },
+  "common.password": {
+    "translation": "Contraseña",
+    "message": "Contraseña",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/Login.js",
+        241
+      ]
+    ]
+  },
+  "common.email": {
+    "translation": "Correo electrónico",
+    "message": "Correo electrónico",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/Login.js",
+        215
+      ]
+    ]
+  },
+  "GmRK4s": {
+    "translation": "Crear",
+    "message": "Crear",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/ModalCompany.js",
+        569
+      ]
+    ]
+  },
+  "VcCE/k": {
+    "translation": "Crear nueva Empresa/Grupo/Persona",
+    "message": "Crear nueva Empresa/Grupo/Persona",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/ModalCompany.js",
+        322
+      ]
+    ]
+  },
+  "wx6Mw/": {
+    "translation": "Dirección*",
+    "message": "Dirección*",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/ModalCompany.js",
+        512
+      ]
+    ]
+  },
+  "96Mosj": {
+    "translation": "Editar Compañía",
+    "message": "Editar Compañía",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/ModalCompany.js",
+        246
+      ]
+    ]
+  },
+  "sTp0mZ": {
+    "translation": "El email es requerido",
+    "message": "El email es requerido",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/ModalCompany.js",
+        505
+      ]
+    ]
+  },
+  "GuBM9l": {
+    "translation": "El nombre de la compañía es requerido",
+    "message": "El nombre de la compañía es requerido",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/ModalCompany.js",
+        360
+      ]
+    ]
+  },
+  "kHpI/D": {
+    "translation": "El número de identificación es requerido",
+    "message": "El número de identificación es requerido",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/ModalCompany.js",
+        414
+      ]
+    ]
+  },
+  "ITJ/ZO": {
+    "translation": "El teléfono es requerido",
+    "message": "El teléfono es requerido",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/ModalCompany.js",
+        472
+      ]
+    ]
+  },
+  "Clnkaz": {
+    "translation": "Email*",
+    "message": "Email*",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/ModalCompany.js",
+        479
+      ]
+    ]
+  },
+  "YXi8ky": {
+    "translation": "EP",
+    "message": "EP",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/Sidebar.js",
+        57
+      ]
+    ]
+  },
+  "SlfejT": {
+    "translation": "Error",
+    "message": "Error",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/ModalCompany.js",
+        265
+      ]
+    ]
+  },
+  "R1pp4J": {
+    "translation": "Event Planner",
+    "message": "Event Planner",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/Sidebar.js",
+        57
+      ]
+    ]
+  },
+  "dNDaCa": {
+    "translation": "Éxito",
+    "message": "Éxito",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/ModalCompany.js",
+        267
+      ]
+    ]
+  },
+  "welcome.features.management": {
+    "translation": "Gestión eficiente",
+    "message": "Gestión eficiente",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/Login.js",
+        162
+      ]
+    ]
+  },
+  "register.google": {
+    "translation": "Google",
+    "message": "Google",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/Register.js",
+        279
+      ]
+    ]
+  },
+  "v4QLmE": {
+    "translation": "Guardar",
+    "message": "Guardar",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/ModalCompany.js",
+        569
+      ]
+    ]
+  },
+  "welcome.features.tools": {
+    "translation": "Herramientas poderosas",
+    "message": "Herramientas poderosas",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/Login.js",
+        168
+      ]
+    ]
+  },
+  "pzMnvc": {
+    "translation": "Información",
+    "message": "Información",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/ModalCompany.js",
+        266
+      ]
+    ]
+  },
+  "hRwLnN": {
+    "translation": "Ingrese número de identificación",
+    "message": "Ingrese número de identificación",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/ModalCompany.js",
+        288
+      ]
+    ]
+  },
+  "login.signingIn": {
+    "translation": "Iniciando sesión...",
+    "message": "Iniciando sesión...",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/Login.js",
+        305
+      ]
+    ]
+  },
+  "login.title": {
+    "translation": "Iniciar sesión",
+    "message": "Iniciar sesión",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/Login.js",
+        192
+      ]
+    ]
+  },
+  "common.signIn": {
+    "translation": "Iniciar sesión",
+    "message": "Iniciar sesión",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/Login.js",
+        307
+      ]
+    ]
+  },
+  "ewszHd": {
+    "translation": "La ciudad es requerida",
+    "message": "La ciudad es requerida",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/ModalCompany.js",
+        553
+      ]
+    ]
+  },
+  "r7LnJt": {
+    "translation": "La dirección es requerida",
+    "message": "La dirección es requerida",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/ModalCompany.js",
+        530
+      ]
+    ]
+  },
+  "welcome.subtitle": {
+    "translation": "La mejor manera de gestionar tu negocio",
+    "message": "La mejor manera de gestionar tu negocio",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/Login.js",
+        151
+      ]
+    ]
+  },
+  "OFGANL": {
+    "translation": "La persona de contacto es requerida",
+    "message": "La persona de contacto es requerida",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/ModalCompany.js",
+        439
+      ]
+    ]
+  },
+  "vo2a+a": {
+    "translation": "Marketing",
+    "message": "Marketing",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/Sidebar.js",
+        40
+      ]
+    ]
+  },
+  "register.microsoft": {
+    "translation": "Microsoft",
+    "message": "Microsoft",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/Register.js",
+        282
+      ]
+    ]
+  },
+  "4jJvKu": {
+    "translation": "Nombre de la Compañía*",
+    "message": "Nombre de la Compañía*",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/ModalCompany.js",
+        342
+      ]
+    ]
+  },
+  "iDNBZe": {
+    "translation": "Notificaciones",
+    "message": "Notifications",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/Sidebar.js",
+        41
+      ]
+    ]
+  },
+  "aOyzki": {
+    "translation": "Nueva Compañía",
+    "message": "Nueva Compañía",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/ModalCompany.js",
+        248
+      ]
+    ]
+  },
+  "xzwL1X": {
+    "translation": "Número de Identificación*",
+    "message": "Número de Identificación*",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/ModalCompany.js",
+        394
+      ]
+    ]
+  },
+  "login.orContinueWith": {
+    "translation": "O continúa con",
+    "message": "O continúa con",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/Login.js",
+        320
+      ]
+    ]
+  },
+  "qNVDKY": {
+    "translation": "Persona de Contacto*",
+    "message": "Persona de Contacto*",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/ModalCompany.js",
+        421
+      ]
+    ]
+  },
+  "zhWvjg": {
+    "translation": "Por favor ingrese solo números y símbolos válidos",
+    "message": "Por favor ingrese solo números y símbolos válidos",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/ModalCompany.js",
+        109
+      ]
+    ]
+  },
+  "GMVXFD": {
+    "translation": "Por favor ingrese un email válido",
+    "message": "Por favor ingrese un email válido",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/ModalCompany.js",
+        105
+      ]
+    ]
+  },
+  "common.rememberMe": {
+    "translation": "Recuérdame",
+    "message": "Recuérdame",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/Login.js",
+        294
+      ]
+    ]
+  },
+  "A1taO8": {
+    "translation": "Buscar",
+    "message": "Search",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/Sidebar.js",
+        39
+      ]
+    ]
+  },
+  "welcome.features.tracking": {
+    "translation": "Seguimiento detallado",
+    "message": "Seguimiento detallado",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/Login.js",
+        174
+      ]
+    ]
+  },
+  "Tz0i8g": {
+    "translation": "Configuración",
+    "message": "Settings",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/Sidebar.js",
+        42
+      ]
+    ]
+  },
+  "bHYIks": {
+    "translation": "Cerrar sesión",
+    "message": "Sign Out",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/Sidebar.js",
+        154
+      ]
+    ]
+  },
+  "dYe7w0": {
+    "translation": "Teléfono*",
+    "message": "Teléfono*",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/ModalCompany.js",
+        446
+      ]
+    ]
+  },
+  "/+mLc0": {
+    "translation": "Tipo de Identificación*",
+    "message": "Tipo de Identificación*",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/ModalCompany.js",
+        367
+      ]
+    ]
+  }
+}

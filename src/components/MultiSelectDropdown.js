@@ -1,7 +1,6 @@
-import React, { useState, useRef, useEffect } from "react";
-import PropTypes from "prop-types";
 import { ChevronDown, X, Check } from "lucide-react";
-import { useTranslation } from 'react-i18next';
+import PropTypes from "prop-types";
+import React, { useState, useRef, useEffect } from "react";
 
 function MultiSelectDropdown({
   options,
@@ -9,7 +8,6 @@ function MultiSelectDropdown({
   onChange,
   placeholder,
 }) {
-  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -61,13 +59,15 @@ function MultiSelectDropdown({
                     onClick={(e) => handleRemoveOption(e, value)}
                     className="flex-shrink-0 ml-1 h-4 w-4 rounded-full inline-flex items-center justify-center text-indigo-400 hover:bg-indigo-200 hover:text-indigo-500 focus:outline-none focus:bg-indigo-500 focus:text-white"
                   >
-                    <span className="sr-only">{t('multiSelect.removeOption')}</span>
+                    <span className="sr-only">Remove option</span>
                     <X size={12} />
                   </button>
                 </span>
               ))
             ) : (
-              <span className="text-gray-400">{placeholder || t('multiSelect.placeholder')}</span>
+              <span className="text-gray-400">
+                {placeholder || "Select an option"}
+              </span>
             )}
           </div>
           <ChevronDown className="h-5 w-5 text-gray-400" />

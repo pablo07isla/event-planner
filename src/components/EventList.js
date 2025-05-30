@@ -1,7 +1,7 @@
-import React, { useState, useRef, useEffect, useMemo } from "react";
-import PropTypes from "prop-types";
-import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
+import PropTypes from "prop-types";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import {
   FaMapMarkerAlt,
   FaUsers,
@@ -9,7 +9,7 @@ import {
   FaMoneyBillWave,
   FaUtensils,
   FaFilePdf,
-  FaCalendarAlt
+  FaCalendarAlt,
 } from "react-icons/fa";
 
 // Constants
@@ -30,7 +30,7 @@ const formatCurrency = (value) => {
   if (value === null || value === undefined) return "0";
   const numericValue = Number(value);
   if (isNaN(numericValue)) return "0";
-  
+
   return new Intl.NumberFormat("es-CO", {
     style: "currency",
     currency: "COP",
@@ -42,78 +42,88 @@ const formatCurrency = (value) => {
 // Sub-components
 const EventCard = ({ event }) => (
   <div className="bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg">
-      {/* Encabezado */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-4 flex justify-between items-center">
+    {/* Encabezado */}
+    <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-4 flex justify-between items-center">
       <h3 className="text-xl font-bold w-full">
-          {event.extendedProps?.companyName || "Evento sin nombre"}
-        </h3>
-        <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-semibold ml-2 flex-shrink-0">
-          {event.extendedProps?.peopleCount || "N/A"} pax
-        </span>
-      </div>
+        {event.extendedProps?.companyName || "Evento sin nombre"}
+      </h3>
+      <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-semibold ml-2 flex-shrink-0">
+        {event.extendedProps?.peopleCount || "N/A"} pax
+      </span>
+    </div>
 
-      {/* Cuerpo del Card */}
-      <div className="mt-3 p-3">
-        <div className="grid md:grid-cols-2 gap-4">
-          {/* Columna Izquierda */}
-          <div>
-            <DetailItem 
-              Icon={FaMapMarkerAlt} 
-              label="Lugar" 
-              value={event.extendedProps?.eventLocation || "No especificado"} 
-              iconColor="text-blue-500"
-            />
-            <DetailItem 
-              Icon={FaUsers} 
-              label="Responsable" 
-              value={event.extendedProps?.contactName || "N/A"} 
-              iconColor="text-blue-500"
-            />
-            <DetailItem 
-              Icon={FaPhoneAlt} 
-              label="Teléfonos" 
-              value={event.extendedProps?.contactPhone || "N/A"} 
-              iconColor="text-blue-500"
-            />
-          </div>
-
-          {/* Columna Derecha */}
-          <div>
-            <DetailItem 
-              Icon={FaMoneyBillWave} 
-              label="Consignación" 
-              value={formatCurrency(event.extendedProps.deposit)} 
-              iconColor="text-green-500"
-            />
-            <DetailItem 
-              Icon={FaMoneyBillWave} 
-              label="Saldo Pendiente" 
-              value={formatCurrency(event.extendedProps.pendingAmount)} 
-              iconColor="text-red-500"
-            />
-            <DetailItem 
-              Icon={FaUtensils} 
-              label="Alimentación" 
-              value={(event.extendedProps?.foodPackage || []).join(", ") || "No especificado"} 
-              iconColor="text-blue-500"
-            />
-          </div>
+    {/* Cuerpo del Card */}
+    <div className="mt-3 p-3">
+      <div className="grid md:grid-cols-2 gap-4">
+        {/* Columna Izquierda */}
+        <div>
+          <DetailItem
+            Icon={FaMapMarkerAlt}
+            label="Lugar"
+            value={event.extendedProps?.eventLocation || "No especificado"}
+            iconColor="text-blue-500"
+          />
+          <DetailItem
+            Icon={FaUsers}
+            label="Responsable"
+            value={event.extendedProps?.contactName || "N/A"}
+            iconColor="text-blue-500"
+          />
+          <DetailItem
+            Icon={FaPhoneAlt}
+            label="Teléfonos"
+            value={event.extendedProps?.contactPhone || "N/A"}
+            iconColor="text-blue-500"
+          />
         </div>
 
-        {/* Sección de Descripción */}
-        <div className="mt-2 pt-4 border-t border-gray-200">
-          <h4 className="text-lg font-semibold text-gray-700 mb-2">Descripción</h4>
-          <div className="text-gray-600">
-            {event.extendedProps?.eventDescription 
-              ? event.extendedProps.eventDescription.split('\n').map((line, index) => (
-                <p key={index} className="mb-1">{line}</p>
-              ))
-              : <p className="italic">No hay descripción disponible</p>
+        {/* Columna Derecha */}
+        <div>
+          <DetailItem
+            Icon={FaMoneyBillWave}
+            label="Consignación"
+            value={formatCurrency(event.extendedProps.deposit)}
+            iconColor="text-green-500"
+          />
+          <DetailItem
+            Icon={FaMoneyBillWave}
+            label="Saldo Pendiente"
+            value={formatCurrency(event.extendedProps.pendingAmount)}
+            iconColor="text-red-500"
+          />
+          <DetailItem
+            Icon={FaUtensils}
+            label="Alimentación"
+            value={
+              (event.extendedProps?.foodPackage || []).join(", ") ||
+              "No especificado"
             }
-          </div>
+            iconColor="text-blue-500"
+          />
+        </div>
+      </div>
+
+      {/* Sección de Descripción */}
+      <div className="mt-2 pt-4 border-t border-gray-200">
+        <h4 className="text-lg font-semibold text-gray-700 mb-2">
+          Descripción
+        </h4>
+        <div className="text-gray-600">
+          {event.extendedProps?.eventDescription ? (
+            event.extendedProps.eventDescription
+              .split("\n")
+              .map((line, index) => (
+                <p key={index} className="mb-1">
+                  {line}
+                </p>
+              ))
+          ) : (
+            <p className="italic">No hay descripción disponible</p>
+          )}
         </div>
       </div>
     </div>
+  </div>
 );
 
 // Componente auxiliar para mostrar detalles con ícono
@@ -128,7 +138,7 @@ const DetailItem = ({ Icon, label, value, iconColor = "text-gray-500" }) => (
 );
 
 EventCard.propTypes = {
-  event: PropTypes.object.isRequired
+  event: PropTypes.object.isRequired,
 };
 
 // Main component
@@ -138,7 +148,7 @@ const EventList = ({ events }) => {
   const eventListRef = useRef();
   const [pdfState, setPdfState] = useState({
     isGenerating: false,
-    error: null
+    error: null,
   });
 
   // PDF Generation with improved error handling
@@ -148,74 +158,76 @@ const EventList = ({ events }) => {
       const pdf = new jsPDF();
       let currentPDFPage = 1;
       const originalPage = currentPage;
-      
+
       for (let page = 1; page <= totalPages; page++) {
         setCurrentPage(page);
         // Wait for React to update the DOM
-        await new Promise(resolve => setTimeout(resolve, 300));
-  
+        await new Promise((resolve) => setTimeout(resolve, 300));
+
         const input = eventListRef.current;
-        
+
         // Create a clean copy for capturing
-        const tempContainer = document.createElement('div');
-        tempContainer.style.position = 'absolute';
-        tempContainer.style.left = '-9999px';
-        tempContainer.style.width = '800px'; // Fixed width for PDF
-        tempContainer.style.background = 'white';
+        const tempContainer = document.createElement("div");
+        tempContainer.style.position = "absolute";
+        tempContainer.style.left = "-9999px";
+        tempContainer.style.width = "800px"; // Fixed width for PDF
+        tempContainer.style.background = "white";
         tempContainer.appendChild(input.cloneNode(true));
         document.body.appendChild(tempContainer);
-  
+
         try {
           const canvas = await html2canvas(tempContainer.firstChild, {
             scale: 2,
             useCORS: true,
             allowTaint: true,
-            backgroundColor: '#FFFFFF',
+            backgroundColor: "#FFFFFF",
             logging: false,
           });
-          
+
           const imgData = canvas.toDataURL("image/png");
-          
+
           if (currentPDFPage > 1) pdf.addPage();
           pdf.addImage(imgData, "PNG", 10, 10, 190, 0);
-          
+
           currentPDFPage++;
         } finally {
           // Always clean up the DOM
           document.body.removeChild(tempContainer);
         }
       }
-  
+
       // Restore the original page
       setCurrentPage(originalPage);
       pdf.save("reporte_eventos.pdf");
     } catch (error) {
-      console.error('Error generando PDF:', error);
+      console.error("Error generando PDF:", error);
       setPdfState({
         isGenerating: false,
-        error: "Error al generar el PDF. Por favor, intenta nuevamente."
+        error: "Error al generar el PDF. Por favor, intenta nuevamente.",
       });
       return;
     }
-    
+
     setPdfState({ isGenerating: false, error: null });
   };
 
   // Event processing logic
   const processEvents = useMemo(() => {
     // Sort all events by date
-    const sortedEvents = [...events].sort((a, b) => new Date(a.start) - new Date(b.start));
-    
+    const sortedEvents = [...events].sort(
+      (a, b) => new Date(a.start) - new Date(b.start)
+    );
+
     // Create paginated array
     const pages = [];
     for (let i = 0; i < sortedEvents.length; i += EVENTS_PER_PAGE) {
       pages.push(sortedEvents.slice(i, i + EVENTS_PER_PAGE));
     }
-    
+
     // Group events for the current page by date
     const groupEventsByDate = (eventsToGroup) => {
       const grouped = {};
-      
+
       eventsToGroup.forEach((event) => {
         const dateString = new Date(event.start).toISOString().split("T")[0];
         if (!grouped[dateString]) {
@@ -223,17 +235,17 @@ const EventList = ({ events }) => {
         }
         grouped[dateString].push(event);
       });
-      
+
       return grouped;
     };
-    
+
     return {
       pages,
       total: pages.length,
       getGroupedEvents: (pageIdx) => {
         const pageEvents = pages[pageIdx] || [];
         return groupEventsByDate(pageEvents);
-      }
+      },
     };
   }, [events]);
 
@@ -249,35 +261,40 @@ const EventList = ({ events }) => {
 
   // Get sorted dates for current page
   const sortedDates = useMemo(() => {
-    return Object.keys(currentGroupedEvents).sort((a, b) => new Date(a) - new Date(b));
+    return Object.keys(currentGroupedEvents).sort(
+      (a, b) => new Date(a) - new Date(b)
+    );
   }, [currentGroupedEvents]);
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 py-6">
       {/* Manejo de Errores */}
       {pdfState.error && (
-        <div 
-          className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" 
+        <div
+          className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
           role="alert"
         >
           <span className="block sm:inline">{pdfState.error}</span>
-          <span 
+          <span
             className="absolute top-0 bottom-0 right-0 px-4 py-3"
-            onClick={() => setPdfState(prev => ({ ...prev, error: null }))}
+            onClick={() => setPdfState((prev) => ({ ...prev, error: null }))}
           >
-            <svg className="fill-current h-6 w-6 text-red-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+            <svg
+              className="fill-current h-6 w-6 text-red-500"
+              role="button"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+            >
               <title>Close</title>
-              <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/>
+              <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z" />
             </svg>
           </span>
         </div>
       )}
-      
+
       {/* Encabezado y Botón de PDF */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">
-          Lista de Eventos
-        </h1>
+        <h1 className="text-2xl font-bold text-gray-800">Lista de Eventos</h1>
         <button
           onClick={generatePDF}
           disabled={pdfState.isGenerating}
@@ -285,9 +302,25 @@ const EventList = ({ events }) => {
         >
           {pdfState.isGenerating ? (
             <>
-              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              <svg
+                className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
               </svg>
               Generando PDF...
             </>
@@ -304,12 +337,13 @@ const EventList = ({ events }) => {
       <div ref={eventListRef} className="space-y-6">
         {sortedDates.length > 0 ? (
           sortedDates.map((date) => (
-            <div key={date} className="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div
+              key={date}
+              className="bg-white rounded-xl shadow-lg overflow-hidden"
+            >
               <div className="bg-gray-100 px-4 py-3 border-b border-gray-200 flex items-center">
                 <FaCalendarAlt className="mr-4 text-xl" />
-                <h2 className="text-xl font-semibold">
-                  {formatDate(date)}
-                </h2>
+                <h2 className="text-xl font-semibold">{formatDate(date)}</h2>
               </div>
               <div className="p-4 space-y-4">
                 {currentGroupedEvents[date].map((event) => (
@@ -319,7 +353,10 @@ const EventList = ({ events }) => {
             </div>
           ))
         ) : (
-          <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded relative" role="alert">
+          <div
+            className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded relative"
+            role="alert"
+          >
             No hay eventos para mostrar en esta página.
           </div>
         )}
@@ -347,16 +384,18 @@ const EventList = ({ events }) => {
               key={i + 1}
               onClick={() => setCurrentPage(i + 1)}
               className={`px-3 py-2 rounded-lg ${
-                i + 1 === currentPage 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-white text-gray-700 border hover:bg-gray-100'
+                i + 1 === currentPage
+                  ? "bg-blue-600 text-white"
+                  : "bg-white text-gray-700 border hover:bg-gray-100"
               }`}
             >
               {i + 1}
             </button>
           ))}
           <button
-            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+            }
             disabled={currentPage === totalPages}
             className="px-3 py-2 bg-white text-gray-700 border rounded-lg disabled:opacity-50 hover:bg-gray-100"
           >

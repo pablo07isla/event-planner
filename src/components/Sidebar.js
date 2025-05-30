@@ -1,4 +1,5 @@
 import { supabase } from "../supabaseClient";
+import { Trans } from "@lingui/macro";
 import * as Avatar from "@radix-ui/react-avatar";
 import * as Separator from "@radix-ui/react-separator";
 import {
@@ -15,10 +16,8 @@ import {
 import PropTypes from "prop-types";
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
-import { useTranslation } from "react-i18next";
 
 const Sidebar = ({ currentUser, onAddEvent }) => {
-  const { t } = useTranslation();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const handleLogout = async () => {
@@ -36,11 +35,11 @@ const Sidebar = ({ currentUser, onAddEvent }) => {
   };
 
   const navItems = [
-    { path: "/", icon: Calendar, label: t("sidebar.calendar") },
-    { path: "/search", icon: Search, label: t("sidebar.search") },
-    { path: "/marketing", icon: Megaphone, label: t("sidebar.marketing") },
-    { path: "/notifications", icon: Bell, label: t("sidebar.notifications") },
-    { path: "/settings", icon: Settings, label: t("sidebar.settings") },
+    { path: "/", icon: Calendar, label: <Trans>Calendar</Trans> },
+    { path: "/search", icon: Search, label: <Trans>Search</Trans> },
+    { path: "/marketing", icon: Megaphone, label: <Trans>Marketing</Trans> },
+    { path: "/notifications", icon: Bell, label: <Trans>Notifications</Trans> },
+    { path: "/settings", icon: Settings, label: <Trans>Settings</Trans> },
   ];
 
   return (
@@ -55,7 +54,7 @@ const Sidebar = ({ currentUser, onAddEvent }) => {
             isCollapsed ? "text-xl" : "text-3xl"
           }`}
         >
-          {isCollapsed ? "EP" : t("sidebar.eventPlanner")}
+          {isCollapsed ? <Trans>EP</Trans> : <Trans>Event Planner</Trans>}
         </h2>
 
         <button
@@ -108,7 +107,11 @@ const Sidebar = ({ currentUser, onAddEvent }) => {
           }`}
         >
           <PlusCircle className={`${isCollapsed ? "h-6 w-6" : "h-5 w-5"}`} />
-          {!isCollapsed && <span>{t("sidebar.addEvent")}</span>}
+          {!isCollapsed && (
+            <span>
+              <Trans>Add Event</Trans>
+            </span>
+          )}
         </button>
 
         <Separator.Root className="bg-indigo-400/30 h-px" />
@@ -131,7 +134,7 @@ const Sidebar = ({ currentUser, onAddEvent }) => {
             <div>
               <p className="font-medium text-indigo-100">{currentUser}</p>
               <p className="text-xs text-indigo-300">
-                {t("sidebar.administrator")}
+                <Trans>Administrator</Trans>
               </p>
             </div>
           )}
@@ -146,7 +149,11 @@ const Sidebar = ({ currentUser, onAddEvent }) => {
           focus:ring-2 focus:ring-indigo-300 focus:ring-opacity-50`}
         >
           <LogOut className="h-4 w-4" />
-          {!isCollapsed && <span>{t("sidebar.signOut")}</span>}
+          {!isCollapsed && (
+            <span>
+              <Trans>Sign Out</Trans>
+            </span>
+          )}
         </button>
       </div>
     </div>

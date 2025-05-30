@@ -18,12 +18,12 @@ import Sidebar from "./Sidebar";
 import bootstrapPlugin from "@fullcalendar/bootstrap";
 import { Modal, Button, Toast } from "react-bootstrap";
 import "./EventCalendar.css";
+import { getEventColor, applyEventColor } from "../utils/eventHelpers";
 import EventList from "./EventList";
 import { parseISO, format } from "date-fns";
 import { FaPrint } from "react-icons/fa";
 // Asegúrate de que la ruta sea correcta
 import { useNavigate } from "react-router-dom";
-import { getEventColor, applyEventColor } from "../utils/eventHelpers";
 
 function EventCalendar({ initialEvents }) {
   const [events, setEvents] = useState(initialEvents);

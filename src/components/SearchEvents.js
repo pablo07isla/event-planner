@@ -1,21 +1,14 @@
-import React, { useState, useEffect } from "react";
+import { cn } from "../lib/utils";
 import { supabase } from "../supabaseClient";
-import { format, parseISO } from "date-fns";
-import { es } from "date-fns/locale"; // Importamos la localización en español
-import { Calendar, Search, Building, Eye } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import ModalEvent from "./Modal";
 import Sidebar from "./Sidebar";
-
+import { Badge } from "./ui/badge";
 // Importaciones de shadcn/ui
 import { Button } from "./ui/button";
+import { Calendar as CalendarUI } from "./ui/calendar";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Input } from "./ui/input";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "./ui/card";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import {
   Table,
   TableBody,
@@ -24,10 +17,12 @@ import {
   TableHeader,
   TableRow,
 } from "./ui/table";
-import { Badge } from "./ui/badge";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import { cn } from "../lib/utils";
-import { Calendar as CalendarUI } from "./ui/calendar";
+import { format, parseISO } from "date-fns";
+import { es } from "date-fns/locale";
+// Importamos la localización en español
+import { Calendar, Search, Building, Eye } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const SearchEvents = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -53,7 +48,7 @@ const SearchEvents = () => {
           .from("CompanyGroups")
           .select("id, identificationNumber, companyName")
           .order("companyName");
-        
+
         if (error) throw error;
         // Los datos de las empresas no se utilizan actualmente
       } catch (err) {
@@ -86,12 +81,12 @@ const SearchEvents = () => {
           .from("CompanyGroups")
           .select("id")
           .ilike("identificationNumber", `%${companyId}%`);
-        
+
         if (companyError) throw companyError;
-        
+
         if (matchingCompanies && matchingCompanies.length > 0) {
           // Obtener los IDs de las empresas que coinciden
-          const companyIds = matchingCompanies.map(company => company.id);
+          const companyIds = matchingCompanies.map((company) => company.id);
           // Filtrar eventos por esos IDs de empresa
           query = query.in("companyGroupId", companyIds);
         } else {
@@ -110,77 +105,87 @@ const SearchEvents = () => {
       // Filtrar por fecha única (solo eventos en esa fecha)
       if (singleDate && searchMode === "singleDate") {
         // Formatear correctamente la fecha
-        const dateOnly = format(singleDate, 'yyyy-MM-dd');
-        
+        const dateOnly = format(singleDate, "yyyy-MM-dd");
+
         // Crear fechas en UTC para evitar problemas de zona horaria
         const startOfDay = new Date(`${dateOnly}T00:00:00.000Z`);
         const endOfDay = new Date(`${dateOnly}T23:59:59.999Z`);
-        
+
         console.log("Fecha de búsqueda:", dateOnly);
         console.log("Inicio del día (UTC):", startOfDay.toISOString());
         console.log("Fin del día (UTC):", endOfDay.toISOString());
-        
+
         // Usar formato ISO8601 con offset local para la búsqueda
-        query = query.gte("start", startOfDay.toISOString())
-                     .lt("start", endOfDay.toISOString());
+        query = query
+          .gte("start", startOfDay.toISOString())
+          .lt("start", endOfDay.toISOString());
       }
-      
+
       // Filtrar por rango de fechas (solo considerando fecha de inicio)
       if (startDate && endDate && searchMode === "dateRange") {
         // Formatear correctamente las fechas
-        const startDateOnly = format(startDate, 'yyyy-MM-dd');
-        const endDateOnly = format(endDate, 'yyyy-MM-dd');
-        
+        const startDateOnly = format(startDate, "yyyy-MM-dd");
+        const endDateOnly = format(endDate, "yyyy-MM-dd");
+
         // Crear fechas en UTC para evitar problemas de zona horaria
         const startOfStartDate = new Date(`${startDateOnly}T00:00:00.000Z`);
         const endOfEndDate = new Date(`${endDateOnly}T23:59:59.999Z`);
-        
+
         console.log("Rango de fechas:", startDateOnly, "a", endDateOnly);
         console.log("Inicio del rango (UTC):", startOfStartDate.toISOString());
         console.log("Fin del rango (UTC):", endOfEndDate.toISOString());
-        
-        query = query.gte("start", startOfStartDate.toISOString())
-                     .lt("start", endOfEndDate.toISOString());
+
+        query = query
+          .gte("start", startOfStartDate.toISOString())
+          .lt("start", endOfEndDate.toISOString());
       }
 
       const { data, error } = await query;
 
       if (error) throw error;
-      
+
       // Si necesitamos información de la empresa, hacemos una segunda consulta
       if (data && data.length > 0) {
         // Obtener los IDs de empresa únicos
-        const companyGroupIds = [...new Set(data.filter(event => event.companyGroupId).map(event => event.companyGroupId))];
-        
+        const companyGroupIds = [
+          ...new Set(
+            data
+              .filter((event) => event.companyGroupId)
+              .map((event) => event.companyGroupId)
+          ),
+        ];
+
         if (companyGroupIds.length > 0) {
           // Obtener información de las empresas
           const { data: companyData, error: companyError } = await supabase
             .from("CompanyGroups")
             .select("id, companyName, identificationNumber")
             .in("id", companyGroupIds);
-          
+
           if (companyError) throw companyError;
-          
+
           // Crear un mapa para acceso rápido
           const companyMap = {};
-          companyData.forEach(company => {
+          companyData.forEach((company) => {
             companyMap[company.id] = company;
           });
-          
+
           // Enriquecer los resultados con información de la empresa
-          data.forEach(event => {
+          data.forEach((event) => {
             if (event.companyGroupId && companyMap[event.companyGroupId]) {
               event.companyInfo = companyMap[event.companyGroupId];
             }
           });
         }
       }
-      
+
       // Ordenar los resultados por fecha de inicio (de menor a mayor)
-      const sortedData = data ? [...data].sort((a, b) => {
-        return new Date(a.start) - new Date(b.start);
-      }) : [];
-      
+      const sortedData = data
+        ? [...data].sort((a, b) => {
+            return new Date(a.start) - new Date(b.start);
+          })
+        : [];
+
       setSearchResults(sortedData);
       console.log("Resultados de búsqueda:", sortedData);
     } catch (err) {
@@ -196,7 +201,7 @@ const SearchEvents = () => {
     let attachments = [];
     try {
       if (event.attachments) {
-        if (typeof event.attachments === 'string') {
+        if (typeof event.attachments === "string") {
           attachments = JSON.parse(event.attachments);
         } else if (Array.isArray(event.attachments)) {
           attachments = event.attachments;
@@ -233,7 +238,7 @@ const SearchEvents = () => {
       lastModifiedBy: event.lastModifiedBy || "",
       companyGroupId: event.companyGroupId || null,
     });
-    
+
     setModalOpen(true);
   };
 
@@ -242,8 +247,12 @@ const SearchEvents = () => {
       const currentUser = JSON.parse(localStorage.getItem("user"));
 
       // Convertir foodPackage a un array de PostgreSQL
-      const foodPackageArray = formData.get("foodPackage") ? formData.get("foodPackage").split(',') : [];
-      const foodPackagePostgres = `{${foodPackageArray.map(item => `"${item}"`).join(',')}}`;
+      const foodPackageArray = formData.get("foodPackage")
+        ? formData.get("foodPackage").split(",")
+        : [];
+      const foodPackagePostgres = `{${foodPackageArray
+        .map((item) => `"${item}"`)
+        .join(",")}}`;
 
       // Parsear los archivos adjuntos y asegurarse de que sea un array válido
       let attachments = [];
@@ -251,10 +260,10 @@ const SearchEvents = () => {
         const attachmentsStr = formData.get("attachments");
         if (attachmentsStr) {
           attachments = JSON.parse(attachmentsStr);
-          attachments = attachments.map(attachment => ({
+          attachments = attachments.map((attachment) => ({
             name: attachment.name,
             url: attachment.url,
-            path: attachment.path
+            path: attachment.path,
           }));
         }
       } catch (e) {
@@ -278,13 +287,17 @@ const SearchEvents = () => {
         email: formData.get("email"),
         eventLocation: formData.get("eventLocation"),
         eventDescription: formData.get("eventDescription"),
-        deposit: deposit ? parseFloat(deposit.replace(/[^\d.-]/g, '')) || 0 : 0,
-        pendingAmount: pendingAmount ? parseFloat(pendingAmount.replace(/[^\d.-]/g, '')) || 0 : 0,
+        deposit: deposit ? parseFloat(deposit.replace(/[^\d.-]/g, "")) || 0 : 0,
+        pendingAmount: pendingAmount
+          ? parseFloat(pendingAmount.replace(/[^\d.-]/g, "")) || 0
+          : 0,
         eventStatus: formData.get("eventStatus"),
         lastModified: new Date().toISOString(),
-        lastModifiedBy: currentUser ? currentUser.username : "Usuario desconocido",
+        lastModifiedBy: currentUser
+          ? currentUser.username
+          : "Usuario desconocido",
         companyGroupId: formData.get("companyGroupId"),
-        attachments: attachments
+        attachments: attachments,
       };
 
       console.log("Saving event with data:", eventData);
@@ -313,7 +326,7 @@ const SearchEvents = () => {
 
       // Después de guardar, actualizar la lista de resultados
       await handleSearch();
-      
+
       // Cerrar el modal
       setModalOpen(false);
     } catch (err) {
@@ -326,12 +339,12 @@ const SearchEvents = () => {
     try {
       if (currentEvent && currentEvent.id) {
         await supabase.from("events").delete().eq("id", currentEvent.id);
-        
+
         // Actualizar la lista de resultados
-        setSearchResults(prevResults => 
-          prevResults.filter(event => event.id !== currentEvent.id)
+        setSearchResults((prevResults) =>
+          prevResults.filter((event) => event.id !== currentEvent.id)
         );
-        
+
         // Cerrar el modal
         setModalOpen(false);
       }
@@ -357,30 +370,29 @@ const SearchEvents = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'Pendiente':
+      case "Pendiente":
         return {
-          bg: 'bg-amber-200',
-          text: 'text-amber-800',
-          dot: 'bg-amber-500'
+          bg: "bg-amber-200",
+          text: "text-amber-800",
+          dot: "bg-amber-500",
         };
-      case 'Con Abono':
+      case "Con Abono":
         return {
-          bg: 'bg-emerald-200',
-          text: 'text-emerald-800',
-          dot: 'bg-emerald-500'
-          
+          bg: "bg-emerald-200",
+          text: "text-emerald-800",
+          dot: "bg-emerald-500",
         };
-      case 'Pago Total':
+      case "Pago Total":
         return {
-          bg: 'bg-blue-200',
-          text: 'text-blue-800',
-          dot: 'bg-blue-500'
+          bg: "bg-blue-200",
+          text: "text-blue-800",
+          dot: "bg-blue-500",
         };
       default:
         return {
-          bg: 'bg-red-100',
-          text: 'text-red-800',
-          dot: 'bg-red-500'
+          bg: "bg-red-100",
+          text: "text-red-800",
+          dot: "bg-red-500",
         };
     }
   };
@@ -391,11 +403,15 @@ const SearchEvents = () => {
       <div className="sticky top-0 h-screen">
         <Sidebar />
       </div>
-      
+
       <div className="flex-1 p-8 overflow-auto">
-        <h1 className="text-4xl font-bold tracking-tight mb-2">Búsqueda de Eventos</h1>
-        <p className="text-muted-foreground mb-8">Encuentra y gestiona eventos por empresa o fecha</p>
-        
+        <h1 className="text-4xl font-bold tracking-tight mb-2">
+          Búsqueda de Eventos
+        </h1>
+        <p className="text-muted-foreground mb-8">
+          Encuentra y gestiona eventos por empresa o fecha
+        </p>
+
         <Card>
           <CardHeader>
             <CardTitle>Filtros de Búsqueda</CardTitle>
@@ -450,10 +466,9 @@ const SearchEvents = () => {
                         placeholder="Buscar por nombre..."
                         className="pl-10"
                       />
-                      
                     </div>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <label className="text-sm font-medium">
                       N° Identificación de Empresa
@@ -466,7 +481,6 @@ const SearchEvents = () => {
                         placeholder="Buscar por N° identificación..."
                         className="pl-10"
                       />
-                     
                     </div>
                   </div>
                 </div>
@@ -488,7 +502,9 @@ const SearchEvents = () => {
                           )}
                         >
                           <Calendar className="mr-2 h-4 w-4" />
-                          {singleDate ? formatButtonDate(singleDate) : "Seleccionar fecha"}
+                          {singleDate
+                            ? formatButtonDate(singleDate)
+                            : "Seleccionar fecha"}
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0">
@@ -508,9 +524,7 @@ const SearchEvents = () => {
               {searchMode === "dateRange" && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">
-                      Desde
-                    </label>
+                    <label className="text-sm font-medium">Desde</label>
                     <div>
                       <Popover>
                         <PopoverTrigger asChild>
@@ -522,7 +536,9 @@ const SearchEvents = () => {
                             )}
                           >
                             <Calendar className="mr-2 h-4 w-4" />
-                            {startDate ? formatButtonDate(startDate) : "Fecha inicio"}
+                            {startDate
+                              ? formatButtonDate(startDate)
+                              : "Fecha inicio"}
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0">
@@ -531,18 +547,16 @@ const SearchEvents = () => {
                             selected={startDate}
                             onSelect={setStartDate}
                             initialFocus
-                            disabled={(date) => (endDate && date > endDate)}
+                            disabled={(date) => endDate && date > endDate}
                             locale={es} // Configuramos locale español
                           />
                         </PopoverContent>
                       </Popover>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">
-                      Hasta
-                    </label>
+                    <label className="text-sm font-medium">Hasta</label>
                     <div>
                       <Popover>
                         <PopoverTrigger asChild>
@@ -563,7 +577,7 @@ const SearchEvents = () => {
                             selected={endDate}
                             onSelect={setEndDate}
                             initialFocus
-                            disabled={(date) => (startDate && date < startDate)}
+                            disabled={(date) => startDate && date < startDate}
                             locale={es} // Configuramos locale español
                           />
                         </PopoverContent>
@@ -622,13 +636,17 @@ const SearchEvents = () => {
                       </TableCell>
                       <TableCell>
                         <div>{event.contactName}</div>
-                        <div className="text-sm text-muted-foreground">{event.contactPhone}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {event.contactPhone}
+                        </div>
                       </TableCell>
                       <TableCell>{formatDate(event.start)}</TableCell>
                       <TableCell>{event.email}</TableCell>
                       <TableCell>
                         <Badge
-                          className={`${getStatusColor(event.eventStatus).bg} ${getStatusColor(event.eventStatus).text}`}
+                          className={`${getStatusColor(event.eventStatus).bg} ${
+                            getStatusColor(event.eventStatus).text
+                          }`}
                         >
                           {event.eventStatus}
                         </Badge>
@@ -650,20 +668,29 @@ const SearchEvents = () => {
               </Table>
             </CardContent>
           </Card>
-        ) : !loading && (
-          <Card className="mt-8">
-            <CardContent className="text-center py-6">
-              <div className="rounded-full bg-muted w-12 h-12 flex items-center justify-center mx-auto mb-4">
-                <Search className="h-6 w-6 text-muted-foreground" />
-              </div>
-              <h3 className="text-lg font-medium mb-2">No hay resultados que mostrar</h3>
-              <p className="text-muted-foreground">
-                {searchResults.length === 0 && (singleDate || startDate || endDate || searchTerm || companyId)
-                  ? "No se encontraron eventos que coincidan con tu búsqueda. Intenta con otros criterios."
-                  : "Utiliza los filtros para buscar eventos por empresa o fecha."}
-              </p>
-            </CardContent>
-          </Card>
+        ) : (
+          !loading && (
+            <Card className="mt-8">
+              <CardContent className="text-center py-6">
+                <div className="rounded-full bg-muted w-12 h-12 flex items-center justify-center mx-auto mb-4">
+                  <Search className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <h3 className="text-lg font-medium mb-2">
+                  No hay resultados que mostrar
+                </h3>
+                <p className="text-muted-foreground">
+                  {searchResults.length === 0 &&
+                  (singleDate ||
+                    startDate ||
+                    endDate ||
+                    searchTerm ||
+                    companyId)
+                    ? "No se encontraron eventos que coincidan con tu búsqueda. Intenta con otros criterios."
+                    : "Utiliza los filtros para buscar eventos por empresa o fecha."}
+                </p>
+              </CardContent>
+            </Card>
+          )
         )}
 
         <ModalEvent
