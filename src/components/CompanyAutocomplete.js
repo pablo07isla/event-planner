@@ -145,13 +145,16 @@ const CompanyAutocomplete = ({ value, onChange, placeholder }) => {
           <CompanySheetForm
             open={showSheet}
             onClose={() => setShowSheet(false)}
+            initialName={query}
             onSuccess={(empresa) => {
               setShowSheet(false);
+              setShowDropdown(false);
               if (empresa && empresa.companyName) {
                 onChange({
                   companyName: empresa.companyName,
                   companyGroupId: empresa.id,
                 });
+                setQuery(empresa.companyName);
               }
             }}
           />

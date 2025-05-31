@@ -11,7 +11,7 @@ import {
 } from "./ui/select";
 import { Separator } from "./ui/separator";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "./ui/sheet";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 const initialForm = {
   companyName: "",
@@ -24,8 +24,16 @@ const initialForm = {
   city: "",
 };
 
-export default function CompanySheetForm({ open, onClose, onSuccess }) {
-  const [form, setForm] = useState(initialForm);
+export default function CompanySheetForm({
+  open,
+  onClose,
+  onSuccess,
+  initialName,
+}) {
+  const [form, setForm] = useState({
+    ...initialForm,
+    companyName: initialName || "",
+  });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
@@ -78,6 +86,13 @@ export default function CompanySheetForm({ open, onClose, onSuccess }) {
       setLoading(false);
     }
   };
+
+  // Si initialName cambia y el formulario está vacío, actualizar el nombre
+  useEffect(() => {
+    if (open && initialName && !form.companyName) {
+      setForm((prev) => ({ ...prev, companyName: initialName }));
+    }
+  }, [initialName, open, form.companyName]);
 
   return (
     <Sheet open={open} onOpenChange={onClose}>
