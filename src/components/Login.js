@@ -140,9 +140,9 @@ const Login = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-indigo-50 to-white">
+    <div className="flex min-h-screen h-screen w-screen bg-gradient-to-br from-indigo-50 to-white">
       {/* Left Side - Illustration/Info Panel */}
-      <div className="hidden lg:flex lg:w-1/2 bg-indigo-600 flex-col justify-center items-center p-12 text-white">
+      <div className="hidden lg:flex lg:w-1/2 bg-indigo-600 flex-col justify-center items-center p-12 text-white h-full min-h-screen">
         <div className="max-w-md">
           <h1 className="text-4xl font-bold mb-6">
             <Trans id="welcome.title">Bienvenido a nuestra plataforma</Trans>
@@ -181,7 +181,7 @@ const Login = () => {
       </div>
 
       {/* Right Side - Login Form */}
-      <div className="w-full lg:w-1/2 flex flex-col justify-center px-8 sm:px-16 lg:px-24">
+      <div className="w-full lg:w-1/2 flex flex-col justify-center px-8 sm:px-16 lg:px-24 h-full min-h-screen">
         <div className="absolute top-4 right-4 z-50">
           <LanguageSwitcher />
         </div>

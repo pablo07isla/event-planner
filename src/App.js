@@ -14,34 +14,37 @@ import {
   Navigate,
 } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { SidebarProvider } from "./components/ui/sidebar";
 
 const App = () => {
   return (
     <Router>
       <SessionManager />
-      <div className="relative">
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <EventCalendar />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/search"
-            element={
-              <ProtectedRoute>
-                <SearchEvents />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </div>
+      <SidebarProvider>
+        <div className="relative">
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <EventCalendar />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/search"
+              element={
+                <ProtectedRoute>
+                  <SearchEvents />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </div>
+      </SidebarProvider>
     </Router>
   );
 };
