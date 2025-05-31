@@ -14,13 +14,15 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import "@fortawesome/fontawesome-free/css/all.css";
 import { supabase } from "../supabaseClient";
 import ShadSidebar from "./ShadSidebar";
+import { AppSidebar } from "./app-sidebar";
+// Importa el componente AppSidebar
 // needs additional webpack config!
 import bootstrapPlugin from "@fullcalendar/bootstrap";
 import { Modal, Button, Toast } from "react-bootstrap";
 import "./EventCalendar.css";
 import { getEventColor, applyEventColor } from "../utils/eventHelpers";
 import EventList from "./EventList";
-import { SidebarProvider } from "./ui/sidebar";
+import { SidebarInset, SidebarTrigger } from "./ui/sidebar";
 import { parseISO, format } from "date-fns";
 import { FaPrint } from "react-icons/fa";
 // Asegúrate de que la ruta sea correcta
@@ -619,207 +621,197 @@ function EventCalendar({ initialEvents }) {
   };
 
   return (
-    <SidebarProvider>
-      <div className="flex h-screen w-screen overflow-hidden bg-gray-100">
-        <ShadSidebar
-          currentUser={user ? user.username : ""}
-          onAddEvent={handleAddEvent}
-          onLogout={handleLogout}
-        />
-        <div className="flex-1 flex flex-col min-h-0 min-w-0 overflow-hidden transition-all duration-300 ">
-          <div className="flex-1 min-h-0 min-w-0 overflow-auto p-4 lg:p-6">
-            <div className="bg-white shadow-2xl rounded-3xl h-full overflow-hidden flex flex-col">
-              <div className="p-4 lg:p-6 flex-grow">
-                <button
-                  onClick={handleShowModal}
-                  className="fixed bottom-6 right-6 z-10 bg-indigo-600 hover:bg-indigo-700 text-white p-4 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50"
-                  aria-label="Exportar PDF"
-                >
-                  <FaPrint size={24} />
-                </button>
+    <div className="flex h-screen w-screen overflow-hidden bg-gray-100">
+      <AppSidebar
+        currentUserData={user}
+        onAddEvent={handleAddEvent}
+        onLogout={handleLogout}
+      />
 
-                {cargando && (
-                  <div className="flex justify-center items-center p-4">
-                    <div
-                      className="spinner-border text-indigo-600"
-                      role="status"
-                    >
-                      <span className="sr-only">Cargando...</span>
-                    </div>
+      <div className="flex-1 flex flex-col min-h-0 min-w-0 overflow-hidden transition-all duration-300 ">
+        <div className="flex-1 min-h-0 min-w-0 overflow-auto p-4 lg:p-6">
+          <div className="bg-white shadow-2xl rounded-3xl h-full overflow-hidden flex flex-col">
+            <div className="p-4 lg:p-6 flex-grow">
+              <button
+                onClick={handleShowModal}
+                className="fixed bottom-6 right-6 z-10 bg-indigo-600 hover:bg-indigo-700 text-white p-4 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50"
+                aria-label="Exportar PDF"
+              >
+                <FaPrint size={24} />
+              </button>
+              {cargando && (
+                <div className="flex justify-center items-center p-4">
+                  <div className="spinner-border text-indigo-600" role="status">
+                    <span className="sr-only">Cargando...</span>
+                  </div>
+                </div>
+              )}
+              <Modal
+                show={showModal}
+                onHide={handleCloseModal}
+                size="lg"
+                centered
+                className="rounded-lg"
+              >
+                <Modal.Body className="p-6">
+                  <EventList events={visibleEvents} />
+                </Modal.Body>
+                <Modal.Footer className="border-t border-gray-200">
+                  <Button
+                    variant="secondary"
+                    onClick={handleCloseModal}
+                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors duration-300"
+                  >
+                    Cerrar
+                  </Button>
+                </Modal.Footer>
+              </Modal>
+
+              <FullCalendar
+                plugins={[
+                  dayGridPlugin,
+                  timeGridPlugin,
+                  listPlugin,
+                  interactionPlugin,
+                  bootstrap5Plugin,
+                  bootstrapPlugin,
+                ]}
+                themeSystem="bootstrap"
+                headerToolbar={{
+                  left: "prev,next today",
+                  center: "title",
+                  right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
+                }}
+                initialView="dayGridMonth"
+                editable={true}
+                selectable={true}
+                selectMirror={true}
+                dayMaxEvents={true}
+                weekends={true}
+                timeZone="local"
+                events={preparedEvents}
+                select={handleDateSelect}
+                eventClick={handleEventClick}
+                ref={calendarRef}
+                eventDrop={handleEventDrop}
+                eventResize={handleEventResize}
+                datesSet={handleDatesSet}
+                height="100%"
+                eventContent={(eventInfo) => (
+                  <div className="flex items-center justify-between w-full px-2 py-1 text-sm bg-indigo-100 rounded-lg shadow-sm overflow-hidden">
+                    <span className="font-semibold truncate text-indigo-800 flex-grow">
+                      {eventInfo.event.extendedProps.companyName}
+                    </span>
+                    <span className="ml-1 text-xs bg-indigo-200 text-indigo-800 px-2 py-1 rounded-full whitespace-nowrap">
+                      {eventInfo.event.extendedProps.peopleCount}pax
+                    </span>
                   </div>
                 )}
-
-                <Modal
-                  show={showModal}
-                  onHide={handleCloseModal}
-                  size="lg"
-                  centered
-                  className="rounded-lg"
-                >
-                  <Modal.Body className="p-6">
-                    <EventList events={visibleEvents} />
-                  </Modal.Body>
-                  <Modal.Footer className="border-t border-gray-200">
-                    <Button
-                      variant="secondary"
-                      onClick={handleCloseModal}
-                      className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors duration-300"
-                    >
-                      Cerrar
-                    </Button>
-                  </Modal.Footer>
-                </Modal>
-
-                <FullCalendar
-                  plugins={[
-                    dayGridPlugin,
-                    timeGridPlugin,
-                    listPlugin,
-                    interactionPlugin,
-                    bootstrap5Plugin,
-                    bootstrapPlugin,
-                  ]}
-                  themeSystem="bootstrap"
-                  headerToolbar={{
-                    left: "prev,next today",
-                    center: "title",
-                    right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
-                  }}
-                  initialView="dayGridMonth"
-                  editable={true}
-                  selectable={true}
-                  selectMirror={true}
-                  dayMaxEvents={true}
-                  weekends={true}
-                  timeZone="local"
-                  events={preparedEvents}
-                  select={handleDateSelect}
-                  eventClick={handleEventClick}
-                  ref={calendarRef}
-                  eventDrop={handleEventDrop}
-                  eventResize={handleEventResize}
-                  datesSet={handleDatesSet}
-                  height="100%"
-                  eventContent={(eventInfo) => (
-                    <div className="flex items-center justify-between w-full px-2 py-1 text-sm bg-indigo-100 rounded-lg shadow-sm overflow-hidden">
-                      <span className="font-semibold truncate text-indigo-800 flex-grow">
-                        {eventInfo.event.extendedProps.companyName}
-                      </span>
-                      <span className="ml-1 text-xs bg-indigo-200 text-indigo-800 px-2 py-1 rounded-full whitespace-nowrap">
-                        {eventInfo.event.extendedProps.peopleCount}pax
-                      </span>
-                    </div>
-                  )}
-                  locale={esLocale}
-                  buttonText={{
-                    today: "Hoy",
-                    month: "Mes",
-                    week: "Semana",
-                    day: "Día",
-                    list: "Lista",
-                  }}
-                  firstDay={1}
-                  titleFormat={{ year: "numeric", month: "long" }}
-                  views={{
-                    dayGridMonth: {
-                      dayHeaderFormat: { weekday: "short" },
-                      displayEventTime: false,
-                    },
-                    timeGridWeek: {
-                      dayHeaderFormat: {
-                        weekday: "short",
-                        day: "numeric",
-                        month: "numeric",
-                      },
-                      slotDuration: "01:00:00",
-                      slotLabelInterval: "01:00:00",
-                    },
-                    timeGridDay: {
-                      dayHeaderFormat: {
-                        weekday: "long",
-                        day: "numeric",
-                        month: "long",
-                      },
-                      slotDuration: "01:00:00",
-                      slotLabelInterval: "01:00:00",
-                    },
-                    listWeek: {
-                      listDayFormat: {
-                        weekday: "long",
-                        day: "numeric",
-                        month: "long",
-                      },
-                      listDaySideFormat: { weekday: "short" },
-                    },
-                  }}
-                  slotLabelFormat={{
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    hour12: false,
-                  }}
-                  eventTimeFormat={{
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    hour12: false,
-                  }}
-                />
-
-                <ModalEvent
-                  isOpen={modalOpen}
-                  onClose={() => setModalOpen(false)}
-                  onSave={handleSaveEvent}
-                  onDelete={handleDeleteEvent}
-                  event={currentEvent}
-                />
-
-                <Modal
-                  show={alertDialogOpen}
-                  onHide={() => setAlertDialogOpen(false)}
-                  centered
-                  className="rounded-lg overflow-hidden z-[999]"
-                >
-                  <Modal.Header closeButton>
-                    <Modal.Title>Confirmar cambio de fecha</Modal.Title>
-                  </Modal.Header>
-                  <Modal.Body>
-                    ¿Está seguro de que desea cambiar la fecha del evento?
-                  </Modal.Body>
-                  <Modal.Footer>
-                    <Button
-                      variant="secondary"
-                      onClick={handleCancelDateChange}
-                    >
-                      Cancelar
-                    </Button>
-                    <Button variant="primary" onClick={handleConfirmDateChange}>
-                      Confirmar
-                    </Button>
-                  </Modal.Footer>
-                </Modal>
-              </div>
-            </div>
-            {error && (
-              <Toast
-                onClose={() => setError(null)}
-                show={true}
-                delay={5000}
-                autohide
-                style={{
-                  position: "absolute",
-                  top: 20,
-                  right: 20,
-                  minWidth: "250px",
+                locale={esLocale}
+                buttonText={{
+                  today: "Hoy",
+                  month: "Mes",
+                  week: "Semana",
+                  day: "Día",
+                  list: "Lista",
                 }}
+                firstDay={1}
+                titleFormat={{ year: "numeric", month: "long" }}
+                views={{
+                  dayGridMonth: {
+                    dayHeaderFormat: { weekday: "short" },
+                    displayEventTime: false,
+                  },
+                  timeGridWeek: {
+                    dayHeaderFormat: {
+                      weekday: "short",
+                      day: "numeric",
+                      month: "numeric",
+                    },
+                    slotDuration: "01:00:00",
+                    slotLabelInterval: "01:00:00",
+                  },
+                  timeGridDay: {
+                    dayHeaderFormat: {
+                      weekday: "long",
+                      day: "numeric",
+                      month: "long",
+                    },
+                    slotDuration: "01:00:00",
+                    slotLabelInterval: "01:00:00",
+                  },
+                  listWeek: {
+                    listDayFormat: {
+                      weekday: "long",
+                      day: "numeric",
+                      month: "long",
+                    },
+                    listDaySideFormat: { weekday: "short" },
+                  },
+                }}
+                slotLabelFormat={{
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: false,
+                }}
+                eventTimeFormat={{
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: false,
+                }}
+              />
+              <ModalEvent
+                isOpen={modalOpen}
+                onClose={() => setModalOpen(false)}
+                onSave={handleSaveEvent}
+                onDelete={handleDeleteEvent}
+                event={currentEvent}
+              />
+              <Modal
+                show={alertDialogOpen}
+                onHide={() => setAlertDialogOpen(false)}
+                centered
+                className="rounded-lg overflow-hidden z-[999]"
               >
-                <Toast.Header>
-                  <strong className="mr-auto text-danger">Error</strong>
-                </Toast.Header>
-                <Toast.Body>{error}</Toast.Body>
-              </Toast>
-            )}
+                <Modal.Header closeButton>
+                  <Modal.Title>Confirmar cambio de fecha</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                  ¿Está seguro de que desea cambiar la fecha del evento?
+                </Modal.Body>
+                <Modal.Footer>
+                  <Button variant="secondary" onClick={handleCancelDateChange}>
+                    Cancelar
+                  </Button>
+                  <Button variant="primary" onClick={handleConfirmDateChange}>
+                    Confirmar
+                  </Button>
+                </Modal.Footer>
+              </Modal>
+            </div>
           </div>
+          {error && (
+            <Toast
+              onClose={() => setError(null)}
+              show={true}
+              delay={5000}
+              autohide
+              style={{
+                position: "absolute",
+                top: 20,
+                right: 20,
+                minWidth: "250px",
+              }}
+            >
+              <Toast.Header>
+                <strong className="mr-auto text-danger">Error</strong>
+              </Toast.Header>
+              <Toast.Body>{error}</Toast.Body>
+            </Toast>
+          )}
         </div>
       </div>
+
       <style jsx global>{`
         .fc .fc-daygrid-day-frame {
           min-height: 100px;
@@ -836,7 +828,7 @@ function EventCalendar({ initialEvents }) {
           color: #4f46e5;
         }
       `}</style>
-    </SidebarProvider>
+    </div>
   );
 }
 
