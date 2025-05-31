@@ -96,101 +96,107 @@ export default function CompanySheetForm({
 
   return (
     <Sheet open={open} onOpenChange={onClose}>
-      <SheetContent className="max-w-md w-full">
-        <SheetHeader>
-          <SheetTitle>Crear Empresa / Grupo</SheetTitle>
+      <SheetContent className="w-1/2 max-w-2xl min-w-[400px] flex flex-col items-center justify-start pt-8">
+        <SheetHeader className="w-full">
+          <SheetTitle className="text-3xl font-bold text-gray-900 mb-6">
+            Crear Empresa / Grupo
+          </SheetTitle>
         </SheetHeader>
-        <form className="space-y-4 mt-4" onSubmit={handleSubmit}>
-          <div>
-            <Label htmlFor="companyName">Nombre de la Empresa*</Label>
-            <Input
-              name="companyName"
-              value={form.companyName}
-              onChange={handleChange}
-            />
-            {errors.companyName && (
-              <p className="text-red-500 text-xs">{errors.companyName}</p>
-            )}
-          </div>
-          <div>
-            <Label htmlFor="identificationType">Tipo de Identificación*</Label>
-            <Select
-              value={form.identificationType}
-              onValueChange={handleSelect}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Seleccione" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="NIT">NIT</SelectItem>
-                <SelectItem value="CC">Cédula de Ciudadanía (CC)</SelectItem>
-                <SelectItem value="CE">Cédula de Extranjería (CE)</SelectItem>
-                <SelectItem value="PP">Pasaporte (PP)</SelectItem>
-              </SelectContent>
-            </Select>
-            {errors.identificationType && (
-              <p className="text-red-500 text-xs">
-                {errors.identificationType}
-              </p>
-            )}
-          </div>
-          <div>
-            <Label htmlFor="identificationNumber">
-              Número de Identificación*
-            </Label>
-            <Input
-              name="identificationNumber"
-              value={form.identificationNumber}
-              onChange={handleChange}
-            />
-            {errors.identificationNumber && (
-              <p className="text-red-500 text-xs">
-                {errors.identificationNumber}
-              </p>
-            )}
-          </div>
-          <div>
-            <Label htmlFor="contactPerson">Persona de Contacto*</Label>
-            <Input
-              name="contactPerson"
-              value={form.contactPerson}
-              onChange={handleChange}
-            />
-            {errors.contactPerson && (
-              <p className="text-red-500 text-xs">{errors.contactPerson}</p>
-            )}
-          </div>
-          <div>
-            <Label htmlFor="phone">Teléfono*</Label>
-            <Input name="phone" value={form.phone} onChange={handleChange} />
-            {errors.phone && (
-              <p className="text-red-500 text-xs">{errors.phone}</p>
-            )}
-          </div>
-          <div>
-            <Label htmlFor="email">Email*</Label>
-            <Input name="email" value={form.email} onChange={handleChange} />
-            {errors.email && (
-              <p className="text-red-500 text-xs">{errors.email}</p>
-            )}
-          </div>
-          <div>
-            <Label htmlFor="address">Dirección*</Label>
-            <Input
-              name="address"
-              value={form.address}
-              onChange={handleChange}
-            />
-            {errors.address && (
-              <p className="text-red-500 text-xs">{errors.address}</p>
-            )}
-          </div>
-          <div>
-            <Label htmlFor="city">Ciudad*</Label>
-            <Input name="city" value={form.city} onChange={handleChange} />
-            {errors.city && (
-              <p className="text-red-500 text-xs">{errors.city}</p>
-            )}
+        <form className="w-full max-w-2xl space-y-6" onSubmit={handleSubmit}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <Label htmlFor="companyName">Nombre de la Empresa*</Label>
+              <Input
+                name="companyName"
+                value={form.companyName}
+                onChange={handleChange}
+              />
+              {errors.companyName && (
+                <p className="text-red-500 text-xs">{errors.companyName}</p>
+              )}
+            </div>
+            <div>
+              <Label htmlFor="identificationType">
+                Tipo de Identificación*
+              </Label>
+              <Select
+                value={form.identificationType}
+                onValueChange={handleSelect}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccione" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="NIT">NIT</SelectItem>
+                  <SelectItem value="CC">Cédula de Ciudadanía (CC)</SelectItem>
+                  <SelectItem value="CE">Cédula de Extranjería (CE)</SelectItem>
+                  <SelectItem value="PP">Pasaporte (PP)</SelectItem>
+                </SelectContent>
+              </Select>
+              {errors.identificationType && (
+                <p className="text-red-500 text-xs">
+                  {errors.identificationType}
+                </p>
+              )}
+            </div>
+            <div>
+              <Label htmlFor="identificationNumber">
+                Número de Identificación*
+              </Label>
+              <Input
+                name="identificationNumber"
+                value={form.identificationNumber}
+                onChange={handleChange}
+              />
+              {errors.identificationNumber && (
+                <p className="text-red-500 text-xs">
+                  {errors.identificationNumber}
+                </p>
+              )}
+            </div>
+            <div>
+              <Label htmlFor="contactPerson">Persona de Contacto*</Label>
+              <Input
+                name="contactPerson"
+                value={form.contactPerson}
+                onChange={handleChange}
+              />
+              {errors.contactPerson && (
+                <p className="text-red-500 text-xs">{errors.contactPerson}</p>
+              )}
+            </div>
+            <div>
+              <Label htmlFor="phone">Teléfono*</Label>
+              <Input name="phone" value={form.phone} onChange={handleChange} />
+              {errors.phone && (
+                <p className="text-red-500 text-xs">{errors.phone}</p>
+              )}
+            </div>
+            <div>
+              <Label htmlFor="email">Email*</Label>
+              <Input name="email" value={form.email} onChange={handleChange} />
+              {errors.email && (
+                <p className="text-red-500 text-xs">{errors.email}</p>
+              )}
+            </div>
+            <div>
+              <Label htmlFor="address">Dirección*</Label>
+              <Input
+                name="address"
+                value={form.address}
+                onChange={handleChange}
+              />
+              {errors.address && (
+                <p className="text-red-500 text-xs">{errors.address}</p>
+              )}
+            </div>
+            <div>
+              <Label htmlFor="city">Ciudad*</Label>
+              <Input name="city" value={form.city} onChange={handleChange} />
+              {errors.city && (
+                <p className="text-red-500 text-xs">{errors.city}</p>
+              )}
+            </div>
           </div>
           <Separator />
           {message && (
@@ -204,7 +210,7 @@ export default function CompanySheetForm({
               {message}
             </div>
           )}
-          <div className="flex justify-end gap-2">
+          <div className="flex justify-end gap-2 pt-4">
             <Button
               type="button"
               variant="outline"
