@@ -1,10 +1,11 @@
 import { supabase } from "../supabaseClient";
+import CompanyAutocomplete from "./CompanyAutocomplete";
+import EventList from "./EventList";
 import ModalCompany from "./ModalCompany";
 import MultiSelectDropdown from "./MultiSelectDropdown";
 import { format } from "date-fns";
 import PropTypes from "prop-types";
 import React, { useState, useEffect } from "react";
-import EventList from "./EventList";
 import { Modal } from "react-bootstrap";
 import ReactDOM from "react-dom";
 import {
@@ -13,7 +14,7 @@ import {
   FaFileImage,
   FaFileDownload,
   FaTrash,
-  FaPaperclip
+  FaPaperclip,
 } from "react-icons/fa";
 
 // Hook personalizado para obtener datos de la empresa según el companyGroupId
@@ -76,13 +77,15 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
   const [uploadingFiles, setUploadingFiles] = useState(false); // Estado para controlar la carga de archivos
 
   // Usamos el hook personalizado para obtener datos de la empresa según el event.companyGroupId
-  const { companyData: fetchedCompanyData } = useCompanyData(event?.companyGroupId);
+  const { companyData: fetchedCompanyData } = useCompanyData(
+    event?.companyGroupId
+  );
 
   // Efecto para manejar los estilos del modal
   useEffect(() => {
     // Crear estilos para asegurar que el modal aparezca por encima
-    const styleElement = document.createElement('style');
-    styleElement.id = 'modal-event-styles';
+    const styleElement = document.createElement("style");
+    styleElement.id = "modal-event-styles";
     styleElement.innerHTML = `
       .modal-backdrop-high {
         z-index: 9998 !important;
@@ -105,22 +108,22 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
         z-index: 10000;
       }
     `;
-    
+
     // Verificar si ya existe el estilo para evitar duplicados
-    if (!document.getElementById('modal-event-styles')) {
+    if (!document.getElementById("modal-event-styles")) {
       document.head.appendChild(styleElement);
     }
-    
+
     // Crear un elemento para el portal del modal si no existe
-    if (!document.getElementById('pdf-modal-root')) {
-      const modalRoot = document.createElement('div');
-      modalRoot.id = 'pdf-modal-root';
+    if (!document.getElementById("pdf-modal-root")) {
+      const modalRoot = document.createElement("div");
+      modalRoot.id = "pdf-modal-root";
       document.body.appendChild(modalRoot);
     }
-    
+
     // Limpiar al desmontar
     return () => {
-      const existingStyle = document.getElementById('modal-event-styles');
+      const existingStyle = document.getElementById("modal-event-styles");
       if (existingStyle) {
         document.head.removeChild(existingStyle);
       }
@@ -134,17 +137,22 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
       setMessage(null);
       setMessageType("error");
       setError(null);
-      
+
       setFormData({
         ...event,
-        startDate: event.start ? format(new Date(event.start), "yyyy-MM-dd'T'HH:mm") : "",
-        endDate: event.end ? format(new Date(event.end), "yyyy-MM-dd'T'HH:mm") : "",
+        startDate: event.start
+          ? format(new Date(event.start), "yyyy-MM-dd'T'HH:mm")
+          : "",
+        endDate: event.end
+          ? format(new Date(event.end), "yyyy-MM-dd'T'HH:mm")
+          : "",
         title: event.companyName || "",
         foodPackage: Array.isArray(event.foodPackage) ? event.foodPackage : [],
         eventStatus: event.eventStatus || "",
         email: event.email || "",
         deposit: event.deposit ? event.deposit.toString() : "",
-        pendingAmount: event.pendingAmount !== null ? event.pendingAmount.toString() : "0",
+        pendingAmount:
+          event.pendingAmount !== null ? event.pendingAmount.toString() : "0",
         attachments: Array.isArray(event.attachments) ? event.attachments : [],
         lastModified: event.lastModified || "",
         lastModifiedBy: event.lastModifiedBy || "",
@@ -155,7 +163,7 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
   // Cuando se obtengan datos de la empresa, actualizamos el formulario
   useEffect(() => {
     if (fetchedCompanyData) {
-      setFormData(prevState => ({
+      setFormData((prevState) => ({
         ...prevState,
         companyName: fetchedCompanyData.companyName,
         companyGroupId: fetchedCompanyData.id,
@@ -163,24 +171,24 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
     }
   }, [fetchedCompanyData]);
 
-  
-
-  const handleCompanyClick = () => {
-    // Abre el modal de compañía (la obtención de datos se maneja en el hook)
-    setCompanyModalOpen(true);
-  };
-
   const handleCompanySave = async (companyFormData, action) => {
     try {
+      console.log("[Modal] handleCompanySave called", {
+        companyFormData,
+        action,
+      });
       let response;
+      // Eliminar id si está vacío o falsy
+      if (!companyFormData.id) {
+        delete companyFormData.id;
+      }
       if (action === "create") {
-        if (!companyFormData.id) {
-          delete companyFormData.id;
-        }
+        console.log("[Modal] Insertando en Supabase:", companyFormData);
         const { data, error } = await supabase
           .from("CompanyGroups")
           .insert([companyFormData])
           .select();
+        console.log("[Modal] Supabase insert result", { data, error });
         if (error) throw error;
         if (!data || data.length === 0) {
           const { data: fetchedData, error: fetchError } = await supabase
@@ -188,6 +196,10 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
             .select("*")
             .eq("identificationNumber", companyFormData.identificationNumber)
             .single();
+          console.log("[Modal] Fallback fetch after insert", {
+            fetchedData,
+            fetchError,
+          });
           if (fetchError) throw fetchError;
           if (!fetchedData) {
             throw new Error("No se pudo obtener la empresa recién creada");
@@ -207,6 +219,7 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
           .update(companyFormData)
           .eq("id", companyFormData.id)
           .select();
+        console.log("[Modal] Supabase update result", { data, error });
         if (error) throw error;
         if (!data || data.length === 0) {
           throw new Error("No se recibieron datos después de la actualización");
@@ -216,11 +229,12 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
         setMessageType("info");
       }
 
-      if (!response.data) {
+      if (!response || !response.data) {
+        console.error("[Modal] No response data from Supabase", response);
         throw new Error("Respuesta de Supabase no contiene datos");
       }
 
-      setFormData(prevState => ({
+      setFormData((prevState) => ({
         ...prevState,
         companyName: response.data.companyName,
         companyGroupId: response.data.id,
@@ -228,10 +242,14 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
 
       setCompanyModalOpen(false);
       setError(null);
+      console.log("[Modal] Empresa guardada con éxito", response.data);
+      return response.data; // Siempre retorna el objeto creado/actualizado
     } catch (err) {
       const errorMsg = err.message || "Ocurrió un error al guardar la empresa.";
       setError(errorMsg);
       setMessageType("error");
+      setMessage(errorMsg); // Mostrar mensaje de error visible en el modal
+      console.error("[Modal] Error al guardar empresa:", err);
       return errorMsg;
     }
   };
@@ -262,14 +280,14 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prevState => ({
+    setFormData((prevState) => ({
       ...prevState,
       [name]: value,
     }));
   };
 
   const handleFoodPackageChange = (selectedOptions) => {
-    setFormData(prevState => ({
+    setFormData((prevState) => ({
       ...prevState,
       foodPackage: selectedOptions,
     }));
@@ -278,7 +296,7 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
   const handleMoneyChange = (e) => {
     const { name, value } = e.target;
     const numericValue = value.replace(/[^\d]/g, "");
-    setFormData(prevState => ({
+    setFormData((prevState) => ({
       ...prevState,
       [name]: numericValue || "",
     }));
@@ -288,60 +306,62 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
   const handleFileUpload = async (e) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
-    
+
     setUploadingFiles(true);
     setError(null);
     setMessage(null); // Limpiar mensajes anteriores
-    
+
     try {
       // El bucket 'event-images' ya existe en Supabase, no intentamos crearlo
       const newAttachments = [...formData.attachments];
-      
+
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
-        const filePath = `${event?.id || 'new-event'}/${fileName}`;
-        
+        const fileExt = file.name.split(".").pop();
+        const fileName = `${Math.random()
+          .toString(36)
+          .substring(2, 15)}_${Date.now()}.${fileExt}`;
+        const filePath = `${event?.id || "new-event"}/${fileName}`;
+
         console.log("Subiendo archivo:", file.name, "a la ruta:", filePath);
-        
+
         // Subir archivo a Supabase Storage
         const { error } = await supabase.storage
-          .from('event-images')
+          .from("event-images")
           .upload(filePath, file, {
-            cacheControl: '3600',
-            upsert: false
+            cacheControl: "3600",
+            upsert: false,
           });
-          
+
         if (error) {
           console.error("Error al subir archivo:", error);
           throw error;
         }
-        
+
         console.log("Archivo subido correctamente, obteniendo URL pública");
-        
+
         // Obtener URL pública del archivo
         const { data: urlData } = supabase.storage
-          .from('event-images')
+          .from("event-images")
           .getPublicUrl(filePath);
-          
+
         const publicUrl = urlData.publicUrl;
         console.log("URL pública generada:", publicUrl);
-        
+
         // Agregar el archivo a los adjuntos
         newAttachments.push({
           name: file.name,
           url: publicUrl,
           path: filePath,
-          type: file.type
+          type: file.type,
         });
       }
-      
-      setFormData(prevState => ({
+
+      setFormData((prevState) => ({
         ...prevState,
-        attachments: newAttachments
+        attachments: newAttachments,
       }));
-      
+
       setMessage("Archivos adjuntados correctamente");
       setMessageType("success");
     } catch (err) {
@@ -360,16 +380,19 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
       setMessage(null); // Limpiar mensajes anteriores
       const attachmentToRemove = formData.attachments[index];
       console.log("Eliminando archivo:", attachmentToRemove);
-      
+
       // Si el archivo ya está en Supabase, eliminarlo
       if (attachmentToRemove.path) {
-        console.log("Intentando eliminar archivo de Supabase:", attachmentToRemove.path);
-        
+        console.log(
+          "Intentando eliminar archivo de Supabase:",
+          attachmentToRemove.path
+        );
+
         try {
           const { error } = await supabase.storage
-            .from('event-images')
+            .from("event-images")
             .remove([attachmentToRemove.path]);
-            
+
           if (error) {
             console.error("Error al eliminar archivo de Supabase:", error);
             // Continuar con la eliminación local incluso si hay error en Supabase
@@ -377,20 +400,23 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
             console.log("Archivo eliminado correctamente de Supabase");
           }
         } catch (storageErr) {
-          console.error("Error al intentar eliminar archivo de Supabase:", storageErr);
+          console.error(
+            "Error al intentar eliminar archivo de Supabase:",
+            storageErr
+          );
           // Continuar con la eliminación local incluso si hay error en Supabase
         }
       }
-      
+
       // Eliminar el archivo de los adjuntos
       const newAttachments = [...formData.attachments];
       newAttachments.splice(index, 1);
-      
-      setFormData(prevState => ({
+
+      setFormData((prevState) => ({
         ...prevState,
-        attachments: newAttachments
+        attachments: newAttachments,
       }));
-      
+
       setMessage("Archivo eliminado correctamente");
       setMessageType("success");
     } catch (err) {
@@ -404,37 +430,37 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
     try {
       setError(null);
       setMessage(null); // Limpiar mensajes anteriores
-      
+
       // Verificar si la URL es válida
       if (!url) {
         throw new Error("URL de descarga no válida");
       }
-      
+
       console.log("Intentando descargar archivo:", fileName, "URL:", url);
-      
+
       // Extraer la ruta del archivo de la URL pública
-      let filePath = '';
+      let filePath = "";
       try {
         // Intentar extraer la ruta del archivo de la URL
-        if (url.includes('event-images/')) {
-          filePath = url.split('event-images/')[1];
-        } else if (url.includes('/storage/v1/object/public/')) {
-          filePath = url.split('/storage/v1/object/public/event-images/')[1];
+        if (url.includes("event-images/")) {
+          filePath = url.split("event-images/")[1];
+        } else if (url.includes("/storage/v1/object/public/")) {
+          filePath = url.split("/storage/v1/object/public/event-images/")[1];
         }
-        
+
         console.log("Ruta del archivo extraída:", filePath);
       } catch (e) {
         console.error("Error extracting file path from URL:", e);
       }
-      
+
       // Si tenemos la ruta del archivo, intentar obtener el archivo directamente
       if (filePath) {
         try {
           // Intentar descargar el archivo directamente
           const { data, error } = await supabase.storage
-            .from('event-images')
+            .from("event-images")
             .download(filePath);
-            
+
           if (error) {
             console.error("Error downloading file directly:", error);
             // Si hay error, intentar con la URL pública
@@ -442,18 +468,18 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
             // Crear un objeto URL para el blob
             const blob = new Blob([data]);
             const blobUrl = URL.createObjectURL(blob);
-            
+
             // Crear un enlace temporal para la descarga
-            const link = document.createElement('a');
+            const link = document.createElement("a");
             link.href = blobUrl;
-            link.download = fileName || 'archivo';
+            link.download = fileName || "archivo";
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            
+
             // Liberar el objeto URL
             setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
-            
+
             setMessage("Archivo descargado correctamente");
             setMessageType("success");
             return;
@@ -462,27 +488,27 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
           console.error("Error downloading file:", e);
         }
       }
-      
+
       // Si no pudimos descargar directamente, intentar con la URL pública
       console.log("Intentando descargar con URL pública:", url);
-      
+
       // Crear un enlace temporal para la descarga
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      link.download = fileName || 'archivo';
-      link.target = '_blank'; // Abrir en una nueva pestaña si la descarga directa falla
+      link.download = fileName || "archivo";
+      link.target = "_blank"; // Abrir en una nueva pestaña si la descarga directa falla
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
+
       setMessage("Descarga iniciada");
       setMessageType("success");
     } catch (err) {
       console.error("Error al descargar archivo:", err);
       setError(`Error al descargar archivo: ${err.message}`);
-      
+
       // Intentar abrir la URL en una nueva pestaña como alternativa
-      window.open(url, '_blank');
+      window.open(url, "_blank");
     }
   };
 
@@ -501,12 +527,19 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const formDataToSubmit = new FormData();
-    
-    // Limpiar mensajes anteriores
     setMessage(null);
     setError(null);
-    
+
+    // Validación: empresa requerida
+    if (!formData.companyGroupId || formData.companyGroupId === "null") {
+      setMessage(
+        "Debe seleccionar una empresa válida antes de guardar el evento."
+      );
+      setMessageType("error");
+      return;
+    }
+
+    const formDataToSubmit = new FormData();
     Object.keys(formData).forEach((key) => {
       if (key === "startDate" || key === "endDate") {
         const date = new Date(formData[key]);
@@ -518,16 +551,18 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
         formDataToSubmit.append(key, value);
       } else if (key === "attachments") {
         formDataToSubmit.append(key, JSON.stringify(formData[key]));
+      } else if (key === "companyGroupId") {
+        // Solo agregar si es un UUID válido (no null, no string 'null', no vacío)
+        if (formData.companyGroupId && formData.companyGroupId !== "null") {
+          formDataToSubmit.append(key, formData.companyGroupId);
+        }
       } else {
         formDataToSubmit.append(key, formData[key]);
       }
     });
-    
-    // Si estamos editando un evento existente, incluir su ID
     if (event && event.id) {
       formDataToSubmit.append("id", event.id);
     }
-    
     onSave(formDataToSubmit);
   };
 
@@ -544,21 +579,23 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
           companyName: event.companyName,
           peopleCount: event.peopleCount,
           contactName: event.contactName,
-          foodPackage: Array.isArray(event.foodPackage) ? event.foodPackage : [],
+          foodPackage: Array.isArray(event.foodPackage)
+            ? event.foodPackage
+            : [],
           contactPhone: event.contactPhone,
           email: event.email,
           eventLocation: event.eventLocation,
           eventDescription: event.eventDescription,
           deposit: event.deposit,
           pendingAmount: event.pendingAmount,
-          eventStatus: event.eventStatus
-        }
+          eventStatus: event.eventStatus,
+        },
       };
       setEventForPDF([eventForPDF]); // Guardar como array para EventList
     }
     setShowModal(true);
   };
-  
+
   const handleCloseModal = () => setShowModal(false);
 
   const handleClose = () => {
@@ -566,7 +603,7 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
     setMessage(null);
     setMessageType("error");
     setError(null);
-    
+
     // Llamar a la función onClose pasada como prop
     onClose();
   };
@@ -575,9 +612,9 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
 
   // Renderizar el modal de PDF en un portal
   const renderPDFModal = () => {
-    const modalRoot = document.getElementById('pdf-modal-root');
+    const modalRoot = document.getElementById("pdf-modal-root");
     if (!modalRoot) return null;
-    
+
     return ReactDOM.createPortal(
       <Modal
         show={showModal}
@@ -590,7 +627,6 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
         dialogClassName="pdf-preview-dialog"
         animation={true}
       >
-        
         <Modal.Body className="p-6">
           {eventForPDF && <EventList events={eventForPDF} />}
         </Modal.Body>
@@ -599,8 +635,19 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
             onClick={handleCloseModal}
             className="px-6 py-3 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 transition duration-150 ease-in-out text-sm flex items-center"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 mr-2"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
             Cerrar
           </button>
@@ -627,7 +674,8 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
           </div>
           {event?.id && (
             <div className="mb-4 text-sm text-gray-400">
-              Última modificación: {formatLastModified(formData.lastModified)} por {formData.lastModifiedBy}
+              Última modificación: {formatLastModified(formData.lastModified)}{" "}
+              por {formData.lastModifiedBy}
             </div>
           )}
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -674,18 +722,24 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
                   htmlFor="companyName"
                   className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                 >
-                  Nombre Empresa/Grupo <span className="text-red-500 ml-1">*</span>
+                  Nombre Empresa/Grupo{" "}
+                  <span className="text-red-500 ml-1">*</span>
                 </label>
-                <input
-                  type="text"
-                  id="companyName"
-                  name="companyName"
-                  value={formData.companyName}
-                  onChange={handleChange}
-                  onClick={handleCompanyClick}
-                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 w-full p-2.5"
-                  placeholder="Nombre Empresa/Grupo"
-                  required
+                <CompanyAutocomplete
+                  value={{
+                    companyName: formData.companyName,
+                    companyGroupId: formData.companyGroupId,
+                  }}
+                  onChange={(company) => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      companyName: company.companyName,
+                      companyGroupId: company.companyGroupId || null,
+                    }));
+                    // Si es nueva, abrir el modal de creación
+                    if (company.isNew) setCompanyModalOpen(true);
+                  }}
+                  placeholder="Buscar o crear empresa/grupo..."
                 />
               </div>
               <div>
@@ -693,7 +747,8 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
                   htmlFor="contactName"
                   className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                 >
-                  Nombre Responsable/Contacto <span className="text-red-500 ml-1">*</span>
+                  Nombre Responsable/Contacto{" "}
+                  <span className="text-red-500 ml-1">*</span>
                 </label>
                 <input
                   type="text"
@@ -711,7 +766,8 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
                   htmlFor="contactPhone"
                   className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                 >
-                  Teléfono de Contacto <span className="text-red-500 ml-1">*</span>
+                  Teléfono de Contacto{" "}
+                  <span className="text-red-500 ml-1">*</span>
                 </label>
                 <input
                   type="tel"
@@ -761,7 +817,10 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
                 />
               </div>
               <div>
-                <label htmlFor="eventLocation" className="block mb-2 text-sm font-medium text-gray-900">
+                <label
+                  htmlFor="eventLocation"
+                  className="block mb-2 text-sm font-medium text-gray-900"
+                >
                   Lugar del Evento
                 </label>
                 <input
@@ -775,7 +834,10 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
                 />
               </div>
               <div className="col-span-2">
-                <label htmlFor="foodPackage" className="block mb-2 text-sm font-medium text-gray-900">
+                <label
+                  htmlFor="foodPackage"
+                  className="block mb-2 text-sm font-medium text-gray-900"
+                >
                   Paquete de alimentación
                 </label>
                 <MultiSelectDropdown
@@ -794,7 +856,10 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
               </div>
             </div>
             <div className="col-span-2">
-              <label htmlFor="eventDescription" className="block mb-2 text-sm font-medium text-gray-900">
+              <label
+                htmlFor="eventDescription"
+                className="block mb-2 text-sm font-medium text-gray-900"
+              >
                 Descripción del Evento
               </label>
               <textarea
@@ -809,7 +874,10 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label htmlFor="deposit" className="block mb-2 text-sm font-medium text-gray-900">
+                <label
+                  htmlFor="deposit"
+                  className="block mb-2 text-sm font-medium text-gray-900"
+                >
                   Consignación/Abono
                 </label>
                 <div className="mt-1 relative rounded-md shadow-sm">
@@ -828,7 +896,10 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
                 </div>
               </div>
               <div>
-                <label htmlFor="pendingAmount" className="block mb-2 text-sm font-medium text-gray-900">
+                <label
+                  htmlFor="pendingAmount"
+                  className="block mb-2 text-sm font-medium text-gray-900"
+                >
                   Saldo Pendiente
                 </label>
                 <div className="mt-1 relative rounded-md shadow-sm">
@@ -849,7 +920,10 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label htmlFor="eventStatus" className="block mb-2 text-sm font-medium text-gray-900">
+                <label
+                  htmlFor="eventStatus"
+                  className="block mb-2 text-sm font-medium text-gray-900"
+                >
                   Estado del Evento
                 </label>
                 <select
@@ -868,28 +942,40 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
                 </select>
               </div>
             </div>
-            
+
             {/* Sección de archivos adjuntos */}
             <div className="col-span-2">
-              <label htmlFor="attachments" className="block mb-2 text-sm font-medium text-gray-900 items-center">
+              <label
+                htmlFor="attachments"
+                className="block mb-2 text-sm font-medium text-gray-900 items-center"
+              >
                 <FaPaperclip className="mr-2" /> Archivos Adjuntos
               </label>
-              
+
               {/* Lista de archivos adjuntos */}
               {formData.attachments && formData.attachments.length > 0 && (
                 <div className="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
                   <ul className="divide-y divide-gray-200">
                     {formData.attachments.map((attachment, index) => (
-                      <li key={index} className="py-3 flex items-center justify-between">
+                      <li
+                        key={index}
+                        className="py-3 flex items-center justify-between"
+                      >
                         <div className="flex items-center">
-                          {attachment.type && attachment.type.includes('image') ? (
+                          {attachment.type &&
+                          attachment.type.includes("image") ? (
                             <FaFileImage className="text-blue-500 mr-2" />
                           ) : (
                             <FaFileAlt className="text-gray-500 mr-2" />
                           )}
-                          <span 
+                          <span
                             className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
-                            onClick={() => handleDownloadAttachment(attachment.url, attachment.name)}
+                            onClick={() =>
+                              handleDownloadAttachment(
+                                attachment.url,
+                                attachment.name
+                              )
+                            }
                           >
                             {attachment.name}
                           </span>
@@ -897,7 +983,12 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
                         <div className="flex space-x-2">
                           <button
                             type="button"
-                            onClick={() => handleDownloadAttachment(attachment.url, attachment.name)}
+                            onClick={() =>
+                              handleDownloadAttachment(
+                                attachment.url,
+                                attachment.name
+                              )
+                            }
                             className="text-blue-500 hover:text-blue-700"
                             title="Descargar archivo"
                           >
@@ -917,12 +1008,17 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
                   </ul>
                 </div>
               )}
-              
+
               {/* Input para subir archivos */}
               <div className="mt-2">
-                <label htmlFor="file-upload" className="cursor-pointer inline-flex items-center px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-md transition duration-150 ease-in-out text-sm">
+                <label
+                  htmlFor="file-upload"
+                  className="cursor-pointer inline-flex items-center px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-md transition duration-150 ease-in-out text-sm"
+                >
                   <FaPaperclip className="mr-2" />
-                  {uploadingFiles ? "Subiendo archivos..." : "Adjuntar archivos"}
+                  {uploadingFiles
+                    ? "Subiendo archivos..."
+                    : "Adjuntar archivos"}
                 </label>
                 <input
                   id="file-upload"
@@ -937,14 +1033,20 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
                 </span>
               </div>
             </div>
-            
+
             {/* Mensajes de éxito o error */}
             {message && (
-              <div className={`p-4 rounded-lg ${messageType === 'error' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+              <div
+                className={`p-4 rounded-lg ${
+                  messageType === "error"
+                    ? "bg-red-100 text-red-700"
+                    : "bg-green-100 text-green-700"
+                }`}
+              >
                 {message}
               </div>
             )}
-            
+
             <div className="flex justify-end space-x-2 pt-4">
               {event && event.id && (
                 <button
@@ -990,7 +1092,7 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
         onSave={handleCompanySave}
         companyData={fetchedCompanyData}
       />
-       
+
       {/* Renderizar el modal de PDF en un portal */}
       {renderPDFModal()}
     </>
