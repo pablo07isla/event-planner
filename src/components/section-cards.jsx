@@ -84,30 +84,23 @@ export default function SectionCards() {
   }) => (
     <Card className={`${bgColor} ${borderColor} h-full flex flex-col`}>
       <CardHeader className="pb-4">
-        {/* Header con badge de personas y título */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4 mb-3 w-full justify-between">
+          <CardDescription className="text-lg font-semibold text-gray-700 capitalize flex-1">
+            {title}
+          </CardDescription>
+          <div className="flex items-center gap-2 flex-1 justify-center">
             <IconCalendarEvent className="h-6 w-6 text-gray-600" />
-            <div>
-              <CardDescription className="text-lg font-semibold text-gray-700 capitalize">
-                {title}
-              </CardDescription>
-              <CardTitle className="text-3xl font-bold tabular-nums text-gray-900">
-                {loading ? "..." : events.length}
-              </CardTitle>
-            </div>
+            <span className="text-xl font-bold tabular-nums text-gray-900">
+              {loading ? "..." : events.length}
+            </span>
           </div>
-          
-          {/* Badge de total de personas */}
-          <div className="text-right">
-            <div className="text-3xl font-bold tabular-nums text-gray-900">
+          <div className="flex items-center gap-1 flex-1 justify-end">
+           <Badge variant="secondary" className="bg-white/80 border-white/40 text-xl font-bold tabular-nums text-gray-900 px-3 py-2">
               {loading ? "..." : totalPeople}
-            </div>
-            <p className="text-sm text-gray-600 font-medium">personas</p>
+              <span className="text-sm text-gray-600 font-medium ml-1">pax</span>
+            </Badge>
           </div>
         </div>
-
-        {/* Badge de estado cuando no hay eventos */}
         {!loading && events.length === 0 && (
           <div className="flex justify-center">
             <Badge variant="secondary" className="text-gray-500">
@@ -116,7 +109,6 @@ export default function SectionCards() {
           </div>
         )}
       </CardHeader>
-
       <CardFooter className="pt-0 flex-1 flex flex-col">
         {loading ? (
           <div className="flex items-center justify-center py-4">
@@ -144,7 +136,6 @@ export default function SectionCards() {
                       </p>
                     )}
                   </div>
-                  
                   {event.peopleCount && (
                     <div className="text-right flex-shrink-0">
                       <span className="font-bold text-gray-900 text-sm">
