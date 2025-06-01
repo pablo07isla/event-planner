@@ -14,35 +14,42 @@ import {
   Navigate,
 } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { SidebarProvider } from "./components/ui/sidebar";
+import { SidebarProvider, SidebarInset } from "./components/ui/sidebar";
 
 const App = () => {
   return (
     <Router>
       <SessionManager />
       <SidebarProvider>
-        <div className="relative">
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <EventCalendar />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/search"
-              element={
-                <ProtectedRoute>
-                  <SearchEvents />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+        <div className="flex flex-col h-screen">
+          <div className="flex flex-1 min-h-0">
+            {/* Si tienes un sidebar lateral, insértalo aquí si es necesario */}
+            <main className="flex-1 overflow-auto">
+              <SidebarInset>
+                <Routes>
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
+                  <Route
+                    path="/"
+                    element={
+                      <ProtectedRoute>
+                        <EventCalendar />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/search"
+                    element={
+                      <ProtectedRoute>
+                        <SearchEvents />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </SidebarInset>
+            </main>
+          </div>
         </div>
       </SidebarProvider>
     </Router>

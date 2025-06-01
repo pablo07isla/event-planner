@@ -22,6 +22,7 @@ import { Modal, Button, Toast } from "react-bootstrap";
 import "./EventCalendar.css";
 import { getEventColor, applyEventColor } from "../utils/eventHelpers";
 import EventList from "./EventList";
+import { SiteHeader } from "./site-header";
 import { SidebarInset, SidebarTrigger } from "./ui/sidebar";
 import { parseISO, format } from "date-fns";
 import { FaPrint } from "react-icons/fa";
@@ -627,11 +628,11 @@ function EventCalendar({ initialEvents }) {
         onAddEvent={handleAddEvent}
         onLogout={handleLogout}
       />
-
-      <div className="flex-1 flex flex-col min-h-0 min-w-0 overflow-hidden transition-all duration-300 ">
-        <div className="flex-1 min-h-0 min-w-0 overflow-auto p-4 lg:p-6">
-          <div className="bg-white shadow-2xl rounded-3xl h-full overflow-hidden flex flex-col">
-            <div className="p-4 lg:p-6 flex-grow">
+      <div className="flex flex-col flex-1 min-h-0 min-w-0 overflow-hidden">
+        <SiteHeader />
+        <div className="flex-1 min-h-0 min-w-0 overflow-auto p-0 lg:p-0">
+          <div className="bg-white shadow-2xl rounded-none h-full overflow-hidden flex flex-col">
+            <div className="flex-grow p-0 lg:p-0">
               <button
                 onClick={handleShowModal}
                 className="fixed bottom-6 right-6 z-10 bg-indigo-600 hover:bg-indigo-700 text-white p-4 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50"
