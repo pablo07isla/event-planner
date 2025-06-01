@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
-import { supabase } from "../supabaseClient";
-import { Badge } from "./ui/badge";
+import { supabase } from "../../supabaseClient";
+import { Badge } from "../ui/badge";
 import {
   Card,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
-} from "./ui/card";
+} from "../ui/card";
 import { IconCalendarEvent } from "@tabler/icons-react";
-import ModalEvent from "./Modal";
+import ModalEvent from "../Modal";
 
 function parseToLocalDate(dateString) {
   // Si viene como 'YYYY-MM-DD', fuerza a local
