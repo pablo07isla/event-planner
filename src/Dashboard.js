@@ -63,10 +63,10 @@ export default function Dashboard() {
               <section className="w-full">
                 <div className="mb-6">
                   <h2 className="text-2xl font-semibold tracking-tight text-foreground mb-2">
-                    Overview
+                    Proximos Eventos
                   </h2>
                   <p className="text-muted-foreground">
-                    Key metrics and performance indicators
+                    Preparate para lo que viene
                   </p>
                 </div>
                 <SectionCards />
