@@ -46,6 +46,7 @@ const data = {
   ],
   navMain: [
     { url: "/", icon: Calendar, title: <Trans>Calendar</Trans> },
+    { url: "/dashboard", icon: PieChart, title: <Trans>Dashboard</Trans> },
     { url: "/search", icon: Search, title: <Trans>Search</Trans> },
     { url: "/marketing", icon: Megaphone, title: <Trans>Marketing</Trans> },
     { url: "/notifications", icon: Bell, title: <Trans>Notifications</Trans> },
@@ -83,7 +84,7 @@ export function AppSidebar(props) {
   }
   // Si no hay usuario logueado, no mostrar NavUser
   return (
-    <Sidebar variant="inset" collapsible="none" {...props}>
+    <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
