@@ -8,6 +8,7 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
+  SidebarInset,
 } from "./ui/sidebar";
 import { Trans } from "@lingui/macro";
 import {
@@ -82,7 +83,7 @@ export function AppSidebar(props) {
   }
   // Si no hay usuario logueado, no mostrar NavUser
   return (
-    <Sidebar collapsible="icon" {...props}>
+    <Sidebar variant="inset" collapsible="none" {...props}>
       <SidebarHeader>
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>

@@ -20,12 +20,17 @@ const App = () => {
   return (
     <Router>
       <SessionManager />
-      <SidebarProvider>
+      <SidebarProvider
+        style={{
+          "--sidebar-width": "15rem",
+          "--sidebar-width-mobile": "15rem",
+        }}
+      >
         <div className="flex flex-col h-screen">
           <div className="flex flex-1 min-h-0">
-            {/* Si tienes un sidebar lateral, insértalo aquí si es necesario */}
-            <main className="flex-1 overflow-auto">
-              <SidebarInset>
+            <SidebarInset>
+              {/* Si tienes un sidebar lateral, insértalo aquí si es necesario */}
+              <main className="flex-1 overflow-auto">
                 <Routes>
                   <Route path="/login" element={<Login />} />
                   <Route path="/register" element={<Register />} />
@@ -47,8 +52,8 @@ const App = () => {
                   />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
-              </SidebarInset>
-            </main>
+              </main>
+            </SidebarInset>
           </div>
         </div>
       </SidebarProvider>
