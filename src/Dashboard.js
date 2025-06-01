@@ -5,12 +5,53 @@ import SectionCards from "./components/section-cards.jsx";
 import { SiteHeader } from "./components/site-header";
 import { SidebarInset, SidebarProvider } from "./components/ui/sidebar";
 import data from "./dashboard/data.json";
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 export default function Dashboard() {
+  // Real user and handlers for sidebar functionality
+  const [user, setUser] = useState(null);
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    if (!token || !storedUser) {
+      setUser(null);
+    } else {
+      setUser(storedUser);
+    }
+  }, []);
+
+  const handleAddEvent = () => {
+    // Puedes redirigir a la página de eventos o abrir un modal, según tu flujo
+    window.location.href = "/events";
+  };
+
+  const handleLogout = async () => {
+    try {
+      // Si usas supabase:
+      if (window.supabase && window.supabase.auth) {
+        const { error } = await window.supabase.auth.signOut();
+        if (error) {
+          console.error("[Sidebar] Error signing out:", error);
+        }
+      }
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      setUser(null);
+      window.location.href = "/login";
+    } catch (err) {
+      console.error("[Sidebar] Unexpected error during sign out:", err);
+    }
+  };
+
   return (
     <div className="app-container min-h-screen flex">
-      <AppSidebar variant="inset" collapsible="offcanvas" />
+      <AppSidebar
+        variant="inset"
+        collapsible="offcanvas"
+        currentUserData={user}
+        onAddEvent={handleAddEvent}
+        onLogout={handleLogout}
+      />
       <SidebarInset>
         <SiteHeader />
         {/* Main Dashboard Content */}

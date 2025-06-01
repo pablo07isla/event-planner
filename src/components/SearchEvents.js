@@ -2,6 +2,8 @@ import { cn } from "../lib/utils";
 import { supabase } from "../supabaseClient";
 import ModalEvent from "./Modal";
 import ShadSidebar from "./ShadSidebar";
+import { AppSidebar } from "./app-sidebar";
+import { SiteHeader } from "./site-header";
 import { Badge } from "./ui/badge";
 // Importaciones de shadcn/ui
 import { Button } from "./ui/button";
@@ -395,15 +397,65 @@ const SearchEvents = () => {
     }
   };
 
+  // Real user and handlers for sidebar functionality
+  const [user, setUser] = useState(null);
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    if (!token || !storedUser) {
+      setUser(null);
+    } else {
+      setUser(storedUser);
+    }
+  }, []);
+
+  const handleAddEvent = () => {
+    setCurrentEvent({
+      start: "",
+      end: "",
+      allDay: true,
+      companyName: "",
+      peopleCount: "",
+      contactName: "",
+      foodPackage: [],
+      contactPhone: "",
+      email: "",
+      eventLocation: "",
+      eventDescription: "",
+      deposit: "",
+      pendingAmount: "",
+      attachments: null,
+      eventStatus: "Pendiente",
+    });
+    setModalOpen(true);
+  };
+
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("[Sidebar] Error signing out:", error);
+      }
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      setUser(null);
+      window.location.href = "/login";
+    } catch (err) {
+      console.error("[Sidebar] Unexpected error during sign out:", err);
+    }
+  };
+
   // Layout principal para ocupar todo el alto y ancho disponible
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-gray-100">
-      <ShadSidebar
-        currentUser={"Usuario"} // Ajusta según tu lógica de usuario
-        onAddEvent={() => {}}
-        onLogout={() => {}}
+      <AppSidebar
+        variant="inset"
+        currentUserData={user}
+        onAddEvent={handleAddEvent}
+        onLogout={handleLogout}
       />
       <SidebarInset>
+        <SiteHeader />
         <div className="flex-1 flex flex-col min-h-0 min-w-0 overflow-hidden">
           <div className="flex-1 min-h-0 min-w-0 overflow-auto p-4 lg:p-6">
             <div className="flex-1 p-8 overflow-auto">
