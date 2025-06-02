@@ -7,17 +7,6 @@ import { useIsMobile } from "../hooks/use-mobile";
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 import { supabase } from "../supabaseClient";
 
-const chartConfig = {
-  2024: {
-    label: "2024",
-    color: "#007fff",
-  },
-  2025: {
-    label: "2025",
-    color: "#ff4500",
-  },
-};
-
 export default function ChartAreaInteractive() {
   const isMobile = useIsMobile();
   const [timeRange, setTimeRange] = React.useState("90d");
@@ -40,9 +29,24 @@ export default function ChartAreaInteractive() {
     }
   }, [isMobile]);
 
+  // Detectar años dinámicamente
+  const currentYear = new Date().getFullYear();
+  const prevYear = currentYear - 1;
+
+  // Configuración dinámica de colores y etiquetas
+  const chartConfig = {
+    [prevYear]: {
+      label: prevYear.toString(),
+      color: "#007fff",
+    },
+    [currentYear]: {
+      label: currentYear.toString(),
+      color: "#ff4500",
+    },
+  };
+
   // Procesar eventos para el gráfico
   function getChartData(events, timeRange) {
-    // Obtener fechas límite según el rango
     const today = new Date();
     let days = 90;
     if (timeRange === "30d") days = 30;
@@ -50,20 +54,17 @@ export default function ChartAreaInteractive() {
     const startDate = new Date(today);
     startDate.setDate(today.getDate() - days + 1);
 
-    // Agrupar por día y año
     const map = {};
     events.forEach((e) => {
       if (!e.start || !e.peopleCount) return;
       const d = new Date(e.start);
       if (d < startDate || d > today) return;
       const year = d.getFullYear();
-      if (year !== 2024 && year !== 2025) return;
-      // Cambia el formato a dd-mm
+      if (year !== prevYear && year !== currentYear) return;
       const key = d.getDate().toString().padStart(2, "0") + "-" + (d.getMonth() + 1).toString().padStart(2, "0");
-      if (!map[key]) map[key] = { date: key, 2024: 0, 2025: 0 };
+      if (!map[key]) map[key] = { date: key, [prevYear]: 0, [currentYear]: 0 };
       map[key][year] += parseInt(e.peopleCount) || 0;
     });
-    // Ordenar por fecha real (dd-mm) en vez de string
     return Object.values(map).sort((a, b) => {
       const [ad, am] = a.date.split("-").map(Number);
       const [bd, bm] = b.date.split("-").map(Number);
@@ -94,12 +95,12 @@ export default function ChartAreaInteractive() {
   return (
     <Card className="@container/card">
       <CardHeader>
-        <CardTitle>Total Visitors</CardTitle>
+        <CardTitle>Total de Personas</CardTitle>
         <CardDescription>
           <span className="hidden @[540px]/card:block">
-            Total for the last 3 months
+            Año actual vs Año anterior
           </span>
-          <span className="@[540px]/card:hidden">Last 3 months</span>
+          <span className="@[540px]/card:hidden">Año actual vs Año anterior</span>
         </CardDescription>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mt-4">
           <ToggleGroup
@@ -142,11 +143,11 @@ export default function ChartAreaInteractive() {
         >
           <AreaChart data={filteredData}>
             <defs>
-              <linearGradient id="fill2024" x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id={`fill${prevYear}`} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="var(--color-2024)" stopOpacity={1.0} />
                 <stop offset="95%" stopColor="var(--color-2024)" stopOpacity={0.1} />
               </linearGradient>
-              <linearGradient id="fill2025" x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id={`fill${currentYear}`} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="var(--color-2025)" stopOpacity={1.0} />
                 <stop offset="95%" stopColor="var(--color-2025)" stopOpacity={0.1} />
               </linearGradient>
@@ -167,22 +168,20 @@ export default function ChartAreaInteractive() {
                   nameKey={undefined}
                   indicator="dot"
                 />
-                
               }
-              
             />
-             <ChartLegend content={<ChartLegendContent />} />
+            <ChartLegend content={<ChartLegendContent />} />
             <Area
-              dataKey="2024"
+              dataKey={prevYear}
               type="natural"
-              fill="url(#fill2024)"
+              fill={`url(#fill${prevYear})`}
               stroke="#007fff"
               stackId={undefined}
             />
             <Area
-              dataKey="2025"
+              dataKey={currentYear}
               type="natural"
-              fill="url(#fill2025)"
+              fill={`url(#fill${currentYear})`}
               stroke="#ff4500"
               stackId={undefined}
             />

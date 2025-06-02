@@ -108,7 +108,7 @@ export default function Dashboard() {
                 </div>
               </section>
               {/* Data Table Section - Bottom Section */}
-              <section className="w-full">
+              {/* <section className="w-full">
                 <div className="mb-6">
                   <h2 className="text-2xl font-semibold tracking-tight text-foreground mb-2">
                     Data Overview
@@ -120,7 +120,7 @@ export default function Dashboard() {
                 <div className="rounded-lg border bg-card shadow-sm overflow-hidden">
                   <DataTable data={data} />
                 </div>
-              </section>
+              </section> */}
             </div>
           </div>
         </main>
