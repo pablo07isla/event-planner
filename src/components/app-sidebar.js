@@ -84,7 +84,15 @@ export function AppSidebar(props) {
   }
   // Si no hay usuario logueado, no mostrar NavUser
   return (
-    <Sidebar collapsible="icon" {...props}>
+    <Sidebar
+      collapsible="icon"
+      {...props}
+      style={{
+        "--sidebar-width-icon": "4.5rem",
+
+        ...props.style,
+      }}
+    >
       <SidebarHeader>
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>

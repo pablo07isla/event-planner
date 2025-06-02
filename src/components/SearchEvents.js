@@ -450,6 +450,7 @@ const SearchEvents = () => {
     <div className="flex h-screen w-screen overflow-hidden bg-gray-100">
       <AppSidebar
         variant="inset"
+        collapsible="offcanvas"
         currentUserData={user}
         onAddEvent={handleAddEvent}
         onLogout={handleLogout}

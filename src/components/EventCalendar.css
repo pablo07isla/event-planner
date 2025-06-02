@@ -272,7 +272,7 @@ border-style: solid !important;
         /* Sidebar */
         .app-sidebar {
           /* width: 250px; */
-          min-width: 80px;
+          min-width: 10px;
           max-width: 250px;
           height: 100vh;
           overflow-y: auto;

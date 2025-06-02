@@ -23,7 +23,8 @@ import {
 import {
   SidebarMenu,
   SidebarMenuItem,
-  SidebarMenuButton
+  SidebarMenuButton,
+  useSidebar
 } from "./ui/sidebar"
 import { useIsMobile } from "../hooks/use-mobile";
 
@@ -32,6 +33,7 @@ export function NavUser({
   onLogout
 }) {
   const isMobile = useIsMobile()
+  const { state } = useSidebar();
 
   return (
     (<SidebarMenu>
@@ -47,11 +49,15 @@ export function NavUser({
                   {user.name ? user.name.charAt(0).toUpperCase() : "?"}
                 </AvatarFallback>
               </Avatar>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">{user.name}</span>
-                <span className="truncate text-xs text-muted-foreground">{user.role || user.email}</span>
-              </div>
-              <ChevronsUpDown className="ml-auto size-4" />
+              {state !== "collapsed" && (
+                <>
+                  <div className="grid flex-1 text-left text-sm leading-tight">
+                    <span className="truncate font-semibold">{user.name}</span>
+                    <span className="truncate text-xs text-muted-foreground">{user.role || user.email}</span>
+                  </div>
+                  <ChevronsUpDown className="ml-auto size-4" />
+                </>
+              )}
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent

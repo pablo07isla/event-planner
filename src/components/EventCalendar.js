@@ -13,7 +13,6 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 // needs additional webpack config!
 import "@fortawesome/fontawesome-free/css/all.css";
 import { supabase } from "../supabaseClient";
-import ShadSidebar from "./ShadSidebar";
 import { AppSidebar } from "./app-sidebar";
 // Importa el componente AppSidebar
 // needs additional webpack config!
@@ -23,7 +22,7 @@ import "./EventCalendar.css";
 import { getEventColor, applyEventColor } from "../utils/eventHelpers";
 import EventList from "./EventList";
 import { SiteHeader } from "./site-header";
-import { SidebarInset, SidebarTrigger } from "./ui/sidebar";
+import { SidebarInset } from "./ui/sidebar";
 import { parseISO, format } from "date-fns";
 import { FaPrint } from "react-icons/fa";
 // Asegúrate de que la ruta sea correcta
@@ -627,6 +626,7 @@ function EventCalendar({ initialEvents }) {
       <div className="app-sidebar">
         <AppSidebar
           variant="inset"
+          collapsible="offcanvas"
           currentUserData={user}
           onAddEvent={handleAddEvent}
           onLogout={handleLogout}

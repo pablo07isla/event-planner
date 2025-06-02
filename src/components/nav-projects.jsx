@@ -18,7 +18,7 @@ export function NavProjects({
   projects,
   onAddEvent // nuevo prop para manejar el click
 }) {
-  const { isMobile } = useSidebar()
+  const { state } = useSidebar();
 
   return (
     (<SidebarGroup className="group-data-[collapsible=icon]:hidden">
@@ -31,9 +31,11 @@ export function NavProjects({
               className="flex items-center justify-center gap-2 mt-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 transition-all duration-200"
             >
               <PlusCircle className="size-4" />
-              <span>
-                <Trans>Add Event</Trans>
-              </span>
+              {state !== "collapsed" && (
+                <span>
+                  <Trans>Add Event</Trans>
+                </span>
+              )}
             </SidebarMenuButton>
             
           </SidebarMenuItem>

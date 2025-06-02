@@ -1,40 +1,35 @@
 "use client";
 
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "./ui/collapsible";
+import { useSidebar } from "./ui/sidebar";
 import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
 } from "./ui/sidebar";
-import { ChevronRight } from "lucide-react";
 
 export function NavMain({ items }) {
+  const { state } = useSidebar(); // "collapsed" o "expanded"
+
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Navega</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => (
-          <SidebarMenuItem>
-            <SidebarMenuButton tooltip={item.title}>
-              {item.icon && <item.icon />}
+          <SidebarMenuItem key={item.url} className={state === "collapsed" ? "justify-start" : ""}>
+            <SidebarMenuButton
+              tooltip={item.title}
+              
+            >
               <a
                 href={item.url}
                 className="flex items-center gap-2 no-underline text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
               >
-                <span>{item.title}</span>
+                {item.icon && <item.icon />}
+                {state !== "collapsed" && <span>{item.title}</span>}
               </a>
             </SidebarMenuButton>
-
-            
           </SidebarMenuItem>
         ))}
       </SidebarMenu>
