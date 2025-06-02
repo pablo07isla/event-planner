@@ -5,6 +5,7 @@ import SectionCards from "./components/dashboard/section-cards.jsx";
 import DataTable from "./components/data-table.jsx";
 import { SiteHeader } from "./components/site-header";
 import { SidebarInset, SidebarProvider } from "./components/ui/sidebar";
+import { Trans } from "@lingui/macro";
 import React, { useState, useEffect } from "react";
 
 export default function Dashboard() {
@@ -64,10 +65,10 @@ export default function Dashboard() {
                 <div className="mb-6 flex items-center justify-between">
                   <div>
                     <h2 className="text-2xl font-semibold tracking-tight text-foreground mb-2">
-                      Proximos Eventos
+                      <Trans>Proximos Eventos</Trans>
                     </h2>
                     <p className="text-muted-foreground">
-                      Preparate para lo que viene
+                      <Trans>Preparate para lo que viene</Trans>
                     </p>
                   </div>
                   <button
@@ -88,7 +89,7 @@ export default function Dashboard() {
                         d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                       />
                     </svg>
-                    Ir a calendario
+                    <Trans>Ir a calendario</Trans>
                   </button>
                 </div>
                 <SectionCards />
@@ -97,10 +98,10 @@ export default function Dashboard() {
               <section className="w-full">
                 <div className="mb-6">
                   <h2 className="text-2xl font-semibold tracking-tight text-foreground mb-2">
-                    Analytics
+                    <Trans>Analytics</Trans>
                   </h2>
                   <p className="text-muted-foreground">
-                    Interactive data visualization and trends
+                    <Trans>Interactive data visualization and trends</Trans>
                   </p>
                 </div>
                 <div className="rounded-lg border bg-card shadow-sm">
@@ -111,10 +112,10 @@ export default function Dashboard() {
               {/* <section className="w-full">
                 <div className="mb-6">
                   <h2 className="text-2xl font-semibold tracking-tight text-foreground mb-2">
-                    Data Overview
+                    <Trans>Data Overview</Trans>
                   </h2>
                   <p className="text-muted-foreground">
-                    Detailed information and records
+                    <Trans>Detailed information and records</Trans>
                   </p>
                 </div>
                 <div className="rounded-lg border bg-card shadow-sm overflow-hidden">

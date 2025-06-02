@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Trans } from "@lingui/macro";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "./ui/chart";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
@@ -79,7 +80,9 @@ export default function ChartAreaInteractive() {
   if (loading) {
     return (
       <Card className="@container/card flex items-center justify-center h-[250px]">
-        <span className="text-muted-foreground text-lg">Cargando datos...</span>
+        <span className="text-muted-foreground text-lg">
+          <Trans>Cargando datos...</Trans>
+        </span>
       </Card>
     );
   }
@@ -87,7 +90,9 @@ export default function ChartAreaInteractive() {
   if (!filteredData.length) {
     return (
       <Card className="@container/card flex items-center justify-center h-[250px]">
-        <span className="text-muted-foreground text-lg">No hay datos para mostrar en este rango.</span>
+        <span className="text-muted-foreground text-lg">
+          <Trans>No hay datos para mostrar en este rango.</Trans>
+        </span>
       </Card>
     );
   }
@@ -95,12 +100,14 @@ export default function ChartAreaInteractive() {
   return (
     <Card className="@container/card">
       <CardHeader>
-        <CardTitle>Total de Personas</CardTitle>
+        <CardTitle><Trans>Total de Personas</Trans></CardTitle>
         <CardDescription>
           <span className="hidden @[540px]/card:block">
-            Año actual vs Año anterior
+            <Trans>Año actual vs Año anterior</Trans>
           </span>
-          <span className="@[540px]/card:hidden">Año actual vs Año anterior</span>
+          <span className="@[540px]/card:hidden">
+            <Trans>Año actual vs Año anterior</Trans>
+          </span>
         </CardDescription>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mt-4">
           <ToggleGroup
@@ -110,9 +117,9 @@ export default function ChartAreaInteractive() {
             variant="outline"
             className="hidden *:data-[slot=toggle-group-item]:!px-4 @[767px]/card:flex"
           >
-            <ToggleGroupItem value="90d">Last 3 months</ToggleGroupItem>
-            <ToggleGroupItem value="30d">Last 30 days</ToggleGroupItem>
-            <ToggleGroupItem value="7d">Last 7 days</ToggleGroupItem>
+            <ToggleGroupItem value="90d"><Trans>Last 3 months</Trans></ToggleGroupItem>
+            <ToggleGroupItem value="30d"><Trans>Last 30 days</Trans></ToggleGroupItem>
+            <ToggleGroupItem value="7d"><Trans>Last 7 days</Trans></ToggleGroupItem>
           </ToggleGroup>
           <Select value={timeRange} onValueChange={setTimeRange}>
             <SelectTrigger
@@ -120,17 +127,17 @@ export default function ChartAreaInteractive() {
               size="sm"
               aria-label="Select a value"
             >
-              <SelectValue placeholder="Last 3 months" />
+              <SelectValue placeholder={<Trans>Last 3 months</Trans>} />
             </SelectTrigger>
             <SelectContent className="rounded-xl">
               <SelectItem value="90d" className="rounded-lg">
-                Last 3 months
+                <Trans>Last 3 months</Trans>
               </SelectItem>
               <SelectItem value="30d" className="rounded-lg">
-                Last 30 days
+                <Trans>Last 30 days</Trans>
               </SelectItem>
               <SelectItem value="7d" className="rounded-lg">
-                Last 7 days
+                <Trans>Last 7 days</Trans>
               </SelectItem>
             </SelectContent>
           </Select>

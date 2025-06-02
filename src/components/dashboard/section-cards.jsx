@@ -1,3 +1,4 @@
+import { Trans } from "@lingui/macro";
 import { useEffect, useState } from "react";
 import { supabase } from "../../supabaseClient";
 import { Badge } from "../ui/badge";
@@ -97,22 +98,26 @@ export default function SectionCards() {
           <div className="flex items-center gap-1 flex-1 justify-end">
            <Badge variant="secondary" className="bg-white/80 border-white/40 text-xl font-bold tabular-nums text-gray-900 px-3 py-2">
               {loading ? "..." : totalPeople}
-              <span className="text-sm text-gray-600 font-medium ml-1">pax</span>
+              <span className="text-sm text-gray-600 font-medium ml-1">
+                <Trans>pax</Trans>
+              </span>
             </Badge>
           </div>
         </div>
-        {!loading && events.length === 0 && (
+        {/* {!loading && events.length === 0 && (
           <div className="flex justify-center">
             <Badge variant="secondary" className="text-gray-500">
-              Sin eventos
+              <Trans>Sin eventos</Trans>
             </Badge>
           </div>
-        )}
+        )} */}
       </CardHeader>
       <CardFooter className="pt-0 flex-1 flex flex-col">
         {loading ? (
           <div className="flex items-center justify-center py-4">
-            <div className="animate-pulse text-gray-500">Cargando...</div>
+            <div className="animate-pulse text-gray-500">
+              <Trans>Cargando...</Trans>
+            </div>
           </div>
         ) : events.length > 0 ? (
           <div className="space-y-3 w-full">
@@ -163,25 +168,25 @@ export default function SectionCards() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-4 lg:px-6">
       <EventCard
-        title="Hoy"
+        title={<Trans>Hoy</Trans>}
         events={eventsToday}
         totalPeople={totalPeopleToday}
         bgColor="bg-gradient-to-br from-blue-50 to-blue-100"
         borderColor="border-blue-200"
         badgeColor="bg-blue-500"
         textColor="text-white"
-        emptyMessage="No hay eventos para hoy"
+        emptyMessage={<Trans>No hay eventos para hoy</Trans>}
       />
       
       <EventCard
-        title="Mañana"
+        title={<Trans>Mañana</Trans>}
         events={eventsTomorrow}
         totalPeople={totalPeopleTomorrow}
         bgColor="bg-gradient-to-br from-green-50 to-green-100"
         borderColor="border-green-200"
         badgeColor="bg-green-500"
         textColor="text-white"
-        emptyMessage="No hay eventos para mañana"
+        emptyMessage={<Trans>No hay eventos para mañana</Trans>}
       />
       
       <EventCard
@@ -192,7 +197,7 @@ export default function SectionCards() {
         borderColor="border-amber-200"
         badgeColor="bg-amber-500"
         textColor="text-white"
-        emptyMessage="No hay eventos para pasado mañana"
+        emptyMessage={<Trans>No hay eventos para pasado mañana</Trans>}
       />
 
       {/* Modal para ver el evento */}
