@@ -1,7 +1,7 @@
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
+import EventListPDF from "./EventListPDF";
+import { PDFDownloadLink } from "@react-pdf/renderer";
 import PropTypes from "prop-types";
-import React, { useState, useRef, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   FaMapMarkerAlt,
   FaUsers,
@@ -145,71 +145,6 @@ EventCard.propTypes = {
 const EventList = ({ events }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const eventListRef = useRef();
-  const [pdfState, setPdfState] = useState({
-    isGenerating: false,
-    error: null,
-  });
-
-  // PDF Generation with improved error handling
-  const generatePDF = async () => {
-    try {
-      setPdfState({ isGenerating: true, error: null });
-      const pdf = new jsPDF();
-      let currentPDFPage = 1;
-      const originalPage = currentPage;
-
-      for (let page = 1; page <= totalPages; page++) {
-        setCurrentPage(page);
-        // Wait for React to update the DOM
-        await new Promise((resolve) => setTimeout(resolve, 300));
-
-        const input = eventListRef.current;
-
-        // Create a clean copy for capturing
-        const tempContainer = document.createElement("div");
-        tempContainer.style.position = "absolute";
-        tempContainer.style.left = "-9999px";
-        tempContainer.style.width = "800px"; // Fixed width for PDF
-        tempContainer.style.background = "white";
-        tempContainer.appendChild(input.cloneNode(true));
-        document.body.appendChild(tempContainer);
-
-        try {
-          const canvas = await html2canvas(tempContainer.firstChild, {
-            scale: 2,
-            useCORS: true,
-            allowTaint: true,
-            backgroundColor: "#FFFFFF",
-            logging: false,
-          });
-
-          const imgData = canvas.toDataURL("image/png");
-
-          if (currentPDFPage > 1) pdf.addPage();
-          pdf.addImage(imgData, "PNG", 10, 10, 190, 0);
-
-          currentPDFPage++;
-        } finally {
-          // Always clean up the DOM
-          document.body.removeChild(tempContainer);
-        }
-      }
-
-      // Restore the original page
-      setCurrentPage(originalPage);
-      pdf.save("reporte_eventos.pdf");
-    } catch (error) {
-      console.error("Error generando PDF:", error);
-      setPdfState({
-        isGenerating: false,
-        error: "Error al generar el PDF. Por favor, intenta nuevamente.",
-      });
-      return;
-    }
-
-    setPdfState({ isGenerating: false, error: null });
-  };
 
   // Event processing logic
   const processEvents = useMemo(() => {
@@ -268,73 +203,55 @@ const EventList = ({ events }) => {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 py-6">
-      {/* Manejo de Errores */}
-      {pdfState.error && (
-        <div
-          className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
-          role="alert"
-        >
-          <span className="block sm:inline">{pdfState.error}</span>
-          <span
-            className="absolute top-0 bottom-0 right-0 px-4 py-3"
-            onClick={() => setPdfState((prev) => ({ ...prev, error: null }))}
-          >
-            <svg
-              className="fill-current h-6 w-6 text-red-500"
-              role="button"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 20 20"
-            >
-              <title>Close</title>
-              <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z" />
-            </svg>
-          </span>
-        </div>
-      )}
-
       {/* Encabezado y Botón de PDF */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Lista de Eventos</h1>
-        <button
-          onClick={generatePDF}
-          disabled={pdfState.isGenerating}
-          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-300 disabled:opacity-50"
+        <PDFDownloadLink
+          document={<EventListPDF events={events} />}
+          fileName="reporte_eventos.pdf"
         >
-          {pdfState.isGenerating ? (
-            <>
-              <svg
-                className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-              Generando PDF...
-            </>
-          ) : (
-            <>
-              <FaFilePdf className="mr-2" />
-              Descargar PDF
-            </>
+          {({ loading }) => (
+            <button
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-300 disabled:opacity-50"
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <svg
+                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  Generando PDF...
+                </>
+              ) : (
+                <>
+                  <FaFilePdf className="mr-2" />
+                  Descargar PDF
+                </>
+              )}
+            </button>
           )}
-        </button>
+        </PDFDownloadLink>
       </div>
 
       {/* Lista de Eventos */}
-      <div ref={eventListRef} className="space-y-6">
+      <div className="space-y-6">
         {sortedDates.length > 0 ? (
           sortedDates.map((date) => (
             <div
