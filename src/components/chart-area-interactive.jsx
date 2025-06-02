@@ -1,28 +1,11 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "./ui/chart";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
 import { useIsMobile } from "../hooks/use-mobile";
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
-
-const chartData = [
-  { date: "05-24", 2024: 556, 2025: 635 },
-  { date: "05-25", 2024: 430, 2025: 510 },
-  { date: "05-26", 2024: 390, 2025: 480 },
-  { date: "05-27", 2024: 600, 2025: 700 },
-  { date: "05-28", 2024: 320, 2025: 410 },
-  { date: "05-29", 2024: 410, 2025: 390 },
-  { date: "05-30", 2024: 500, 2025: 520 },
-  { date: "05-31", 2024: 470, 2025: 610 },
-  { date: "06-01", 2024: 350, 2025: 420 },
-  { date: "06-02", 2024: 380, 2025: 450 },
-  { date: "06-03", 2024: 420, 2025: 480 },
-  { date: "06-04", 2024: 390, 2025: 510 },
-  { date: "06-05", 2024: 410, 2025: 530 },
-  { date: "06-06", 2024: 370, 2025: 490 },
-  { date: "06-07", 2024: 430, 2025: 550 },
-];
+import { supabase } from "../supabaseClient";
 
 const chartConfig = {
   2024: {
@@ -38,6 +21,18 @@ const chartConfig = {
 export default function ChartAreaInteractive() {
   const isMobile = useIsMobile();
   const [timeRange, setTimeRange] = React.useState("90d");
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchEvents() {
+      setLoading(true);
+      const { data, error } = await supabase.from("events").select();
+      if (!error) setEvents(data || []);
+      setLoading(false);
+    }
+    fetchEvents();
+  }, []);
 
   React.useEffect(() => {
     if (isMobile) {
@@ -45,7 +40,56 @@ export default function ChartAreaInteractive() {
     }
   }, [isMobile]);
 
-  const filteredData = chartData; // No filter needed for dummy data
+  // Procesar eventos para el gráfico
+  function getChartData(events, timeRange) {
+    // Obtener fechas límite según el rango
+    const today = new Date();
+    let days = 90;
+    if (timeRange === "30d") days = 30;
+    if (timeRange === "7d") days = 7;
+    const startDate = new Date(today);
+    startDate.setDate(today.getDate() - days + 1);
+
+    // Agrupar por día y año
+    const map = {};
+    events.forEach((e) => {
+      if (!e.start || !e.peopleCount) return;
+      const d = new Date(e.start);
+      if (d < startDate || d > today) return;
+      const year = d.getFullYear();
+      if (year !== 2024 && year !== 2025) return;
+      // Cambia el formato a dd-mm
+      const key = d.getDate().toString().padStart(2, "0") + "-" + (d.getMonth() + 1).toString().padStart(2, "0");
+      if (!map[key]) map[key] = { date: key, 2024: 0, 2025: 0 };
+      map[key][year] += parseInt(e.peopleCount) || 0;
+    });
+    // Ordenar por fecha real (dd-mm) en vez de string
+    return Object.values(map).sort((a, b) => {
+      const [ad, am] = a.date.split("-").map(Number);
+      const [bd, bm] = b.date.split("-").map(Number);
+      if (am !== bm) return am - bm;
+      return ad - bd;
+    });
+  }
+
+  const filteredData = getChartData(events, timeRange);
+
+  // Indicador de carga y mensaje si no hay datos
+  if (loading) {
+    return (
+      <Card className="@container/card flex items-center justify-center h-[250px]">
+        <span className="text-muted-foreground text-lg">Cargando datos...</span>
+      </Card>
+    );
+  }
+
+  if (!filteredData.length) {
+    return (
+      <Card className="@container/card flex items-center justify-center h-[250px]">
+        <span className="text-muted-foreground text-lg">No hay datos para mostrar en este rango.</span>
+      </Card>
+    );
+  }
 
   return (
     <Card className="@container/card">
