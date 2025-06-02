@@ -49,6 +49,9 @@
     --sidebar-border: 220 13% 91%;
  
     --sidebar-ring: 217.2 91.2% 59.8%;
+ 
+    --color-2024: 220 100% 50%; /* vivid blue */
+    --color-2025: 10 90% 55%;  /* vivid orange-red */
   }
  
   .dark {
@@ -87,6 +90,9 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+ 
+    --color-2024: 220 100% 70%; /* lighter vivid blue for dark */
+    --color-2025: 10 90% 65%;  /* lighter vivid orange-red for dark */
   }
 }
  

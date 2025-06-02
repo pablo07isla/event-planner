@@ -76,8 +76,25 @@ const Register = () => {
     }
   };
 
+  // Verificar si el usuario actual es admin
+  const user = JSON.parse(localStorage.getItem("user") || "null");
+  if (!user || user.role !== "admin") {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-indigo-50 to-white">
+        <div className="bg-white p-8 rounded-lg shadow-md text-center">
+          <h2 className="text-2xl font-bold mb-4 text-red-600">
+            Acceso denegado
+          </h2>
+          <p className="text-gray-700">
+            Solo un administrador puede crear nuevos usuarios.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-indigo-50 to-white">
+    <div className="flex min-h-screen h-screen w-screen bg-gradient-to-br from-indigo-50 to-white">
       {/* Left Side - Illustration/Info Panel */}
       <div className="hidden lg:flex lg:w-1/2 bg-indigo-600 flex-col justify-center items-center p-12 text-white">
         <div className="max-w-md">
@@ -261,28 +278,6 @@ const Register = () => {
               </button>
             </div>
           </form>
-
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">
-                  O continúa con
-                </span>
-              </div>
-            </div>
-
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              <button className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                <Trans id="register.google">Google</Trans>
-              </button>
-              <button className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                <Trans id="register.microsoft">Microsoft</Trans>
-              </button>
-            </div>
-          </div>
 
           <p className="mt-8 text-center text-sm text-gray-600">
             ¿Ya tienes una cuenta?{" "}

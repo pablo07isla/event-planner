@@ -139,6 +139,9 @@ const Login = () => {
     }
   };
 
+  // Obtener usuario de localStorage para mostrar el enlace de registro solo a admin
+  const user = JSON.parse(localStorage.getItem("user") || "null");
+
   return (
     <div className="flex min-h-screen h-screen w-screen bg-gradient-to-br from-indigo-50 to-white">
       {/* Left Side - Illustration/Info Panel */}
@@ -233,22 +236,12 @@ const Login = () => {
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-1">
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  <Trans id="common.password">Contraseña</Trans>
-                </label>
-                <Link
-                  to="/forgot-password"
-                  className="text-sm font-semibold text-indigo-600 hover:text-indigo-500"
-                >
-                  <Trans id="common.forgotPassword">
-                    ¿Olvidaste tu contraseña?
-                  </Trans>
-                </Link>
-              </div>
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                <Trans id="common.password">Contraseña</Trans>
+              </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Lock className="h-5 w-5 text-gray-400" />
@@ -310,39 +303,18 @@ const Login = () => {
             </div>
           </form>
 
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">
-                  <Trans id="login.orContinueWith">O continúa con</Trans>
-                </span>
-              </div>
-            </div>
-
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              <button className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                Google
-              </button>
-              <button className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                Microsoft
-              </button>
-            </div>
-          </div>
-
-          <p className="mt-8 text-center text-sm text-gray-600">
-            <Trans id="login.noAccount">
-              ¿No tienes una cuenta?{" "}
+          {/* Mostrar enlace de registro solo a admin */}
+          {user && user.role === "admin" && (
+            <p className="mt-8 text-center text-sm text-gray-600">
+              ¿Deseas crear un usuario nuevo?{" "}
               <Link
                 to="/register"
                 className="font-semibold text-indigo-600 hover:text-indigo-500"
               >
-                Regístrate ahora
+                Registrar nuevo usuario
               </Link>
-            </Trans>
-          </p>
+            </p>
+          )}
         </div>
       </div>
     </div>
