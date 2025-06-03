@@ -2,7 +2,7 @@ import {
   getLocalDateString,
   formatDate,
   formatCurrency,
-} from "../utils/eventPdfUtils";
+} from "../../utils/eventPdfUtils";
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import React from "react";
 

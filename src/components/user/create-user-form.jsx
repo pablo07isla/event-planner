@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Trans } from "@lingui/macro";
-import { Input } from "./ui/input";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import { Mail, Lock, User, AlertCircle, UserCheck } from "lucide-react";
 
 export function CreateUserForm({ onSubmit, loading, error, success, initialValues }) {

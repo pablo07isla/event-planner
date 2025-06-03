@@ -1,8 +1,8 @@
-import { supabase } from "../supabaseClient";
-import CompanyAutocomplete from "./CompanyAutocomplete";
+import { supabase } from "../../supabaseClient";
+import CompanyAutocomplete from "../companies/CompanyAutocomplete";
+import ModalCompany from "../companies/ModalCompany";
+import MultiSelectDropdown from "../companies/MultiSelectDropdown";
 import EventList from "./EventList";
-import ModalCompany from "./ModalCompany";
-import MultiSelectDropdown from "./MultiSelectDropdown";
 import { format } from "date-fns";
 import PropTypes from "prop-types";
 import React, { useState, useEffect } from "react";
@@ -628,7 +628,9 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
         animation={true}
       >
         <Modal.Body className="p-6">
-          {eventForPDF && <EventList events={eventForPDF} />}
+          {eventForPDF && (
+            <EventList events={eventForPDF} onClose={handleCloseModal} />
+          )}
         </Modal.Body>
         <Modal.Footer className="border-t border-gray-200 p-4">
           <button

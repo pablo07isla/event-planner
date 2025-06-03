@@ -9,9 +9,9 @@ import {
   CardHeader,
 } from "../ui/card";
 import { IconCalendarEvent } from "@tabler/icons-react";
-import ModalEvent from "../Modal";
+import ModalEvent from "../events/Modal";
 import { PDFDownloadLink } from "@react-pdf/renderer";
-import EventListPDF from "../EventListPDF";
+import EventListPDF from "../events/EventListPDF";
 import { IconPrinter } from "@tabler/icons-react";
 
 function parseToLocalDate(dateString) {
@@ -168,24 +168,19 @@ export default function SectionCards() {
                     setModalOpen(true);
                   }}
                 >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-gray-900 truncate text-sm">
-                        {event.companyName || event.title || 'Sin nombre'}
-                      </h4>
-                      {event.eventStatus && (
-                        <p className="text-xs text-gray-600 mt-1">
-                          {event.eventStatus}
-                        </p>
-                      )}
-                    </div>
+                  <div className="flex items-center gap-2 w-full">
+                    <span className="font-medium text-gray-900 truncate text-sm flex-1">
+                      {event.companyName || event.title || 'Sin nombre'}
+                    </span>
                     {event.peopleCount && (
-                      <div className="text-right flex-shrink-0">
-                        <span className="font-bold text-gray-900 text-sm">
-                          {event.peopleCount}
-                        </span>
-                        <p className="text-xs text-gray-500">personas</p>
-                      </div>
+                      <span className="font-bold text-gray-900 text-xs whitespace-nowrap">
+                        {event.peopleCount} p
+                      </span>
+                    )}
+                    {event.eventStatus && (
+                      <span className="text-xs text-gray-600 ml-2 whitespace-nowrap">
+                        {event.eventStatus}
+                      </span>
                     )}
                   </div>
                 </div>

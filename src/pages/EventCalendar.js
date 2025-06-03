@@ -1,4 +1,4 @@
-import ModalEvent from "../components/Modal";
+import ModalEvent from "../components/events/Modal";
 import bootstrap5Plugin from "@fullcalendar/bootstrap5";
 import esLocale from "@fullcalendar/core/locales/es";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -12,15 +12,15 @@ import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 // needs additional webpack config!
 import "@fortawesome/fontawesome-free/css/all.css";
-import { AppSidebar } from "../components/app-sidebar";
+import { AppSidebar } from "../components/sidebar/app-sidebar";
 import { supabase } from "../supabaseClient";
 // Importa el componente AppSidebar
 // needs additional webpack config!
 import bootstrapPlugin from "@fullcalendar/bootstrap";
 import { Modal, Button, Toast } from "react-bootstrap";
-import "../components/EventCalendar.css";
-import EventList from "../components/EventList";
-import { SiteHeader } from "../components/site-header";
+import "src/components/events/EventCalendar.css";
+import EventList from "../components/events/EventList";
+import { SiteHeader } from "../components/sidebar/site-header";
 import { SidebarInset } from "../components/ui/sidebar";
 import { getEventColor, applyEventColor } from "../utils/eventHelpers";
 import { parseISO, format } from "date-fns";

@@ -1,6 +1,6 @@
+import { supabase } from "../../supabaseClient";
 import { useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { supabase } from "../supabaseClient";
 
 const SessionManager = () => {
   console.log("[SessionManager] Componente montado");

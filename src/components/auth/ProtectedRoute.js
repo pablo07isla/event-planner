@@ -1,7 +1,8 @@
 // components/ProtectedRoute.js
+
+import SessionManager from "./SessionManager";
 import React from "react";
 import { Navigate } from "react-router-dom";
-import SessionManager from "./SessionManager";
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem("token");

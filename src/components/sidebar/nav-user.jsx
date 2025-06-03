@@ -10,7 +10,7 @@ import {
 } from "lucide-react"
 import PropTypes from "prop-types";
 
-import { Avatar,AvatarImage, AvatarFallback } from "./ui/avatar"
+import { Avatar,AvatarImage, AvatarFallback } from "../ui/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,14 +19,14 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuGroup
-} from "./ui/dropdown-menu"
+} from "../ui/dropdown-menu"
 import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
   useSidebar
-} from "./ui/sidebar"
-import { useIsMobile } from "../hooks/use-mobile";
+} from "../ui/sidebar"
+import { useIsMobile } from "../../hooks/use-mobile";
 
 export function NavUser({
   user,

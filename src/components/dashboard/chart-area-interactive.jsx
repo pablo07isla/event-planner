@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Trans } from "@lingui/macro";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
-import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "./ui/chart";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
-import { useIsMobile } from "../hooks/use-mobile";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "../ui/chart";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { ToggleGroup, ToggleGroupItem } from "../ui/toggle-group";
+import { useIsMobile } from "../../hooks/use-mobile";
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
-import { supabase } from "../supabaseClient";
+import { supabase } from "../../supabaseClient";
 
 export default function ChartAreaInteractive() {
   const isMobile = useIsMobile();

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { CreateUserForm } from "../components/create-user-form";
+import { CreateUserForm } from "../components/user/create-user-form";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 

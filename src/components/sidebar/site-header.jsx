@@ -1,5 +1,5 @@
-import { Separator } from "./ui/separator";
-import { SidebarTrigger, useSidebar } from "./ui/sidebar";
+import { Separator } from "../ui/separator";
+import { SidebarTrigger, useSidebar } from "../ui/sidebar";
 
 export function SiteHeader() {
   const { state } = useSidebar();

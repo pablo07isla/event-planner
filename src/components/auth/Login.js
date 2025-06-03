@@ -1,8 +1,8 @@
 // Login.js
 
-import { ReactComponent as LogoSVG } from "../assets/tailwindcss.svg";
-import { supabase } from "../supabaseClient";
-import LanguageSwitcher from "./LanguageSwitcher";
+import { ReactComponent as LogoSVG } from "../../assets/tailwindcss.svg";
+import LanguageSwitcher from "../../locales/LanguageSwitcher";
+import { supabase } from "../../supabaseClient";
 import { Trans } from "@lingui/macro";
 import { Eye, EyeOff, Mail, Lock, AlertCircle } from "lucide-react";
 import React, { useState, useEffect } from "react";

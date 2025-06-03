@@ -1,16 +1,23 @@
-import { cn } from "../lib/utils";
-import { supabase } from "../supabaseClient";
-import ModalEvent from "./Modal";
-import { AppSidebar } from "./app-sidebar";
-import { SiteHeader } from "./site-header";
-import { Badge } from "./ui/badge";
+import ModalEvent from "../components/events/Modal";
+import { AppSidebar } from "../components/sidebar/app-sidebar";
+import { SiteHeader } from "../components/sidebar/site-header";
+import { Badge } from "../components/ui/badge";
 // Importaciones de shadcn/ui
-import { Button } from "./ui/button";
-import { Calendar as CalendarUI } from "./ui/calendar";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { Input } from "./ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import { SidebarInset } from "./ui/sidebar";
+import { Button } from "../components/ui/button";
+import { Calendar as CalendarUI } from "../components/ui/calendar";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
+import { Input } from "../components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "../components/ui/popover";
+import { SidebarInset } from "../components/ui/sidebar";
 import {
   Table,
   TableBody,
@@ -18,7 +25,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "./ui/table";
+} from "../components/ui/table";
+import { cn } from "../lib/utils";
+import { supabase } from "../supabaseClient";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 // Importamos la localización en español
@@ -39,6 +48,11 @@ const SearchEvents = () => {
   const [searchMode, setSearchMode] = useState("company");
   const [selectedCompany] = useState(""); // Restore selectedCompany and setSelectedCompany since it is used in the code logic
 
+  // Estados para controlar la apertura de los popovers de los date pickers
+  const [singleDatePopoverOpen, setSingleDatePopoverOpen] = useState(false);
+  const [startDatePopoverOpen, setStartDatePopoverOpen] = useState(false);
+  const [endDatePopoverOpen, setEndDatePopoverOpen] = useState(false);
+
   // Cargar la lista de empresas al iniciar
   useEffect(() => {
     const fetchCompanies = async () => {
@@ -58,6 +72,13 @@ const SearchEvents = () => {
 
     fetchCompanies();
   }, []);
+
+  // Limpiar el campo de nombre de empresa cada vez que cambiamos a filtro por empresa
+  useEffect(() => {
+    if (searchMode === "company") {
+      setSearchTerm("");
+    }
+  }, [searchMode]);
 
   const handleSearch = async () => {
     setLoading(true);
@@ -477,7 +498,10 @@ const SearchEvents = () => {
                         variant={
                           searchMode === "company" ? "default" : "outline"
                         }
-                        onClick={() => setSearchMode("company")}
+                        onClick={() => {
+                          setSearchMode("company");
+                          setSearchTerm(""); // Limpiar campo al cambiar
+                        }}
                         className="flex items-center"
                       >
                         <Building className="h-4 w-4 mr-2" />
@@ -552,7 +576,10 @@ const SearchEvents = () => {
                           Fecha del Evento
                         </label>
                         <div>
-                          <Popover>
+                          <Popover
+                            open={singleDatePopoverOpen}
+                            onOpenChange={setSingleDatePopoverOpen}
+                          >
                             <PopoverTrigger asChild>
                               <Button
                                 variant="outline"
@@ -571,9 +598,12 @@ const SearchEvents = () => {
                               <CalendarUI
                                 mode="single"
                                 selected={singleDate}
-                                onSelect={setSingleDate}
+                                onSelect={(date) => {
+                                  setSingleDate(date);
+                                  setSingleDatePopoverOpen(false);
+                                }}
                                 initialFocus
-                                locale={es} // Configuramos locale español
+                                locale={es}
                               />
                             </PopoverContent>
                           </Popover>
@@ -586,7 +616,10 @@ const SearchEvents = () => {
                         <div className="space-y-2">
                           <label className="text-sm font-medium">Desde</label>
                           <div>
-                            <Popover>
+                            <Popover
+                              open={startDatePopoverOpen}
+                              onOpenChange={setStartDatePopoverOpen}
+                            >
                               <PopoverTrigger asChild>
                                 <Button
                                   variant="outline"
@@ -605,10 +638,13 @@ const SearchEvents = () => {
                                 <CalendarUI
                                   mode="single"
                                   selected={startDate}
-                                  onSelect={setStartDate}
+                                  onSelect={(date) => {
+                                    setStartDate(date);
+                                    setStartDatePopoverOpen(false);
+                                  }}
                                   initialFocus
                                   disabled={(date) => endDate && date > endDate}
-                                  locale={es} // Configuramos locale español
+                                  locale={es}
                                 />
                               </PopoverContent>
                             </Popover>
@@ -618,7 +654,10 @@ const SearchEvents = () => {
                         <div className="space-y-2">
                           <label className="text-sm font-medium">Hasta</label>
                           <div>
-                            <Popover>
+                            <Popover
+                              open={endDatePopoverOpen}
+                              onOpenChange={setEndDatePopoverOpen}
+                            >
                               <PopoverTrigger asChild>
                                 <Button
                                   variant="outline"
@@ -637,12 +676,15 @@ const SearchEvents = () => {
                                 <CalendarUI
                                   mode="single"
                                   selected={endDate}
-                                  onSelect={setEndDate}
+                                  onSelect={(date) => {
+                                    setEndDate(date);
+                                    setEndDatePopoverOpen(false);
+                                  }}
                                   initialFocus
                                   disabled={(date) =>
                                     startDate && date < startDate
                                   }
-                                  locale={es} // Configuramos locale español
+                                  locale={es}
                                 />
                               </PopoverContent>
                             </Popover>

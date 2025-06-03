@@ -1,12 +1,12 @@
 // App.js
 
-import Login from "./components/Login";
-import ProtectedRoute from "./components/ProtectedRoute";
-import Register from "./components/Register";
-import SearchEvents from "./components/SearchEvents";
-import SessionManager from "./components/SessionManager";
+import Login from "./components/auth/Login";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
+import Register from "./components/auth/Register";
+import SessionManager from "./components/auth/SessionManager";
 import Dashboard from "./pages/Dashboard";
 import EventCalendar from "./pages/EventCalendar";
+import SearchEvents from "./pages/SearchEvents";
 import CreateUserPage from "./pages/create-user";
 // Asegúrate de que la ruta de importación sea correcta
 import React from "react";

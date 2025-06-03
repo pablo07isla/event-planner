@@ -142,7 +142,7 @@ EventCard.propTypes = {
 };
 
 // Main component
-const EventList = ({ events }) => {
+const EventList = ({ events, onClose }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -201,6 +201,16 @@ const EventList = ({ events }) => {
     );
   }, [currentGroupedEvents]);
 
+  // Handler para cerrar el modal después de descargar el PDF
+  const handlePDFDownload = (e) => {
+    // Espera un pequeño tiempo para asegurar la descarga
+    setTimeout(() => {
+      if (typeof onClose === "function") {
+        onClose();
+      }
+    }, 500);
+  };
+
   return (
     <div className="w-full max-w-7xl mx-auto px-4 py-6">
       {/* Encabezado y Botón de PDF */}
@@ -210,10 +220,11 @@ const EventList = ({ events }) => {
           document={<EventListPDF events={events} />}
           fileName="reporte_eventos.pdf"
         >
-          {({ loading }) => (
+          {({ loading, url }) => (
             <button
               className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-300 disabled:opacity-50"
               disabled={loading}
+              onClick={handlePDFDownload}
             >
               {loading ? (
                 <>

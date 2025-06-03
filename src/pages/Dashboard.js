@@ -1,7 +1,8 @@
-import { AppSidebar } from "../components/app-sidebar";
-import ChartAreaInteractive from "../components/chart-area-interactive.jsx";
+import ChartAreaInteractive from "../components/dashboard/chart-area-interactive.jsx";
 import SectionCards from "../components/dashboard/section-cards.jsx";
-import { SiteHeader } from "../components/site-header";
+import ModalEvent from "../components/events/Modal";
+import { AppSidebar } from "../components/sidebar/app-sidebar";
+import { SiteHeader } from "../components/sidebar/site-header.jsx";
 import { SidebarInset } from "../components/ui/sidebar";
 import { Trans } from "@lingui/macro";
 import React, { useState, useEffect } from "react";
@@ -19,9 +20,21 @@ export default function Dashboard() {
     }
   }, []);
 
+  const [showEventModal, setShowEventModal] = useState(false);
+  const [modalEventData, setModalEventData] = useState(null);
+
   const handleAddEvent = () => {
-    // Puedes redirigir a la página de eventos o abrir un modal, según tu flujo
-    window.location.href = "/events";
+    setModalEventData(null); // Nuevo evento
+    setShowEventModal(true);
+  };
+
+  const handleCloseEventModal = () => setShowEventModal(false);
+  const handleSaveEvent = (formData) => {
+    // Aquí puedes guardar el evento en la base de datos y recargar la lista si es necesario
+    setShowEventModal(false);
+  };
+  const handleDeleteEvent = () => {
+    setShowEventModal(false);
   };
 
   const handleLogout = async () => {
@@ -70,7 +83,7 @@ export default function Dashboard() {
                     </p>
                   </div>
                   <button
-                    onClick={() => (window.location.href = "/calendar")}
+                    onClick={handleAddEvent}
                     className="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold shadow-md hover:from-blue-600 hover:to-indigo-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
                   >
                     <svg
@@ -123,6 +136,15 @@ export default function Dashboard() {
             </div>
           </div>
         </main>
+        {showEventModal && (
+          <ModalEvent
+            isOpen={showEventModal}
+            onClose={handleCloseEventModal}
+            onSave={handleSaveEvent}
+            onDelete={handleDeleteEvent}
+            event={modalEventData}
+          />
+        )}
       </SidebarInset>
     </div>
   );
