@@ -1,7 +1,7 @@
 import { supabase } from "../../supabaseClient";
 import CompanyAutocomplete from "../companies/CompanyAutocomplete";
 import ModalCompany from "../companies/ModalCompany";
-import MultiSelectDropdown from "../companies/MultiSelectDropdown";
+import MultiSelectDropdown from "../MultiSelectDropdown";
 import EventList from "./EventList";
 import { format } from "date-fns";
 import PropTypes from "prop-types";
