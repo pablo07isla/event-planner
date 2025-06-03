@@ -8,20 +8,15 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
-  SidebarInset,
 } from "./ui/sidebar";
 import { Trans } from "@lingui/macro";
 import {
   AudioWaveform,
   Frame,
-  GalleryVerticalEnd,
-  Map,
   PieChart,
   Calendar,
   Search,
-  Megaphone,
   Settings,
-  Bell,
 } from "lucide-react";
 import React from "react";
 

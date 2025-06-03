@@ -1,7 +1,6 @@
 import { cn } from "../lib/utils";
 import { supabase } from "../supabaseClient";
 import ModalEvent from "./Modal";
-import ShadSidebar from "./ShadSidebar";
 import { AppSidebar } from "./app-sidebar";
 import { SiteHeader } from "./site-header";
 import { Badge } from "./ui/badge";
@@ -38,7 +37,7 @@ const SearchEvents = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [currentEvent, setCurrentEvent] = useState(null);
   const [searchMode, setSearchMode] = useState("company");
-  const [selectedCompany, setSelectedCompany] = useState(""); // Restore selectedCompany and setSelectedCompany since it is used in the code logic
+  const [selectedCompany] = useState(""); // Restore selectedCompany and setSelectedCompany since it is used in the code logic
 
   // Cargar la lista de empresas al iniciar
   useEffect(() => {

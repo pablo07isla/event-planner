@@ -7,10 +7,12 @@ import {
   CardDescription,
   CardFooter,
   CardHeader,
-  CardTitle,
 } from "../ui/card";
 import { IconCalendarEvent } from "@tabler/icons-react";
 import ModalEvent from "../Modal";
+import { PDFDownloadLink } from "@react-pdf/renderer";
+import EventListPDF from "../EventListPDF";
+import { IconPrinter } from "@tabler/icons-react";
 
 function parseToLocalDate(dateString) {
   // Si viene como 'YYYY-MM-DD', fuerza a local
@@ -82,88 +84,125 @@ export default function SectionCards() {
     badgeColor, 
     textColor,
     emptyMessage 
-  }) => (
-    <Card className={`${bgColor} ${borderColor} h-full flex flex-col`}>
-      <CardHeader className="pb-4">
-        <div className="flex items-center gap-4 mb-3 w-full justify-between">
-          <CardDescription className="text-lg font-semibold text-gray-700 capitalize flex-1">
-            {title}
-          </CardDescription>
-          <div className="flex items-center gap-2 flex-1 justify-center">
-            <IconCalendarEvent className="h-6 w-6 text-gray-600" />
-            <span className="text-xl font-bold tabular-nums text-gray-900">
-              {loading ? "..." : events.length}
-            </span>
-          </div>
-          <div className="flex items-center gap-1 flex-1 justify-end">
-           <Badge variant="secondary" className="bg-white/80 border-white/40 text-xl font-bold tabular-nums text-gray-900 px-3 py-2">
-              {loading ? "..." : totalPeople}
-              <span className="text-sm text-gray-600 font-medium ml-1">
-                <Trans>pax</Trans>
+  }) => {
+    return (
+      <Card className={`${bgColor} ${borderColor} h-full flex flex-col`}>
+        <CardHeader className="pb-4">
+          <div className="flex items-center gap-4 mb-3 w-full justify-between">
+            <CardDescription className="text-lg font-semibold text-gray-700 capitalize flex-1">
+              {title}
+            </CardDescription>
+            <div className="flex items-center gap-2 flex-1 justify-center">
+              <IconCalendarEvent className="h-6 w-6 text-gray-600" />
+              <span className="text-xl font-bold tabular-nums text-gray-900">
+                {loading ? "..." : events.length}
               </span>
-            </Badge>
-          </div>
-        </div>
-        {/* {!loading && events.length === 0 && (
-          <div className="flex justify-center">
-            <Badge variant="secondary" className="text-gray-500">
-              <Trans>Sin eventos</Trans>
-            </Badge>
-          </div>
-        )} */}
-      </CardHeader>
-      <CardFooter className="pt-0 flex-1 flex flex-col">
-        {loading ? (
-          <div className="flex items-center justify-center py-4">
-            <div className="animate-pulse text-gray-500">
-              <Trans>Cargando...</Trans>
+            </div>
+            <div className="flex items-center gap-1 flex-1 justify-end">
+              <Badge variant="secondary" className="bg-white/80 border-white/40 text-xl font-bold tabular-nums text-gray-900 px-3 py-2">
+                {loading ? "..." : totalPeople}
+                <span className="text-sm text-gray-600 font-medium ml-1">
+                  <Trans>pax</Trans>
+                </span>
+              </Badge>
+              {/* Botón de imprimir PDF */}
+              {!loading && events.length > 0 && (
+                <PDFDownloadLink
+                  document={
+                    <EventListPDF
+                      events={events.map((event) => ({
+                        ...event,
+                        extendedProps: {
+                          companyName: event.companyName,
+                          peopleCount: event.peopleCount,
+                          contactName: event.contactName,
+                          contactPhone: event.contactPhone,
+                          eventLocation: event.eventLocation,
+                          deposit: event.deposit,
+                          pendingAmount: event.pendingAmount,
+                          eventDescription: event.eventDescription,
+                          foodPackage: event.foodPackage,
+                        },
+                      }))}
+                    />
+                  }
+                  fileName={`eventos_${typeof title === 'string' ? title : ''}.pdf`}
+                  className="ml-2"
+                >
+                  {({ loading: pdfLoading }) => (
+                    <button
+                      className="p-2 rounded hover:bg-gray-200 transition"
+                      title="Descargar PDF"
+                      disabled={pdfLoading}
+                    >
+                      <IconPrinter className="h-6 w-6 text-gray-700" />
+                    </button>
+                  )}
+                </PDFDownloadLink>
+              )}
             </div>
           </div>
-        ) : events.length > 0 ? (
-          <div className="space-y-3 w-full">
-            {events.map((event, idx) => (
-              <div
-                key={idx}
-                className="bg-white/50 rounded-lg p-3 border border-white/20 backdrop-blur-sm cursor-pointer hover:bg-blue-100/70 transition"
-                onClick={() => {
-                  setSelectedEvent(event);
-                  setModalOpen(true);
-                }}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-medium text-gray-900 truncate text-sm">
-                      {event.companyName || event.title || 'Sin nombre'}
-                    </h4>
-                    {event.eventStatus && (
-                      <p className="text-xs text-gray-600 mt-1">
-                        {event.eventStatus}
-                      </p>
+          {/* {!loading && events.length === 0 && (
+            <div className="flex justify-center">
+              <Badge variant="secondary" className="text-gray-500">
+                <Trans>Sin eventos</Trans>
+              </Badge>
+            </div>
+          )} */}
+        </CardHeader>
+        <CardFooter className="pt-0 flex-1 flex flex-col">
+          {loading ? (
+            <div className="flex items-center justify-center py-4">
+              <div className="animate-pulse text-gray-500">
+                <Trans>Cargando...</Trans>
+              </div>
+            </div>
+          ) : events.length > 0 ? (
+            <div className="space-y-3 w-full">
+              {events.map((event, idx) => (
+                <div
+                  key={idx}
+                  className="bg-white/50 rounded-lg p-3 border border-white/20 backdrop-blur-sm cursor-pointer hover:bg-blue-100/70 transition"
+                  onClick={() => {
+                    setSelectedEvent(event);
+                    setModalOpen(true);
+                  }}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-medium text-gray-900 truncate text-sm">
+                        {event.companyName || event.title || 'Sin nombre'}
+                      </h4>
+                      {event.eventStatus && (
+                        <p className="text-xs text-gray-600 mt-1">
+                          {event.eventStatus}
+                        </p>
+                      )}
+                    </div>
+                    {event.peopleCount && (
+                      <div className="text-right flex-shrink-0">
+                        <span className="font-bold text-gray-900 text-sm">
+                          {event.peopleCount}
+                        </span>
+                        <p className="text-xs text-gray-500">personas</p>
+                      </div>
                     )}
                   </div>
-                  {event.peopleCount && (
-                    <div className="text-right flex-shrink-0">
-                      <span className="font-bold text-gray-900 text-sm">
-                        {event.peopleCount}
-                      </span>
-                      <p className="text-xs text-gray-500">personas</p>
-                    </div>
-                  )}
                 </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="flex items-center justify-center py-8 text-gray-500">
-            <div className="text-center">
-              <IconCalendarEvent className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">{emptyMessage}</p>
+              ))}
             </div>
-          </div>
-        )}
-      </CardFooter>
-    </Card>
-  );
+          ) : (
+            <div className="flex items-center justify-center py-8 text-gray-500">
+              <div className="text-center">
+                <IconCalendarEvent className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p className="text-sm">{emptyMessage}</p>
+              </div>
+            </div>
+          )}
+        </CardFooter>
+      </Card>
+    );
+  };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-4 lg:px-6">
