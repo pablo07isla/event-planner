@@ -116,9 +116,10 @@ export function AppSidebar(props) {
     } else if (props.currentUserData.username) {
       user = {
         name: props.currentUserData.username,
-        email: props.currentUserData.role || "Usuario",
+        email: props.currentUserData.email || "Usuario",
         avatar: "/avatars/default.png",
         status: "online", // Add status for modern look
+        role: props.currentUserData.role, // <-- Asegura que role esté presente
       };
     }
   }
@@ -164,6 +165,7 @@ export function AppSidebar(props) {
             <NavMain
               items={data.navMain}
               itemscollapsibles={data.navMainCollapsible}
+              user={user}
             />
           </div>
 

@@ -7,6 +7,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Register from "./components/Register";
 import SearchEvents from "./components/SearchEvents";
 import SessionManager from "./components/SessionManager";
+import CreateUserPage from "./pages/create-user";
 // Asegúrate de que la ruta de importación sea correcta
 import React from "react";
 import {
@@ -55,6 +56,14 @@ const App = () => {
                 element={
                   <ProtectedRoute>
                     <Dashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/pages/create-user"
+                element={
+                  <ProtectedRoute>
+                    <CreateUserPage />
                   </ProtectedRoute>
                 }
               />

@@ -19,31 +19,31 @@ import {
 } from "./ui/collapsible"
 import { ChevronRight } from "lucide-react"
 
-export function NavMain({ items, itemscollapsibles }) {
+export function NavMain({ items, itemscollapsibles, user }) {
   const { state } = useSidebar(); // "collapsed" o "expanded"
 
   return (
-    
-      <SidebarMenu>
-        {items.map((item) => (
-          <SidebarMenuItem key={item.url}>
-            <SidebarMenuButton
-              
-              asChild
+    <SidebarMenu>
+      {items.map((item) => (
+        <SidebarMenuItem key={item.url}>
+          <SidebarMenuButton
+            asChild
+          >
+            <a
+              href={item.url}
+              className={`flex items-center no-underline text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors ${
+                state === "collapsed" ? "justify-start pl-3" : "gap-2"
+              }`}
             >
-              <a
-                href={item.url}
-                className={`flex items-center no-underline text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors ${
-                  state === "collapsed" ? "justify-start pl-3" : "gap-2"
-                }`}
-              >
-                {item.icon && <item.icon />}
-                {state !== "collapsed" && <span>{item.title}</span>}
-              </a>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        ))}
-        {itemscollapsibles.map((itemcollapsible) => (
+              {item.icon && <item.icon />}
+              {state !== "collapsed" && <span>{item.title}</span>}
+            </a>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      ))}
+      {/* Solo muestra los items colapsables si el usuario es admin */}
+      {user?.role === "admin" &&
+        itemscollapsibles.map((itemcollapsible) => (
           <Collapsible
             key={itemcollapsible.title}
             asChild
@@ -63,7 +63,7 @@ export function NavMain({ items, itemscollapsibles }) {
                   {itemcollapsible.items?.map((subItem) => (
                     <SidebarMenuSubItem key={subItem.title}>
                       <SidebarMenuSubButton asChild>
-                        <a href={subItem.url} className="no-underline">
+                        <a href="/pages/create-user" className="no-underline">
                           <span>{subItem.title}</span>
                         </a>
                       </SidebarMenuSubButton>
@@ -74,8 +74,6 @@ export function NavMain({ items, itemscollapsibles }) {
             </SidebarMenuItem>
           </Collapsible>
         ))}
-      </SidebarMenu>
-      
-     
+    </SidebarMenu>
   );
 }
