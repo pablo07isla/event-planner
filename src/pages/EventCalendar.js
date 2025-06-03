@@ -1,4 +1,4 @@
-import ModalEvent from "./Modal";
+import ModalEvent from "../components/Modal";
 import bootstrap5Plugin from "@fullcalendar/bootstrap5";
 import esLocale from "@fullcalendar/core/locales/es";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -12,17 +12,17 @@ import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 // needs additional webpack config!
 import "@fortawesome/fontawesome-free/css/all.css";
+import { AppSidebar } from "../components/app-sidebar";
 import { supabase } from "../supabaseClient";
-import { AppSidebar } from "./app-sidebar";
 // Importa el componente AppSidebar
 // needs additional webpack config!
 import bootstrapPlugin from "@fullcalendar/bootstrap";
 import { Modal, Button, Toast } from "react-bootstrap";
-import "./EventCalendar.css";
+import "../components/EventCalendar.css";
+import EventList from "../components/EventList";
+import { SiteHeader } from "../components/site-header";
+import { SidebarInset } from "../components/ui/sidebar";
 import { getEventColor, applyEventColor } from "../utils/eventHelpers";
-import EventList from "./EventList";
-import { SiteHeader } from "./site-header";
-import { SidebarInset } from "./ui/sidebar";
 import { parseISO, format } from "date-fns";
 import { FaPrint } from "react-icons/fa";
 // Asegúrate de que la ruta sea correcta

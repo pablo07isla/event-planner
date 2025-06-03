@@ -1,12 +1,12 @@
 // App.js
 
-import Dashboard from "./Dashboard";
-import EventCalendar from "./components/EventCalendar";
 import Login from "./components/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Register from "./components/Register";
 import SearchEvents from "./components/SearchEvents";
 import SessionManager from "./components/SessionManager";
+import Dashboard from "./pages/Dashboard";
+import EventCalendar from "./pages/EventCalendar";
 import CreateUserPage from "./pages/create-user";
 // Asegúrate de que la ruta de importación sea correcta
 import React from "react";
@@ -36,26 +36,22 @@ const App = () => {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route
-                path="/"
+                path="/dashboard"
                 element={
                   <ProtectedRoute>
-                    <EventCalendar />
+                    <Dashboard />
                   </ProtectedRoute>
                 }
+              />
+              <Route
+                path="/"
+                element={<Navigate to="/dashboard" replace />} // Redirige la raíz a dashboard
               />
               <Route
                 path="/search"
                 element={
                   <ProtectedRoute>
                     <SearchEvents />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute>
-                    <Dashboard />
                   </ProtectedRoute>
                 }
               />
@@ -67,7 +63,15 @@ const App = () => {
                   </ProtectedRoute>
                 }
               />
-              <Route path="*" element={<Navigate to="/" replace />} />
+              <Route
+                path="/pages/calendar"
+                element={
+                  <ProtectedRoute>
+                    <EventCalendar />
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </main>
         </SidebarInset>

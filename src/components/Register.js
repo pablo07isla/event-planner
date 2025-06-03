@@ -83,10 +83,10 @@ const Register = () => {
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-indigo-50 to-white">
         <div className="bg-white p-8 rounded-lg shadow-md text-center">
           <h2 className="text-2xl font-bold mb-4 text-red-600">
-            Acceso denegado
+            <Trans> Acceso denegado</Trans>
           </h2>
           <p className="text-gray-700">
-            Solo un administrador puede crear nuevos usuarios.
+            <Trans>Solo un administrador puede crear nuevos usuarios.</Trans>
           </p>
         </div>
       </div>
@@ -98,7 +98,9 @@ const Register = () => {
       {/* Left Side - Illustration/Info Panel */}
       <div className="hidden lg:flex lg:w-1/2 bg-indigo-600 flex-col justify-center items-center p-12 text-white">
         <div className="max-w-md">
-          <h1 className="text-4xl font-bold mb-6">Únete a nosotros</h1>
+          <h1 className="text-4xl font-bold mb-6">
+            <Trans>Únete a nosotros</Trans>
+          </h1>
           <p className="text-indigo-200 mb-8">
             Crea tu cuenta para empezar a disfrutar de nuestros servicios.
           </p>

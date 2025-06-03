@@ -1,8 +1,8 @@
-import { AppSidebar } from "./components/app-sidebar";
-import ChartAreaInteractive from "./components/chart-area-interactive.jsx";
-import SectionCards from "./components/dashboard/section-cards.jsx";
-import { SiteHeader } from "./components/site-header";
-import { SidebarInset } from "./components/ui/sidebar";
+import { AppSidebar } from "../components/app-sidebar";
+import ChartAreaInteractive from "../components/chart-area-interactive.jsx";
+import SectionCards from "../components/dashboard/section-cards.jsx";
+import { SiteHeader } from "../components/site-header";
+import { SidebarInset } from "../components/ui/sidebar";
 import { Trans } from "@lingui/macro";
 import React, { useState, useEffect } from "react";
 

@@ -60,7 +60,7 @@ const data = {
       description: "Vista general del sistema",
     },
     {
-      url: "/",
+      url: "pages/calendar",
       icon: Calendar,
       title: <Trans>Calendar</Trans>,
       description: "Gestiona tus eventos",
