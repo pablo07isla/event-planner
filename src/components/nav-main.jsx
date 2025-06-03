@@ -7,24 +7,35 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
+  SidebarGroupContent
 } from "./ui/sidebar";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "./ui/collapsible"
+import { ChevronRight } from "lucide-react"
 
-export function NavMain({ items }) {
+export function NavMain({ items, itemscollapsibles }) {
   const { state } = useSidebar(); // "collapsed" o "expanded"
 
   return (
-    <SidebarGroup>
-      <SidebarGroupLabel>Navega</SidebarGroupLabel>
+    
       <SidebarMenu>
         {items.map((item) => (
-          <SidebarMenuItem key={item.url} className={state === "collapsed" ? "justify-start" : ""}>
+          <SidebarMenuItem key={item.url}>
             <SidebarMenuButton
-              tooltip={item.title}
               
+              asChild
             >
               <a
                 href={item.url}
-                className="flex items-center gap-2 no-underline text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
+                className={`flex items-center no-underline text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors ${
+                  state === "collapsed" ? "justify-start pl-3" : "gap-2"
+                }`}
               >
                 {item.icon && <item.icon />}
                 {state !== "collapsed" && <span>{item.title}</span>}
@@ -32,7 +43,39 @@ export function NavMain({ items }) {
             </SidebarMenuButton>
           </SidebarMenuItem>
         ))}
+        {itemscollapsibles.map((itemcollapsible) => (
+          <Collapsible
+            key={itemcollapsible.title}
+            asChild
+            defaultOpen={itemcollapsible.isActive}
+            className="group/collapsible"
+          >
+            <SidebarMenuItem>
+              <CollapsibleTrigger asChild>
+                <SidebarMenuButton tooltip={itemcollapsible.title}>
+                  {itemcollapsible.icon && <itemcollapsible.icon />}
+                  <span>{itemcollapsible.title}</span>
+                  <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                </SidebarMenuButton>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <SidebarMenuSub>
+                  {itemcollapsible.items?.map((subItem) => (
+                    <SidebarMenuSubItem key={subItem.title}>
+                      <SidebarMenuSubButton asChild>
+                        <a href={subItem.url} className="no-underline">
+                          <span>{subItem.title}</span>
+                        </a>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                  ))}
+                </SidebarMenuSub>
+              </CollapsibleContent>
+            </SidebarMenuItem>
+          </Collapsible>
+        ))}
       </SidebarMenu>
-    </SidebarGroup>
+      
+     
   );
 }

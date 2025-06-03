@@ -93,6 +93,202 @@
  
     --color-2024: 220 100% 70%; /* lighter vivid blue for dark */
     --color-2025: 10 90% 65%;  /* lighter vivid orange-red for dark */
+
+    /* Modern Sidebar Enhancements */
+
+/* Custom scrollbar for sidebar content */
+.sidebar-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, rgb(59 130 246 / 0.3), rgb(147 51 234 / 0.3));
+  border-radius: 2px;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, rgb(59 130 246 / 0.5), rgb(147 51 234 / 0.5));
+}
+
+/* Enhanced hover effects for navigation items */
+.nav-item {
+  @apply relative overflow-hidden transition-all duration-200 ease-in-out;
+}
+
+.nav-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  transition: left 0.5s ease-in-out;
+}
+
+.nav-item:hover::before {
+  left: 100%;
+}
+
+.nav-item:hover {
+  @apply transform scale-[1.02] shadow-md;
+  background: linear-gradient(135deg, rgb(59 130 246 / 0.05), rgb(147 51 234 / 0.05));
+}
+
+/* Modern team switcher styling */
+.team-switcher {
+  @apply relative overflow-hidden rounded-xl;
+  background: linear-gradient(135deg, 
+    rgb(255 255 255 / 0.8), 
+    rgb(249 250 251 / 0.6)
+  );
+  backdrop-filter: blur(10px);
+  border: 1px solid rgb(229 231 235 / 0.3);
+}
+
+.dark .team-switcher {
+  background: linear-gradient(135deg, 
+    rgb(17 24 39 / 0.8), 
+    rgb(31 41 55 / 0.6)
+  );
+  border: 1px solid rgb(75 85 99 / 0.3);
+}
+
+.team-switcher:hover {
+  @apply shadow-lg;
+  transform: translateY(-1px);
+  border-color: rgb(59 130 246 / 0.3);
+}
+
+/* Enhanced project buttons */
+.project-button {
+  @apply relative overflow-hidden rounded-lg p-3 transition-all duration-300;
+  background: linear-gradient(135deg, 
+    rgb(16 185 129 / 0.05), 
+    rgb(20 184 166 / 0.05)
+  );
+  border: 1px solid rgb(16 185 129 / 0.1);
+}
+
+.project-button.featured {
+  background: linear-gradient(135deg, 
+    rgb(99 102 241 / 0.1), 
+    rgb(139 92 246 / 0.1)
+  );
+  border: 1px solid rgb(99 102 241 / 0.2);
+}
+
+.project-button:hover {
+  @apply shadow-lg transform scale-[1.02];
+  background: linear-gradient(135deg, 
+    rgb(16 185 129 / 0.1), 
+    rgb(20 184 166 / 0.1)
+  );
+  border-color: rgb(16 185 129 / 0.3);
+}
+
+.project-button.featured:hover {
+  background: linear-gradient(135deg, 
+    rgb(99 102 241 / 0.15), 
+    rgb(139 92 246 / 0.15)
+  );
+  border-color: rgb(99 102 241 / 0.4);
+}
+
+/* User profile section enhancement */
+.user-profile {
+  @apply relative overflow-hidden rounded-xl p-3;
+  background: linear-gradient(135deg, 
+    rgb(255 255 255 / 0.9), 
+    rgb(249 250 251 / 0.7)
+  );
+  border: 1px solid rgb(229 231 235 / 0.4);
+  backdrop-filter: blur(12px);
+}
+
+.dark .user-profile {
+  background: linear-gradient(135deg, 
+    rgb(17 24 39 / 0.9), 
+    rgb(31 41 55 / 0.7)
+  );
+  border: 1px solid rgb(75 85 99 / 0.4);
+}
+
+.user-profile:hover {
+  @apply shadow-xl;
+  transform: translateY(-2px);
+  border-color: rgb(59 130 246 / 0.4);
+}
+
+/* Status indicator for modern look */
+.status-indicator {
+  @apply absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full;
+  background: linear-gradient(45deg, rgb(34 197 94), rgb(22 163 74));
+  border: 2px solid white;
+  box-shadow: 0 0 0 1px rgb(34 197 94 / 0.3);
+}
+
+.dark .status-indicator {
+  border-color: rgb(17 24 39);
+}
+
+/* Animated gradient backgrounds */
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animated-gradient {
+  background: linear-gradient(-45deg, 
+    rgb(59 130 246 / 0.1), 
+    rgb(147 51 234 / 0.1), 
+    rgb(16 185 129 / 0.1), 
+    rgb(245 158 11 / 0.1)
+  );
+  background-size: 400% 400%;
+  animation: gradientShift 8s ease infinite;
+}
+
+/* Micro-interactions */
+.interactive-element {
+  @apply transition-all duration-200 ease-in-out;
+}
+
+.interactive-element:hover {
+  @apply transform scale-105;
+}
+
+.interactive-element:active {
+  @apply transform scale-95;
+}
+
+/* Glass morphism effect */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px) saturate(120%);
+  border: 1px solid rgba(255, 255, 255, 0.125);
+}
+
+.dark .glass-effect {
+  background: rgba(17, 24, 39, 0.2);
+  border: 1px solid rgba(75, 85, 99, 0.2);
+}
+
+/* Modern focus states */
+.modern-focus:focus-visible {
+  @apply outline-none ring-2 ring-blue-500/40 ring-offset-2 ring-offset-white;
+  box-shadow: 0 0 0 2px rgb(59 130 246 / 0.4), 
+              0 0 20px rgb(59 130 246 / 0.2);
+}
+
+.dark .modern-focus:focus-visible {
+  @apply ring-offset-gray-950;
+}
   }
 }
  

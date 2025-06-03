@@ -626,7 +626,7 @@ function EventCalendar({ initialEvents }) {
       <div className="app-sidebar">
         <AppSidebar
           variant="inset"
-          collapsible="icon"
+          collapsible="offcanvas"
           currentUserData={user}
           onAddEvent={handleAddEvent}
           onLogout={handleLogout}
