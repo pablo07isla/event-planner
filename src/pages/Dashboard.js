@@ -79,10 +79,9 @@ export default function Dashboard() {
       eventData.lastModified = new Date().toISOString();
       eventData.lastModifiedBy = currentUser
         ? currentUser.username
-        : "Usuario desconocido";
-      // Si es edición
+        : "Usuario desconocido";      // Si es edición
       if (eventData.id) {
-        const { error, data } = await supabase
+        const { error } = await supabase
           .from("events")
           .update(eventData)
           .eq("id", eventData.id)
