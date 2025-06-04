@@ -1,6 +1,5 @@
 import { Trans } from "@lingui/macro";
-import { useEffect, useState } from "react";
-import { supabase } from "../../supabaseClient";
+import { useState } from "react";
 import { Badge } from "../ui/badge";
 import {
   Card,
@@ -31,23 +30,9 @@ function isSameDay(dateA, dateB) {
   );
 }
 
-export default function SectionCards() {
-  const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
+export default function SectionCards({ events, loading, refreshEvents }) {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
-
-  useEffect(() => {
-    async function fetchEvents() {
-      setLoading(true);
-      const { data, error } = await supabase.from("events").select();
-      console.log("Supabase data:", data);
-      console.log("Supabase error:", error);
-      if (!error) setEvents(data || []);
-      setLoading(false);
-    }
-    fetchEvents();
-  }, []);
 
   const today = new Date();
   const tomorrow = new Date(today);
@@ -67,12 +52,6 @@ export default function SectionCards() {
 
   // Obtener el nombre del día de la semana para pasado mañana
   const afterTomorrowDayName = afterTomorrow.toLocaleDateString('es-ES', { weekday: 'long' });
-
-  console.log("events state:", events);
-  console.log("today:", today, "tomorrow:", tomorrow, "afterTomorrow:", afterTomorrow);
-  console.log("eventsToday:", eventsToday);
-  console.log("eventsTomorrow:", eventsTomorrow);
-  console.log("eventsAfterTomorrow:", eventsAfterTomorrow);
 
   // Componente para renderizar cada tarjeta
   const EventCard = ({ 

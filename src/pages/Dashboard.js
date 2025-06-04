@@ -25,7 +25,21 @@ export default function Dashboard() {
 
   const [showEventModal, setShowEventModal] = useState(false);
   const [modalEventData, setModalEventData] = useState(null);
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
+  // Fetch events from Supabase
+  const fetchEvents = async () => {
+    setLoading(true);
+    const { data, error } = await supabase.from("events").select();
+    if (!error) setEvents(data || []);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchEvents();
+  }, []);
 
   const handleAddEvent = () => {
     setModalEventData(null); // Nuevo evento
@@ -84,6 +98,7 @@ export default function Dashboard() {
         toast.success("Evento creado exitosamente.");
       }
       setShowEventModal(false);
+      fetchEvents(); // Refresh events after save
     } catch (err) {
       toast.error("Error al guardar el evento: " + (err.message || err));
     }
@@ -164,7 +179,11 @@ export default function Dashboard() {
                     <Trans>Ir a calendario</Trans>
                   </button>
                 </div>
-                <SectionCards />
+                <SectionCards
+                  events={events}
+                  loading={loading}
+                  refreshEvents={fetchEvents}
+                />
               </section>
               {/* Chart Section - Middle Section */}
               <section className="w-full">
