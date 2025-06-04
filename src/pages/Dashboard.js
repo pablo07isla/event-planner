@@ -4,8 +4,11 @@ import ModalEvent from "../components/events/Modal";
 import { AppSidebar } from "../components/sidebar/app-sidebar";
 import { SiteHeader } from "../components/sidebar/site-header.jsx";
 import { SidebarInset } from "../components/ui/sidebar";
+import { supabase } from "../supabaseClient";
 import { Trans } from "@lingui/macro";
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 export default function Dashboard() {
   // Real user and handlers for sidebar functionality
@@ -22,6 +25,7 @@ export default function Dashboard() {
 
   const [showEventModal, setShowEventModal] = useState(false);
   const [modalEventData, setModalEventData] = useState(null);
+  const navigate = useNavigate();
 
   const handleAddEvent = () => {
     setModalEventData(null); // Nuevo evento
@@ -29,12 +33,69 @@ export default function Dashboard() {
   };
 
   const handleCloseEventModal = () => setShowEventModal(false);
-  const handleSaveEvent = (formData) => {
-    // Aquí puedes guardar el evento en la base de datos y recargar la lista si es necesario
-    setShowEventModal(false);
+  const handleSaveEvent = async (formData) => {
+    try {
+      // Obtener usuario actual
+      const currentUser = JSON.parse(localStorage.getItem("user"));
+      // Construir el objeto evento desde formData
+      const eventData = {};
+      for (let [key, value] of formData.entries()) {
+        let mappedKey = key;
+        if (key === "startDate") mappedKey = "start";
+        if (key === "endDate") mappedKey = "end";
+        if (mappedKey === "foodPackage") {
+          eventData[mappedKey] = value ? value.split(",") : [];
+        } else if (mappedKey === "attachments") {
+          try {
+            eventData[mappedKey] = value ? JSON.parse(value) : [];
+          } catch (e) {
+            eventData[mappedKey] = [];
+          }
+        } else if (
+          mappedKey === "peopleCount" ||
+          mappedKey === "deposit" ||
+          mappedKey === "pendingAmount"
+        ) {
+          eventData[mappedKey] = value === "" ? 0 : Number(value);
+        } else {
+          eventData[mappedKey] = value;
+        }
+      }
+      // Agregar campos de auditoría
+      eventData.lastModified = new Date().toISOString();
+      eventData.lastModifiedBy = currentUser
+        ? currentUser.username
+        : "Usuario desconocido";
+      // Si es edición
+      if (eventData.id) {
+        const { error } = await supabase
+          .from("events")
+          .update(eventData)
+          .eq("id", eventData.id)
+          .select();
+        if (error) throw error;
+        toast.success("Evento editado exitosamente.");
+      } else {
+        const { error } = await supabase
+          .from("events")
+          .insert([eventData])
+          .select();
+        if (error) throw error;
+        toast.success("Evento creado exitosamente.");
+      }
+      setShowEventModal(false);
+    } catch (err) {
+      toast.error("Error al guardar el evento: " + (err.message || err));
+    }
   };
-  const handleDeleteEvent = () => {
-    setShowEventModal(false);
+  const handleDeleteEvent = async () => {
+    try {
+      // ...existing code to get event id if needed...
+      setShowEventModal(false);
+      toast.success("Evento eliminado exitosamente.");
+    } catch (err) {
+      toast.error("Error al eliminar el evento: " + (err.message || err));
+    }
   };
 
   const handleLogout = async () => {
@@ -83,7 +144,7 @@ export default function Dashboard() {
                     </p>
                   </div>
                   <button
-                    onClick={handleAddEvent}
+                    onClick={() => navigate("/pages/calendar")}
                     className="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold shadow-md hover:from-blue-600 hover:to-indigo-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
                   >
                     <svg

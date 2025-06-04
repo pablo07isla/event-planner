@@ -18,11 +18,13 @@ import {
 } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { SidebarProvider, SidebarInset } from "./components/ui/sidebar";
+import { Toaster } from "sonner";
 
 const App = () => {
   return (
     <Router>
       <SessionManager />
+      <Toaster position="top-right" richColors />
       <SidebarProvider
         style={{
           "--sidebar-width": "15rem",

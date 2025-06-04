@@ -2,13 +2,6 @@ import { supabase } from "../../supabaseClient";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
 import { Separator } from "../ui/separator";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "../ui/sheet";
 import React, { useState, useEffect } from "react";
@@ -55,10 +48,10 @@ export default function CompanySheetForm({
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const handleSelect = (value) => {
-    setForm({ ...form, identificationType: value });
+    // Limpiar error si existe
+    if (errors[e.target.name]) {
+      setErrors({ ...errors, [e.target.name]: null });
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -96,7 +89,7 @@ export default function CompanySheetForm({
 
   return (
     <Sheet open={open} onOpenChange={onClose}>
-      <SheetContent className="w-1/2 max-w-2xl min-w-[400px] flex flex-col items-center justify-start pt-8">
+      <SheetContent className="w-1/2 max-w-2xl min-w-[400px] flex flex-col items-center justify-start pt-8 z-[100] !overflow-visible">
         <SheetHeader className="w-full">
           <SheetTitle className="text-3xl font-bold text-gray-900 mb-6">
             Crear Empresa / Grupo
@@ -107,6 +100,7 @@ export default function CompanySheetForm({
             <div>
               <Label htmlFor="companyName">Nombre de la Empresa*</Label>
               <Input
+                id="companyName"
                 name="companyName"
                 value={form.companyName}
                 onChange={handleChange}
@@ -119,20 +113,19 @@ export default function CompanySheetForm({
               <Label htmlFor="identificationType">
                 Tipo de Identificación*
               </Label>
-              <Select
+              <select
+                id="identificationType"
+                name="identificationType"
                 value={form.identificationType}
-                onValueChange={handleSelect}
+                onChange={handleChange}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccione" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="NIT">NIT</SelectItem>
-                  <SelectItem value="CC">Cédula de Ciudadanía (CC)</SelectItem>
-                  <SelectItem value="CE">Cédula de Extranjería (CE)</SelectItem>
-                  <SelectItem value="PP">Pasaporte (PP)</SelectItem>
-                </SelectContent>
-              </Select>
+                <option value="">Seleccione tipo de identificación</option>
+                <option value="NIT">NIT</option>
+                <option value="CC">Cédula de Ciudadanía (CC)</option>
+                <option value="CE">Cédula de Extranjería (CE)</option>
+                <option value="PP">Pasaporte (PP)</option>
+              </select>
               {errors.identificationType && (
                 <p className="text-red-500 text-xs">
                   {errors.identificationType}
@@ -144,6 +137,7 @@ export default function CompanySheetForm({
                 Número de Identificación*
               </Label>
               <Input
+                id="identificationNumber"
                 name="identificationNumber"
                 value={form.identificationNumber}
                 onChange={handleChange}
@@ -157,6 +151,7 @@ export default function CompanySheetForm({
             <div>
               <Label htmlFor="contactPerson">Persona de Contacto*</Label>
               <Input
+                id="contactPerson"
                 name="contactPerson"
                 value={form.contactPerson}
                 onChange={handleChange}
@@ -167,14 +162,25 @@ export default function CompanySheetForm({
             </div>
             <div>
               <Label htmlFor="phone">Teléfono*</Label>
-              <Input name="phone" value={form.phone} onChange={handleChange} />
+              <Input
+                id="phone"
+                name="phone"
+                value={form.phone}
+                onChange={handleChange}
+              />
               {errors.phone && (
                 <p className="text-red-500 text-xs">{errors.phone}</p>
               )}
             </div>
             <div>
               <Label htmlFor="email">Email*</Label>
-              <Input name="email" value={form.email} onChange={handleChange} />
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                value={form.email}
+                onChange={handleChange}
+              />
               {errors.email && (
                 <p className="text-red-500 text-xs">{errors.email}</p>
               )}
@@ -182,6 +188,7 @@ export default function CompanySheetForm({
             <div>
               <Label htmlFor="address">Dirección*</Label>
               <Input
+                id="address"
                 name="address"
                 value={form.address}
                 onChange={handleChange}
@@ -192,7 +199,12 @@ export default function CompanySheetForm({
             </div>
             <div>
               <Label htmlFor="city">Ciudad*</Label>
-              <Input name="city" value={form.city} onChange={handleChange} />
+              <Input
+                id="city"
+                name="city"
+                value={form.city}
+                onChange={handleChange}
+              />
               {errors.city && (
                 <p className="text-red-500 text-xs">{errors.city}</p>
               )}
