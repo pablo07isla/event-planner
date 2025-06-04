@@ -90,14 +90,13 @@ const ModalCompany = ({ isOpen, onClose, onSave, companyData, useSheet }) => {
     },
     [zodErrors, touched, formData]
   );
-
   // Declarar resetForm primero
   const resetForm = useCallback(() => {
     setFormData({ ...initialFormState }); // Usar spread para crear nueva referencia
     setIsCreating(false);
     setTouched({});
     setZodErrors({});
-  }, []);
+  }, [initialFormState]);
 
   // Declarar handleClose después de resetForm
   const handleClose = useCallback(() => {
@@ -124,8 +123,7 @@ const ModalCompany = ({ isOpen, onClose, onSave, companyData, useSheet }) => {
       setTouched({});
       setZodErrors({});
     }
-  }, [isOpen, companyData]);
-
+  }, [isOpen, companyData, initialFormState]);
   const handleChange = useCallback(
     (e) => {
       const { name, value } = e.target;
