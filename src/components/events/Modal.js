@@ -1069,7 +1069,10 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
               {event && event.id && (
                 <button
                   type="button"
-                  onClick={onDelete}
+                  onClick={() => {
+                    console.log("[ModalEvent] Delete clicked, event:", event);
+                    onDelete(event.id);
+                  }}
                   className="px-6 py-3 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition duration-150 ease-in-out text-sm"
                 >
                   Eliminar

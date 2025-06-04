@@ -82,13 +82,17 @@ export default function Dashboard() {
         : "Usuario desconocido";
       // Si es edición
       if (eventData.id) {
-        const { error } = await supabase
+        const { error, data } = await supabase
           .from("events")
           .update(eventData)
           .eq("id", eventData.id)
           .select();
         if (error) throw error;
         toast.success("Evento editado exitosamente.");
+        setTimeout(() => {
+          setShowEventModal(false);
+          fetchEvents();
+        }, 300);
       } else {
         const { error } = await supabase
           .from("events")
@@ -96,18 +100,27 @@ export default function Dashboard() {
           .select();
         if (error) throw error;
         toast.success("Evento creado exitosamente.");
+        setTimeout(() => {
+          setShowEventModal(false);
+          fetchEvents();
+        }, 300);
       }
-      setShowEventModal(false);
-      fetchEvents(); // Refresh events after save
     } catch (err) {
       toast.error("Error al guardar el evento: " + (err.message || err));
     }
   };
-  const handleDeleteEvent = async () => {
+  const handleDeleteEvent = async (eventId) => {
     try {
-      // ...existing code to get event id if needed...
-      setShowEventModal(false);
+      const { error } = await supabase
+        .from("events")
+        .delete()
+        .eq("id", eventId);
+      if (error) throw error;
       toast.success("Evento eliminado exitosamente.");
+      setTimeout(() => {
+        setShowEventModal(false);
+        fetchEvents();
+      }, 300);
     } catch (err) {
       toast.error("Error al eliminar el evento: " + (err.message || err));
     }
@@ -183,6 +196,8 @@ export default function Dashboard() {
                   events={events}
                   loading={loading}
                   refreshEvents={fetchEvents}
+                  onDelete={handleDeleteEvent}
+                  onSave={handleSaveEvent}
                 />
               </section>
               {/* Chart Section - Middle Section */}

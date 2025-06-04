@@ -30,7 +30,7 @@ function isSameDay(dateA, dateB) {
   );
 }
 
-export default function SectionCards({ events, loading, refreshEvents }) {
+export default function SectionCards({ events, loading, refreshEvents, onDelete, onSave }) {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -217,8 +217,14 @@ export default function SectionCards({ events, loading, refreshEvents }) {
       <ModalEvent
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        onSave={() => setModalOpen(false)}
-        onDelete={() => setModalOpen(false)}
+        onSave={async (formData) => {
+          await onSave(formData);
+          setModalOpen(false);
+        }}
+        onDelete={id => {
+          onDelete(id);
+          setModalOpen(false);
+        }}
         event={selectedEvent}
       />
     </div>
