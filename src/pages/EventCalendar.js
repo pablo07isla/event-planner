@@ -17,7 +17,7 @@ import { supabase } from "../supabaseClient";
 // Importa el componente AppSidebar
 // needs additional webpack config!
 import bootstrapPlugin from "@fullcalendar/bootstrap";
-import { Modal, Button, Toast } from "react-bootstrap";
+import { Modal, Button } from "react-bootstrap";
 import "src/components/events/EventCalendar.css";
 import EventList from "../components/events/EventList";
 import { SiteHeader } from "../components/sidebar/site-header";
@@ -27,12 +27,12 @@ import { parseISO, format } from "date-fns";
 import { FaPrint } from "react-icons/fa";
 // Asegúrate de que la ruta sea correcta
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 function EventCalendar({ initialEvents }) {
   const [events, setEvents] = useState(initialEvents);
   const [modalOpen, setModalOpen] = useState(false);
   const [currentEvent, setCurrentEvent] = useState(null);
-  const [error, setError] = useState(null);
   const [alertDialogOpen, setAlertDialogOpen] = useState(false);
   const [eventToUpdate, setEventToUpdate] = useState(null);
   const [user, setUser] = useState(null);
@@ -200,13 +200,15 @@ function EventCalendar({ initialEvents }) {
 
         const updatedEvent = updatedData[0];
         console.log("Evento actualizado:", updatedEvent);
-
         setEvents((prevEvents) =>
           prevEvents.map((e) => (e.id === updatedEvent.id ? updatedEvent : e))
         );
+
+        // Mostrar mensaje de éxito
+        toast.success("Fecha del evento actualizada exitosamente");
       } catch (err) {
         console.error("Error detallado:", err);
-        setError(
+        toast.error(
           `Error al actualizar el evento: ${err.message}. Por favor, inténtelo de nuevo.`
         );
       }
@@ -237,9 +239,7 @@ function EventCalendar({ initialEvents }) {
     }
     setEvents((prevEvents) => [...prevEvents]);
   };
-
   const handleSaveEvent = async (formData) => {
-    setError(null);
     try {
       const currentUser = JSON.parse(localStorage.getItem("user"));
 
@@ -363,11 +363,16 @@ function EventCalendar({ initialEvents }) {
           }
         }
       }
-
-      setModalOpen(false);
+      setModalOpen(false); // Mostrar mensaje de éxito
+      const isEdit = formData.get("id");
+      toast.success(
+        isEdit
+          ? "Evento actualizado exitosamente"
+          : "Evento creado exitosamente"
+      );
     } catch (err) {
       console.error("Error detallado al guardar el evento:", err);
-      setError(`Error al guardar el evento: ${err.message}`);
+      toast.error(`Error al guardar el evento: ${err.message}`);
     }
   };
 
@@ -442,13 +447,28 @@ function EventCalendar({ initialEvents }) {
     }
     return updatedAttachments;
   };
-
-  const handleDeleteEvent = async () => {
-    setError(null);
+  const handleDeleteEvent = async (eventId) => {
     try {
+      // Usar el eventId pasado como parámetro o el currentEvent.id como respaldo
+      const idToDelete = eventId || currentEvent?.id;
+      const eventToDelete = eventId
+        ? events.find((e) => e.id === eventId)
+        : currentEvent;
+
+      if (!idToDelete) {
+        console.error(
+          "[handleDeleteEvent] No se pudo identificar el evento a eliminar"
+        );
+        toast.error("No se pudo identificar el evento a eliminar");
+        return;
+      }
+
+      console.log("[handleDeleteEvent] Eliminando evento con ID:", idToDelete);
+      console.log("[handleDeleteEvent] Evento a eliminar:", eventToDelete);
+
       // Si el evento tiene archivos adjuntos, eliminarlos primero
-      if (currentEvent.attachments && currentEvent.attachments.length > 0) {
-        const filePaths = currentEvent.attachments
+      if (eventToDelete?.attachments && eventToDelete.attachments.length > 0) {
+        const filePaths = eventToDelete.attachments
           .filter((attachment) => attachment.path)
           .map((attachment) => attachment.path);
 
@@ -469,13 +489,35 @@ function EventCalendar({ initialEvents }) {
       }
 
       // Eliminar el evento
-      await supabase.from("events").delete().eq("id", currentEvent.id);
-      setEvents((prevEvents) =>
-        prevEvents.filter((e) => e.id !== currentEvent.id)
+      console.log(
+        "[handleDeleteEvent] Ejecutando eliminación en base de datos..."
       );
+      const { error: deleteError } = await supabase
+        .from("events")
+        .delete()
+        .eq("id", idToDelete);
+
+      if (deleteError) {
+        console.error("[handleDeleteEvent] Error en eliminación:", deleteError);
+        throw deleteError;
+      }
+
+      console.log(
+        "[handleDeleteEvent] Evento eliminado de la base de datos exitosamente"
+      );
+
+      setEvents((prevEvents) => prevEvents.filter((e) => e.id !== idToDelete));
       setModalOpen(false);
+
+      // Mostrar mensaje de éxito
+      console.log("[handleDeleteEvent] Mostrando mensaje de éxito...");
+      toast.success("Evento eliminado exitosamente");
+      console.log("[handleDeleteEvent] Función completada exitosamente");
     } catch (err) {
-      setError("Error al eliminar el evento. Por favor, inténtelo de nuevo.");
+      console.error("[handleDeleteEvent] Error:", err);
+      toast.error(
+        "Error al eliminar el evento. Por favor, inténtelo de nuevo."
+      );
       console.error(err);
     }
   };
@@ -501,7 +543,9 @@ function EventCalendar({ initialEvents }) {
       setEvents(data);
     } catch (error) {
       console.error("Error fetching events:", error);
-      setError("Error al cargar los eventos. Por favor, inténtelo de nuevo.");
+      toast.error(
+        "Error al cargar los eventos. Por favor, inténtelo de nuevo."
+      );
     } finally {
       setCargando(false);
     }
@@ -632,7 +676,6 @@ function EventCalendar({ initialEvents }) {
           onLogout={handleLogout}
         />
       </div>
-
       <SidebarInset>
         {/* Main Content Area */}
         <div className="app-main">
@@ -640,7 +683,6 @@ function EventCalendar({ initialEvents }) {
           <div className="app-header">
             <SiteHeader />
           </div>
-
           {/* Calendar Container */}
           <div className="calendar-container">
             {/* Loading Indicator */}
@@ -780,7 +822,6 @@ function EventCalendar({ initialEvents }) {
               />
             </div>
           </div>
-
           {/* Event Modal */}
           <ModalEvent
             isOpen={modalOpen}
@@ -789,7 +830,6 @@ function EventCalendar({ initialEvents }) {
             onDelete={handleDeleteEvent}
             event={currentEvent}
           />
-
           {/* Confirmation Modal */}
           <Modal
             show={alertDialogOpen}
@@ -810,26 +850,10 @@ function EventCalendar({ initialEvents }) {
               <Button variant="primary" onClick={handleConfirmDateChange}>
                 Confirmar
               </Button>
-            </Modal.Footer>
-          </Modal>
-
-          {/* Error Toast */}
-          {error && (
-            <Toast
-              onClose={() => setError(null)}
-              show={true}
-              delay={5000}
-              autohide
-              className="error-toast"
-            >
-              <Toast.Header>
-                <strong className="mr-auto text-danger">Error</strong>
-              </Toast.Header>
-              <Toast.Body>{error}</Toast.Body>
-            </Toast>
-          )}
+            </Modal.Footer>{" "}
+          </Modal>{" "}
         </div>
-      </SidebarInset>
+      </SidebarInset>{" "}
       <style jsx global>{`
         .fc .fc-daygrid-day-frame {
           min-height: 100px;

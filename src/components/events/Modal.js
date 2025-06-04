@@ -277,13 +277,44 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
       maximumFractionDigits: 0,
     }).format(numericValue);
   };
-
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevState) => ({
-      ...prevState,
-      [name]: value,
-    }));
+
+    // Si se está cambiando la fecha de inicio, actualizar automáticamente la fecha fin
+    if (name === "startDate" && value) {
+      const startDate = new Date(value);
+      const endDate = new Date(startDate);
+      endDate.setDate(startDate.getDate() + 1);
+
+      // Formatear la fecha fin para el input datetime-local
+      const formattedEndDate = format(endDate, "yyyy-MM-dd'T'HH:mm");
+
+      setFormData((prevState) => ({
+        ...prevState,
+        [name]: value,
+        endDate: formattedEndDate,
+      }));
+
+      // Cerrar el date picker haciendo blur del elemento
+      setTimeout(() => {
+        e.target.blur();
+      }, 100);
+    } else if (name === "endDate" && value) {
+      setFormData((prevState) => ({
+        ...prevState,
+        [name]: value,
+      }));
+
+      // Cerrar el date picker haciendo blur del elemento
+      setTimeout(() => {
+        e.target.blur();
+      }, 100);
+    } else {
+      setFormData((prevState) => ({
+        ...prevState,
+        [name]: value,
+      }));
+    }
   };
 
   const handleFoodPackageChange = (selectedOptions) => {
