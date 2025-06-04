@@ -13,7 +13,7 @@ import {
 import { Separator } from "../ui/separator";
 import { Trans } from "@lingui/macro";
 import PropTypes from "prop-types";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { z } from "zod";
 
 const companySchema = z.object({
@@ -36,17 +36,20 @@ const companySchema = z.object({
 });
 
 const ModalCompany = ({ isOpen, onClose, onSave, companyData, useSheet }) => {
-  const initialFormState = {
-    id: "",
-    companyName: "",
-    identificationType: "CC", // Valor por defecto
-    identificationNumber: "",
-    contactPerson: "",
-    phone: "",
-    email: "",
-    address: "",
-    city: "",
-  };
+  const initialFormState = useMemo(
+    () => ({
+      id: "",
+      companyName: "",
+      identificationType: "CC", // Valor por defecto
+      identificationNumber: "",
+      contactPerson: "",
+      phone: "",
+      email: "",
+      address: "",
+      city: "",
+    }),
+    []
+  );
 
   const [formData, setFormData] = useState(initialFormState);
   const [notification, setNotification] = useState({
