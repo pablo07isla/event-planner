@@ -55,7 +55,6 @@
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",
     "dotenv": "^16.4.5",
-    "event-planner": "file:",
     "html2canvas": "^1.4.1",
     "i18next-browser-languagedetector": "^8.0.4",
     "jspdf": "^3.0.1",
@@ -79,12 +78,11 @@
     "tailwind-merge": "^2.5.3",
     "tailwindcss": "^3.4.11",
     "tailwindcss-animate": "^1.0.7",
-    "ui": "github:shadcn/ui",
     "web-vitals": "^2.1.4",
     "zod": "^3.25.42"
   },
   "scripts": {
-    "start": "react-scripts --openssl-legacy-provider start",
+    "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
