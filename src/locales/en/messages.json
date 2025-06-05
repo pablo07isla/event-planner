@@ -1,4 +1,11 @@
 {
+  "j9z2AT": {
+    "translation": "Access denied",
+    "message": "Acceso denegado",
+    "placeholders": {},
+    "comments": [],
+    "origin": []
+  },
   "login.noAccount": {
     "translation": "Don't have an account? <0>Register now</0>",
     "message": "¿No tienes una cuenta? <0>Regístrate ahora</0>",
@@ -29,116 +36,56 @@
     "message": "¿Por qué elegirnos?",
     "placeholders": {},
     "comments": [],
-    "origin": [
-      [
-        "src/components/Login.js",
-        160
-      ]
-    ],
+    "origin": [],
     "translation": "Why choose us?"
   },
   "login.subtitle": {
     "message": "Accede a tu cuenta para continuar",
     "placeholders": {},
     "comments": [],
-    "origin": [
-      [
-        "src/components/Login.js",
-        198
-      ]
-    ],
+    "origin": [],
     "translation": "Access your account to continue"
   },
   "AeXO77": {
-    "translation": "",
     "message": "Account",
     "placeholders": {},
     "comments": [],
-    "origin": [
-      [
-        "src/components/ShadSidebar.js",
-        184
-      ]
-    ]
+    "origin": [],
+    "translation": "Account"
   },
   "3igsBN": {
     "message": "Add Event",
     "placeholders": {},
     "comments": [],
-    "origin": [
-      [
-        "src/components/Sidebar.js",
-        112
-      ],
-      [
-        "src/components/ShadSidebar.js",
-        117
-      ],
-      [
-        "src/components/nav-projects.jsx",
-        35
-      ]
-    ],
-    "translation": ""
+    "origin": [],
+    "translation": "Add Event"
   },
   "Faptqt": {
     "message": "Administrator",
     "placeholders": {},
     "comments": [],
-    "origin": [
-      [
-        "src/components/Sidebar.js",
-        137
-      ],
-      [
-        "src/components/ShadSidebar.js",
-        150
-      ],
-      [
-        "src/components/ShadSidebar.js",
-        176
-      ]
-    ],
-    "translation": ""
+    "origin": [],
+    "translation": "Administrator"
   },
   "ZlwDi6": {
-    "translation": "Analytics",
     "message": "Analytics",
     "placeholders": {},
     "comments": [],
-    "origin": [
-      [
-        "src/Dashboard.js",
-        101
-      ]
-    ]
+    "origin": [],
+    "translation": "Analytics"
   },
   "FqmmRa": {
-    "translation": "Current year vs Previous year",
     "message": "Año actual vs Año anterior",
     "placeholders": {},
     "comments": [],
-    "origin": [
-      [
-        "src/components/chart-area-interactive.jsx",
-        106
-      ],
-      [
-        "src/components/chart-area-interactive.jsx",
-        109
-      ]
-    ]
+    "origin": [],
+    "translation": "Current year vs Previous year"
   },
   "welcome.title": {
     "message": "Bienvenido a nuestra plataforma",
     "placeholders": {},
     "comments": [],
-    "origin": [
-      [
-        "src/components/Login.js",
-        151
-      ]
-    ],
+    "origin": [],
     "translation": "Welcome to our platform"
   },
   "8ybi+Y": {
@@ -171,105 +118,85 @@
     "message": "Calendar",
     "placeholders": {},
     "comments": [],
-    "origin": [
-      [
-        "src/components/Sidebar.js",
-        38
-      ],
-      [
-        "src/components/ShadSidebar.js",
-        42
-      ],
-      [
-        "src/components/app-sidebar.js",
-        49
-      ]
-    ],
+    "origin": [],
     "translation": "Calendar"
   },
   "ytcDq7": {
     "message": "Cancelar",
     "placeholders": {},
     "comments": [],
-    "origin": [
-      [
-        "src/components/ModalCompany.js",
-        479
-      ]
-    ],
-    "translation": ""
+    "origin": [],
+    "translation": "Cancel"
   },
   "i9V1KH": {
-    "translation": "Loading data...",
     "message": "Cargando datos...",
     "placeholders": {},
     "comments": [],
-    "origin": [
-      [
-        "src/components/chart-area-interactive.jsx",
-        84
-      ]
-    ]
+    "origin": [],
+    "translation": "Loading data..."
   },
   "/Hlpv8": {
-    "translation": "Loading...",
     "message": "Cargando...",
     "placeholders": {},
     "comments": [],
-    "origin": [
-      [
-        "src/components/dashboard/section-cards.jsx",
-        119
-      ]
-    ]
+    "origin": [],
+    "translation": "Loading..."
   },
   "vLrl4w": {
     "message": "Ciudad*",
     "placeholders": {},
     "comments": [],
-    "origin": [
-      [
-        "src/components/ModalCompany.js",
-        456
-      ]
-    ],
-    "translation": ""
+    "origin": [],
+    "translation": "City*"
+  },
+  "IS5ZAJ": {
+    "translation": "Complete the form to create a new user.",
+    "message": "Completa el formulario para crear un nuevo usuario.",
+    "placeholders": {},
+    "comments": [],
+    "origin": []
+  },
+  "vFjwV6": {
+    "translation": "Password",
+    "message": "Contraseña",
+    "placeholders": {},
+    "comments": [],
+    "origin": []
   },
   "common.password": {
     "message": "Contraseña",
     "placeholders": {},
     "comments": [],
-    "origin": [
-      [
-        "src/components/Login.js",
-        243
-      ]
-    ],
+    "origin": [],
     "translation": "Password"
   },
   "common.email": {
     "message": "Correo electrónico",
     "placeholders": {},
     "comments": [],
-    "origin": [
-      [
-        "src/components/Login.js",
-        218
-      ]
-    ],
+    "origin": [],
     "translation": "Email"
+  },
+  "eTSjYE": {
+    "translation": "Creating...",
+    "message": "Creando...",
+    "placeholders": {},
+    "comments": [],
+    "origin": []
+  },
+  "wHOI0G": {
+    "translation": "Create user",
+    "message": "Crear usuario",
+    "placeholders": {},
+    "comments": [],
+    "origin": []
   },
   "GmRK4s": {
     "message": "Crear",
     "placeholders": {},
     "comments": [],
-    "origin": [
-      [
-        "src/components/ModalCompany.js",
-        485
-      ]
-    ],
-    "translation": ""
+    "origin": [],
+    "translation": "Create"
   },
   "VcCE/k": {
     "translation": "",
@@ -285,167 +212,56 @@
     "obsolete": true
   },
   "7p5kLi": {
-    "translation": "",
     "message": "Dashboard",
     "placeholders": {},
     "comments": [],
-    "origin": [
-      [
-        "src/components/app-sidebar.js",
-        48
-      ]
-    ]
+    "origin": [],
+    "translation": "Dashboard"
   },
   "wx6Mw/": {
     "message": "Dirección*",
     "placeholders": {},
     "comments": [],
-    "origin": [
-      [
-        "src/components/ModalCompany.js",
-        436
-      ]
-    ],
-    "translation": ""
+    "origin": [],
+    "translation": "Address*"
   },
   "96Mosj": {
     "message": "Editar Compañía",
     "placeholders": {},
     "comments": [],
-    "origin": [
-      [
-        "src/components/ModalCompany.js",
-        510
-      ]
-    ],
-    "translation": ""
+    "origin": [],
+    "translation": "Edit Company"
   },
-  "sTp0mZ": {
-    "translation": "",
-    "message": "El email es requerido",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/components/ModalCompany.js",
-        505
-      ]
-    ],
-    "obsolete": true
-  },
-  "GuBM9l": {
-    "translation": "",
-    "message": "El nombre de la compañía es requerido",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/components/ModalCompany.js",
-        360
-      ]
-    ],
-    "obsolete": true
-  },
-  "kHpI/D": {
-    "translation": "",
-    "message": "El número de identificación es requerido",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/components/ModalCompany.js",
-        414
-      ]
-    ],
-    "obsolete": true
-  },
-  "ITJ/ZO": {
-    "translation": "",
-    "message": "El teléfono es requerido",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/components/ModalCompany.js",
-        472
-      ]
-    ],
-    "obsolete": true
+  "O3oNi5": {
+    "translation": "Email"
   },
   "Clnkaz": {
     "message": "Email*",
     "placeholders": {},
     "comments": [],
-    "origin": [
-      [
-        "src/components/ModalCompany.js",
-        416
-      ]
-    ],
-    "translation": ""
+    "origin": [],
+    "translation": "Email*"
   },
   "YXi8ky": {
     "message": "EP",
     "placeholders": {},
     "comments": [],
-    "origin": [
-      [
-        "src/components/Sidebar.js",
-        57
-      ]
-    ],
+    "origin": [],
     "translation": "EP"
   },
   "SlfejT": {
     "message": "Error",
     "placeholders": {},
     "comments": [],
-    "origin": [
-      [
-        "src/components/ModalCompany.js",
-        287
-      ]
-    ],
-    "translation": ""
+    "translation": "Error"
   },
   "R1pp4J": {
-    "message": "Event Planner",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/components/Sidebar.js",
-        57
-      ],
-      [
-        "src/components/ShadSidebar.js",
-        64
-      ]
-    ],
     "translation": "Event Planner"
   },
   "dNDaCa": {
-    "message": "Éxito",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/components/ModalCompany.js",
-        289
-      ]
-    ],
-    "translation": ""
+    "translation": "Success"
   },
   "welcome.features.management": {
-    "message": "Gestión eficiente",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/components/Login.js",
-        165
-      ]
-    ],
     "translation": "Efficient management"
   },
   "register.google": {
@@ -462,52 +278,16 @@
     "obsolete": true
   },
   "v4QLmE": {
-    "message": "Guardar",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/components/ModalCompany.js",
-        485
-      ]
-    ],
-    "translation": ""
+    "translation": "Save"
   },
   "welcome.features.tools": {
-    "message": "Herramientas poderosas",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/components/Login.js",
-        171
-      ]
-    ],
     "translation": "Powerful tools"
   },
   "5Fwy7R": {
-    "translation": "Today",
-    "message": "Hoy",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/components/dashboard/section-cards.jsx",
-        171
-      ]
-    ]
+    "translation": "Today"
   },
   "pzMnvc": {
-    "message": "Información",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/components/ModalCompany.js",
-        288
-      ]
-    ],
-    "translation": ""
+    "translation": "Info"
   },
   "hRwLnN": {
     "translation": "",
@@ -523,194 +303,36 @@
     "obsolete": true
   },
   "login.signingIn": {
-    "message": "Iniciando sesión...",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/components/Login.js",
-        298
-      ]
-    ],
     "translation": "Signing in..."
   },
   "login.title": {
-    "message": "Iniciar sesión",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/components/Login.js",
-        195
-      ]
-    ],
     "translation": "Sign in"
   },
   "common.signIn": {
-    "message": "Iniciar sesión",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/components/Login.js",
-        300
-      ]
-    ],
     "translation": "Sign in"
   },
   "Efy4mJ": {
-    "translation": "Interactive data visualization and trends",
-    "message": "Interactive data visualization and trends",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/Dashboard.js",
-        104
-      ]
-    ]
+    "translation": "Interactive data visualization and trends"
   },
   "vYD1/h": {
-    "translation": "Go to calendar",
-    "message": "Ir a calendario",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/Dashboard.js",
-        92
-      ]
-    ]
-  },
-  "ewszHd": {
-    "translation": "",
-    "message": "La ciudad es requerida",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/components/ModalCompany.js",
-        553
-      ]
-    ],
-    "obsolete": true
-  },
-  "r7LnJt": {
-    "translation": "",
-    "message": "La dirección es requerida",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/components/ModalCompany.js",
-        530
-      ]
-    ],
-    "obsolete": true
+    "translation": "Go to calendar"
   },
   "welcome.subtitle": {
-    "message": "La mejor manera de gestionar tu negocio",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/components/Login.js",
-        154
-      ]
-    ],
     "translation": "The best way to manage your business"
   },
-  "OFGANL": {
-    "translation": "",
-    "message": "La persona de contacto es requerida",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/components/ModalCompany.js",
-        439
-      ]
-    ],
-    "obsolete": true
-  },
   "CnKBZR": {
-    "translation": "Last 3 months",
-    "message": "Last 3 months",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/components/chart-area-interactive.jsx",
-        120
-      ],
-      [
-        "src/components/chart-area-interactive.jsx",
-        130
-      ],
-      [
-        "src/components/chart-area-interactive.jsx",
-        134
-      ]
-    ]
+    "translation": "Last 3 months"
   },
   "uq2BmQ": {
-    "translation": "Last 30 days",
-    "message": "Last 30 days",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/components/chart-area-interactive.jsx",
-        121
-      ],
-      [
-        "src/components/chart-area-interactive.jsx",
-        137
-      ]
-    ]
+    "translation": "Last 30 days"
   },
   "ct2SYD": {
-    "translation": "Last 7 days",
-    "message": "Last 7 days",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/components/chart-area-interactive.jsx",
-        122
-      ],
-      [
-        "src/components/chart-area-interactive.jsx",
-        140
-      ]
-    ]
+    "translation": "Last 7 days"
   },
   "GCdPZM": {
-    "translation": "Tomorrow",
-    "message": "Mañana",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/components/dashboard/section-cards.jsx",
-        182
-      ]
-    ]
+    "translation": "Tomorrow"
   },
   "vo2a+a": {
-    "message": "Marketing",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/components/Sidebar.js",
-        40
-      ],
-      [
-        "src/components/ShadSidebar.js",
-        44
-      ]
-    ],
     "translation": "Marketing"
   },
   "register.microsoft": {
@@ -727,104 +349,40 @@
     "obsolete": true
   },
   "WjfTyA": {
-    "translation": "No data to display in this range.",
-    "message": "No hay datos para mostrar en este rango.",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/components/chart-area-interactive.jsx",
-        94
-      ]
-    ]
+    "translation": "No data to display in this range."
   },
   "mum6Le": {
-    "translation": "No events for today",
-    "message": "No hay eventos para hoy",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/components/dashboard/section-cards.jsx",
-        178
-      ]
-    ]
+    "translation": "No events for today"
   },
   "OrdjEy": {
-    "translation": "No events for tomorrow",
-    "message": "No hay eventos para mañana",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/components/dashboard/section-cards.jsx",
-        189
-      ]
-    ]
+    "translation": "No events for tomorrow"
   },
   "ulGDE0": {
-    "translation": "No events for the day after tomorrow",
-    "message": "No hay eventos para pasado mañana",
+    "translation": "No events for the day after tomorrow"
+  },
+  "4jJvKu": {
+    "translation": "Company Name*"
+  },
+  "PkYri9": {
+    "translation": "",
+    "message": "Nombre de usuario",
     "placeholders": {},
     "comments": [],
     "origin": [
       [
-        "src/components/dashboard/section-cards.jsx",
-        200
+        "src/components/user/create-user-form.jsx",
+        44
       ]
     ]
   },
-  "4jJvKu": {
-    "message": "Nombre de la Compañía*",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/components/ModalCompany.js",
-        299
-      ]
-    ],
-    "translation": ""
-  },
   "iDNBZe": {
-    "message": "Notifications",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/components/Sidebar.js",
-        41
-      ],
-      [
-        "src/components/ShadSidebar.js",
-        45
-      ]
-    ],
     "translation": "Notifications"
   },
   "aOyzki": {
-    "message": "Nueva Compañía",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/components/ModalCompany.js",
-        512
-      ]
-    ],
-    "translation": ""
+    "translation": "New Company"
   },
   "xzwL1X": {
-    "message": "Número de Identificación*",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/components/ModalCompany.js",
-        354
-      ]
-    ],
-    "translation": ""
+    "translation": "Identification Number*"
   },
   "login.orContinueWith": {
     "translation": "Or continue with",
@@ -840,28 +398,10 @@
     "obsolete": true
   },
   "ct3XAd": {
-    "translation": "pax",
-    "message": "pax",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/components/dashboard/section-cards.jsx",
-        102
-      ]
-    ]
+    "translation": "pax"
   },
   "qNVDKY": {
-    "message": "Persona de Contacto*",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/components/ModalCompany.js",
-        376
-      ]
-    ],
-    "translation": ""
+    "translation": "Contact Person*"
   },
   "zhWvjg": {
     "translation": "",
@@ -890,183 +430,51 @@
     "obsolete": true
   },
   "RvBAyC": {
-    "translation": "Get ready for what's coming",
-    "message": "Preparate para lo que viene",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/Dashboard.js",
-        71
-      ]
-    ]
+    "translation": "Get ready for what's coming"
   },
   "Oojfbh": {
-    "translation": "",
-    "message": "Professional",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/components/ShadSidebar.js",
-        67
-      ]
-    ]
+    "translation": "Professional"
   },
   "LdSWvT": {
-    "translation": "Upcoming Events",
-    "message": "Proximos Eventos",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/Dashboard.js",
-        68
-      ]
-    ]
+    "translation": "Upcoming Events"
   },
   "UDMjsP": {
+    "translation": "Quick Actions"
+  },
+  "common.rememberMe": {
+    "translation": "Remember me"
+  },
+  "wtAFiH": {
     "translation": "",
-    "message": "Quick Actions",
+    "message": "Rol",
     "placeholders": {},
     "comments": [],
     "origin": [
       [
-        "src/components/ShadSidebar.js",
-        106
+        "src/components/user/create-user-form.jsx",
+        112
       ]
     ]
   },
-  "common.rememberMe": {
-    "message": "Recuérdame",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/components/Login.js",
-        287
-      ]
-    ],
-    "translation": "Recuérdame"
-  },
   "A1taO8": {
-    "message": "Search",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/components/Sidebar.js",
-        39
-      ],
-      [
-        "src/components/ShadSidebar.js",
-        43
-      ],
-      [
-        "src/components/app-sidebar.js",
-        50
-      ]
-    ],
     "translation": "Search"
   },
   "welcome.features.tracking": {
-    "message": "Seguimiento detallado",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/components/Login.js",
-        177
-      ]
-    ],
     "translation": "Detailed tracking"
   },
   "Tz0i8g": {
-    "message": "Settings",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/components/Sidebar.js",
-        42
-      ],
-      [
-        "src/components/ShadSidebar.js",
-        46
-      ],
-      [
-        "src/components/ShadSidebar.js",
-        188
-      ],
-      [
-        "src/components/app-sidebar.js",
-        53
-      ]
-    ],
     "translation": "Settings"
   },
   "bHYIks": {
-    "message": "Sign Out",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/components/Sidebar.js",
-        154
-      ],
-      [
-        "src/components/ShadSidebar.js",
-        196
-      ]
-    ],
     "translation": "Sign Out"
   },
-  "hqryxr": {
-    "translation": "No events",
-    "message": "Sin eventos",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/components/dashboard/section-cards.jsx",
-        110
-      ]
-    ]
-  },
   "dYe7w0": {
-    "message": "Teléfono*",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/components/ModalCompany.js",
-        396
-      ]
-    ],
-    "translation": ""
+    "translation": "Phone*"
   },
   "/+mLc0": {
-    "message": "Tipo de Identificación*",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/components/ModalCompany.js",
-        319
-      ]
-    ],
-    "translation": ""
+    "translation": "Identification Type*"
   },
   "SJgxHg": {
-    "translation": "Total People",
-    "message": "Total de Personas",
-    "placeholders": {},
-    "comments": [],
-    "origin": [
-      [
-        "src/components/chart-area-interactive.jsx",
-        103
-      ]
-    ]
+    "translation": "Total People"
   }
 }
