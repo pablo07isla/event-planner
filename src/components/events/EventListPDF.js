@@ -52,6 +52,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
+    // Removido break: true para evitar partición
   },
 
   // Header azul del evento
@@ -196,6 +197,11 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: "center",
   },
+
+  // Contenedor para grupo de fecha que permite salto de página
+  dateGroup: {
+    marginBottom: 20,
+  },
 });
 
 const EventListPDF = ({ events }) => {
@@ -216,17 +222,17 @@ const EventListPDF = ({ events }) => {
       <Page style={styles.page}>
         <Text style={styles.mainHeader}>Lista de Eventos</Text>
 
-        {sortedDates.map((date) => (
-          <View key={date} wrap={false}>
-            {/* Header de fecha */}
-            <View style={styles.dateHeader}>
+        {sortedDates.map((date, dateIndex) => (
+          <View key={date} style={styles.dateGroup}>
+            {/* Header de fecha - permite que se mantenga con al menos un evento */}
+            <View style={styles.dateHeader} wrap={false}>
               <View style={styles.calendarIcon} />
               <Text style={styles.dateText}>{formatDate(date)}</Text>
             </View>
 
-            {/* Eventos de esa fecha */}
-            {grouped[date].map((event) => (
-              <View key={event.id} style={styles.eventCard}>
+            {/* Eventos de esa fecha - cada uno evita partirse entre páginas */}
+            {grouped[date].map((event, eventIndex) => (
+              <View key={event.id} style={styles.eventCard} wrap={false}>
                 {/* Header azul con nombre y cantidad de personas */}
                 <View style={styles.eventHeader}>
                   <Text style={styles.eventTitle}>

@@ -208,7 +208,7 @@ const EventList = ({ events, onClose }) => {
       if (typeof onClose === "function") {
         onClose();
       }
-    }, 500);
+    }, 1000);
   };
 
   return (
