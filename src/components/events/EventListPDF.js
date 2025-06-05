@@ -217,7 +217,7 @@ const EventListPDF = ({ events }) => {
         <Text style={styles.mainHeader}>Lista de Eventos</Text>
 
         {sortedDates.map((date) => (
-          <View key={date}>
+          <View key={date} wrap={false}>
             {/* Header de fecha */}
             <View style={styles.dateHeader}>
               <View style={styles.calendarIcon} />
@@ -226,7 +226,7 @@ const EventListPDF = ({ events }) => {
 
             {/* Eventos de esa fecha */}
             {grouped[date].map((event) => (
-              <View key={event.id} style={styles.eventCard} wrap={false}>
+              <View key={event.id} style={styles.eventCard}>
                 {/* Header azul con nombre y cantidad de personas */}
                 <View style={styles.eventHeader}>
                   <Text style={styles.eventTitle}>
