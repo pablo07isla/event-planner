@@ -1,12 +1,7 @@
 import { Trans } from "@lingui/macro";
 import { useState } from "react";
 import { Badge } from "../ui/badge";
-import {
-  Card,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-} from "../ui/card";
+import { Card, CardDescription, CardFooter, CardHeader } from "../ui/card";
 import { IconCalendarEvent } from "@tabler/icons-react";
 import ModalEvent from "../events/Modal";
 import { PDFDownloadLink } from "@react-pdf/renderer";
@@ -30,7 +25,13 @@ function isSameDay(dateA, dateB) {
   );
 }
 
-export default function SectionCards({ events, loading, refreshEvents, onDelete, onSave }) {
+export default function SectionCards({
+  events,
+  loading,
+  refreshEvents,
+  onDelete,
+  onSave,
+}) {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -41,28 +42,51 @@ export default function SectionCards({ events, loading, refreshEvents, onDelete,
   afterTomorrow.setDate(today.getDate() + 2);
 
   // Cambia 'date' por 'start' y ajusta nombre/cantidad
-  const eventsToday = events.filter((e) => isSameDay(parseToLocalDate(e.start), today));
-  const eventsTomorrow = events.filter((e) => isSameDay(parseToLocalDate(e.start), tomorrow));
-  const eventsAfterTomorrow = events.filter((e) => isSameDay(parseToLocalDate(e.start), afterTomorrow));
+  const eventsToday = events.filter(
+    (e) =>
+      isSameDay(parseToLocalDate(e.start), today) &&
+      e.eventStatus !== "Cancelado"
+  );
+  const eventsTomorrow = events.filter(
+    (e) =>
+      isSameDay(parseToLocalDate(e.start), tomorrow) &&
+      e.eventStatus !== "Cancelado"
+  );
+  const eventsAfterTomorrow = events.filter(
+    (e) =>
+      isSameDay(parseToLocalDate(e.start), afterTomorrow) &&
+      e.eventStatus !== "Cancelado"
+  );
 
   // Calcular el total de personas para cada día
-  const totalPeopleToday = eventsToday.reduce((acc, e) => acc + (parseInt(e.peopleCount) || 0), 0);
-  const totalPeopleTomorrow = eventsTomorrow.reduce((acc, e) => acc + (parseInt(e.peopleCount) || 0), 0);
-  const totalPeopleAfterTomorrow = eventsAfterTomorrow.reduce((acc, e) => acc + (parseInt(e.peopleCount) || 0), 0);
+  const totalPeopleToday = eventsToday.reduce(
+    (acc, e) => acc + (parseInt(e.peopleCount) || 0),
+    0
+  );
+  const totalPeopleTomorrow = eventsTomorrow.reduce(
+    (acc, e) => acc + (parseInt(e.peopleCount) || 0),
+    0
+  );
+  const totalPeopleAfterTomorrow = eventsAfterTomorrow.reduce(
+    (acc, e) => acc + (parseInt(e.peopleCount) || 0),
+    0
+  );
 
   // Obtener el nombre del día de la semana para pasado mañana
-  const afterTomorrowDayName = afterTomorrow.toLocaleDateString('es-ES', { weekday: 'long' });
+  const afterTomorrowDayName = afterTomorrow.toLocaleDateString("es-ES", {
+    weekday: "long",
+  });
 
   // Componente para renderizar cada tarjeta
-  const EventCard = ({ 
-    title, 
-    events, 
-    totalPeople, 
-    bgColor, 
-    borderColor, 
-    badgeColor, 
+  const EventCard = ({
+    title,
+    events,
+    totalPeople,
+    bgColor,
+    borderColor,
+    badgeColor,
     textColor,
-    emptyMessage 
+    emptyMessage,
   }) => {
     return (
       <Card className={`${bgColor} ${borderColor} h-full flex flex-col`}>
@@ -78,7 +102,10 @@ export default function SectionCards({ events, loading, refreshEvents, onDelete,
               </span>
             </div>
             <div className="flex items-center gap-1 flex-1 justify-end">
-              <Badge variant="secondary" className="bg-white/80 border-white/40 text-xl font-bold tabular-nums text-gray-900 px-3 py-2">
+              <Badge
+                variant="secondary"
+                className="bg-white/80 border-white/40 text-xl font-bold tabular-nums text-gray-900 px-3 py-2"
+              >
                 {loading ? "..." : totalPeople}
                 <span className="text-sm text-gray-600 font-medium ml-1">
                   <Trans>pax</Trans>
@@ -105,7 +132,9 @@ export default function SectionCards({ events, loading, refreshEvents, onDelete,
                       }))}
                     />
                   }
-                  fileName={`eventos_${typeof title === 'string' ? title : ''}.pdf`}
+                  fileName={`eventos_${
+                    typeof title === "string" ? title : ""
+                  }.pdf`}
                   className="ml-2"
                 >
                   {({ loading: pdfLoading }) => (
@@ -149,7 +178,7 @@ export default function SectionCards({ events, loading, refreshEvents, onDelete,
                 >
                   <div className="flex items-center gap-2 w-full">
                     <span className="font-medium text-gray-900 truncate text-sm flex-1">
-                      {event.companyName || event.title || 'Sin nombre'}
+                      {event.companyName || event.title || "Sin nombre"}
                     </span>
                     {event.peopleCount && (
                       <span className="font-bold text-gray-900 text-xs whitespace-nowrap">
@@ -190,7 +219,7 @@ export default function SectionCards({ events, loading, refreshEvents, onDelete,
         textColor="text-white"
         emptyMessage={<Trans>No hay eventos para hoy</Trans>}
       />
-      
+
       <EventCard
         title={<Trans>Mañana</Trans>}
         events={eventsTomorrow}
@@ -201,7 +230,7 @@ export default function SectionCards({ events, loading, refreshEvents, onDelete,
         textColor="text-white"
         emptyMessage={<Trans>No hay eventos para mañana</Trans>}
       />
-      
+
       <EventCard
         title={afterTomorrowDayName}
         events={eventsAfterTomorrow}
@@ -221,7 +250,7 @@ export default function SectionCards({ events, loading, refreshEvents, onDelete,
           await onSave(formData);
           setModalOpen(false);
         }}
-        onDelete={id => {
+        onDelete={(id) => {
           onDelete(id);
           setModalOpen(false);
         }}

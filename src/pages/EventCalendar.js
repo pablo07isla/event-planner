@@ -10,7 +10,12 @@ import PropTypes from "prop-types";
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
-// needs additional webpack config!
+// Ensure webpack is configured to handle FontAwesome CSS files.
+// Add a rule in your webpack config to process CSS files, such as:
+// {
+//   test: /\.css$/,
+//   use: ['style-loader', 'css-loader']
+// }
 import "@fortawesome/fontawesome-free/css/all.css";
 import { AppSidebar } from "../components/sidebar/app-sidebar";
 import { supabase } from "../supabaseClient";
