@@ -15,6 +15,7 @@ import {
   FaFileDownload,
   FaTrash,
   FaPaperclip,
+  FaPlus,
 } from "react-icons/fa";
 
 // Hook personalizado para obtener datos de la empresa según el companyGroupId
@@ -65,7 +66,15 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
     eventStatus: "",
     lastModified: "",
     lastModifiedBy: "",
+    lastModifiedBy: "",
     companyGroupId: null,
+    paymentHistory: [],
+  });
+
+  const [newPayment, setNewPayment] = useState({
+    amount: "",
+    date: new Date().toISOString().split("T")[0],
+    description: "",
   });
 
   const [isCompanyModalOpen, setCompanyModalOpen] = useState(false);
@@ -155,7 +164,11 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
           event.pendingAmount !== null ? event.pendingAmount.toString() : "0",
         attachments: Array.isArray(event.attachments) ? event.attachments : [],
         lastModified: event.lastModified || "",
+        lastModified: event.lastModified || "",
         lastModifiedBy: event.lastModifiedBy || "",
+        paymentHistory: Array.isArray(event.paymentHistory)
+          ? event.paymentHistory
+          : [],
       });
     }
   }, [event]);
@@ -543,6 +556,62 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
     }
   };
 
+  const handleAddPayment = () => {
+    if (!newPayment.amount || !newPayment.date) {
+      setMessage("Monto y Fecha son obligatorios para el pago.");
+      setMessageType("error");
+      return;
+    }
+    const amount = parseFloat(newPayment.amount);
+    if (isNaN(amount)) {
+      setMessage("Monto inválido.");
+      setMessageType("error");
+      return;
+    }
+
+    const updatedHistory = [
+      ...(formData.paymentHistory || []),
+      { ...newPayment, amount },
+    ];
+
+    // Recalcular el total abonado (deposit)
+    const totalPaid = updatedHistory.reduce(
+      (sum, p) => sum + (parseFloat(p.amount) || 0),
+      0
+    );
+
+    setFormData((prev) => ({
+      ...prev,
+      paymentHistory: updatedHistory,
+      deposit: totalPaid.toString(),
+    }));
+
+    setNewPayment({
+      amount: "",
+      date: new Date().toISOString().split("T")[0],
+      description: "",
+    });
+    setMessage("Pago agregado correctamente.");
+    setMessageType("success");
+  };
+
+  const handleDeletePayment = (index) => {
+    const updatedHistory = [...(formData.paymentHistory || [])];
+    updatedHistory.splice(index, 1);
+
+    // Recalcular el total abonado (deposit)
+    const totalPaid = updatedHistory.reduce(
+      (sum, p) => sum + (parseFloat(p.amount) || 0),
+      0
+    );
+
+    setFormData((prev) => ({
+      ...prev,
+      paymentHistory: updatedHistory,
+      deposit: totalPaid.toString(),
+    }));
+  };
+
   // Efecto para auto-ocultar los mensajes de éxito después de unos segundos
   useEffect(() => {
     let timer;
@@ -587,6 +656,8 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
         if (formData.companyGroupId && formData.companyGroupId !== "null") {
           formDataToSubmit.append(key, formData.companyGroupId);
         }
+      } else if (key === "paymentHistory") {
+        formDataToSubmit.append(key, JSON.stringify(formData[key]));
       } else {
         formDataToSubmit.append(key, formData[key]);
       }
@@ -906,26 +977,131 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
               ></textarea>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label
-                  htmlFor="deposit"
-                  className="block mb-2 text-sm font-medium text-gray-900"
-                >
-                  Consignación/Abono
-                </label>
-                <div className="mt-1 relative rounded-md shadow-sm">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <span className="text-gray-500 sm:text-sm"></span>
+              {/* Sección de Historial de Pagos */}
+              <div className="col-span-1 md:col-span-2 border rounded-lg p-4 bg-gray-50">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  Historial de Pagos / Abonos
+                </h3>
+
+                {/* Tabla de pagos existentes */}
+                {formData.paymentHistory &&
+                formData.paymentHistory.length > 0 ? (
+                  <div className="overflow-x-auto mb-4">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-100">
+                        <tr>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Fecha
+                          </th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Monto
+                          </th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Descripción
+                          </th>
+                          <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Acciones
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {formData.paymentHistory.map((payment, index) => (
+                          <tr key={index}>
+                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
+                              {payment.date}
+                            </td>
+                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
+                              {formatCurrency(payment.amount)}
+                            </td>
+                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
+                              {payment.description}
+                            </td>
+                            <td className="px-3 py-2 whitespace-nowrap text-right text-sm font-medium">
+                              <button
+                                type="button"
+                                onClick={() => handleDeletePayment(index)}
+                                className="text-red-600 hover:text-red-900"
+                              >
+                                <FaTrash />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                      <tfoot className="bg-gray-50">
+                        <tr>
+                          <td className="px-3 py-2 text-sm font-bold text-gray-900">
+                            Total Abonado:
+                          </td>
+                          <td className="px-3 py-2 text-sm font-bold text-gray-900">
+                            {formatCurrency(formData.deposit)}
+                          </td>
+                          <td colSpan="2"></td>
+                        </tr>
+                      </tfoot>
+                    </table>
                   </div>
-                  <input
-                    type="text"
-                    id="deposit"
-                    name="deposit"
-                    value={formatCurrency(formData.deposit)}
-                    onChange={handleMoneyChange}
-                    className="pl-7 pr-12 block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-primary-500 focus:border-primary-500"
-                    placeholder="0"
-                  />
+                ) : (
+                  <p className="text-sm text-gray-500 mb-4 italic">
+                    No hay pagos registrados.
+                  </p>
+                )}
+
+                {/* Formulario para agregar nuevo pago */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end bg-white p-3 rounded border">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Fecha
+                    </label>
+                    <input
+                      type="date"
+                      value={newPayment.date}
+                      onChange={(e) =>
+                        setNewPayment({ ...newPayment, date: e.target.value })
+                      }
+                      className="block w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Monto
+                    </label>
+                    <input
+                      type="number"
+                      value={newPayment.amount}
+                      onChange={(e) =>
+                        setNewPayment({ ...newPayment, amount: e.target.value })
+                      }
+                      placeholder="0"
+                      className="block w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Descripción
+                    </label>
+                    <input
+                      type="text"
+                      value={newPayment.description}
+                      onChange={(e) =>
+                        setNewPayment({
+                          ...newPayment,
+                          description: e.target.value,
+                        })
+                      }
+                      placeholder="Ej. Anticipo"
+                      className="block w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                    />
+                  </div>
+                  <div>
+                    <button
+                      type="button"
+                      onClick={handleAddPayment}
+                      className="w-full inline-flex justify-center items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    >
+                      <FaPlus className="mr-1" /> Agregar
+                    </button>
+                  </div>
                 </div>
               </div>
               <div>

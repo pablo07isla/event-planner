@@ -257,6 +257,7 @@ const SearchEvents = () => {
       lastModified: event.lastModified || "",
       lastModifiedBy: event.lastModifiedBy || "",
       companyGroupId: event.companyGroupId || null,
+      paymentHistory: event.paymentHistory || [],
     });
 
     setModalOpen(true);
@@ -291,6 +292,18 @@ const SearchEvents = () => {
         attachments = [];
       }
 
+      // Parsear historial de pagos
+      let paymentHistory = [];
+      try {
+        const paymentHistoryStr = formData.get("paymentHistory");
+        if (paymentHistoryStr) {
+          paymentHistory = JSON.parse(paymentHistoryStr);
+        }
+      } catch (e) {
+        console.error("Error parsing paymentHistory:", e);
+        paymentHistory = [];
+      }
+
       // Manejar campos numéricos
       const deposit = formData.get("deposit");
       const pendingAmount = formData.get("pendingAmount");
@@ -318,6 +331,7 @@ const SearchEvents = () => {
           : "Usuario desconocido",
         companyGroupId: formData.get("companyGroupId"),
         attachments: attachments,
+        paymentHistory: paymentHistory,
       };
 
       console.log("Saving event with data:", eventData);

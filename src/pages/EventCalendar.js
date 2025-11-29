@@ -125,6 +125,7 @@ function EventCalendar({ initialEvents }) {
       lastModified: clickInfo.event.extendedProps.lastModified || "",
       lastModifiedBy: clickInfo.event.extendedProps.lastModifiedBy || "",
       companyGroupId: clickInfo.event.extendedProps.companyGroupId || null,
+      paymentHistory: clickInfo.event.extendedProps.paymentHistory || [],
     });
     setModalOpen(true);
   };
@@ -271,6 +272,18 @@ function EventCalendar({ initialEvents }) {
         attachments = [];
       }
 
+      // Parsear historial de pagos
+      let paymentHistory = [];
+      try {
+        const paymentHistoryStr = formData.get("paymentHistory");
+        if (paymentHistoryStr) {
+          paymentHistory = JSON.parse(paymentHistoryStr);
+        }
+      } catch (e) {
+        console.error("Error parsing paymentHistory:", e);
+        paymentHistory = [];
+      }
+
       // Manejar campos numéricos
       const deposit = formData.get("deposit");
       const pendingAmount = formData.get("pendingAmount");
@@ -298,6 +311,7 @@ function EventCalendar({ initialEvents }) {
           : "Usuario desconocido",
         companyGroupId: formData.get("companyGroupId"),
         attachments: attachments,
+        paymentHistory: paymentHistory,
       };
 
       console.log("Saving event with data:", eventData);

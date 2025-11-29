@@ -65,6 +65,12 @@ export default function Dashboard() {
           } catch (e) {
             eventData[mappedKey] = [];
           }
+        } else if (mappedKey === "paymentHistory") {
+          try {
+            eventData[mappedKey] = value ? JSON.parse(value) : [];
+          } catch (e) {
+            eventData[mappedKey] = [];
+          }
         } else if (
           mappedKey === "peopleCount" ||
           mappedKey === "deposit" ||
