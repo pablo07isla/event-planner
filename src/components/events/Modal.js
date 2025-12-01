@@ -691,6 +691,9 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
           deposit: event.deposit,
           pendingAmount: event.pendingAmount,
           eventStatus: event.eventStatus,
+          paymentHistory: Array.isArray(event.paymentHistory)
+            ? event.paymentHistory
+            : [],
         },
       };
       setEventForPDF([eventForPDF]); // Guardar como array para EventList

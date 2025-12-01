@@ -259,21 +259,6 @@ const EventListPDF = ({ events }) => {
                       </Text>
                     </View>
 
-                    {/* Consignación */}
-                    <View style={styles.infoItem}>
-                      <View style={[styles.icon, styles.moneyIcon]} />
-                      <Text style={styles.infoLabel}>Consignación:</Text>
-                      <Text
-                        style={[
-                          styles.infoValue,
-                          styles.moneyValue,
-                          styles.positiveAmount,
-                        ]}
-                      >
-                        {formatCurrency(event.extendedProps?.deposit)}
-                      </Text>
-                    </View>
-
                     {/* Responsable */}
                     <View style={styles.infoItem}>
                       <View style={[styles.icon, styles.personIcon]} />
@@ -282,6 +267,21 @@ const EventListPDF = ({ events }) => {
                         {event.extendedProps?.contactName || "N/A"}
                       </Text>
                     </View>
+
+                    {/* Spacer vacío para forzar Teléfonos a la columna derecha */}
+                    <View style={styles.infoItem} />
+
+                    {/* Teléfonos */}
+                    <View style={styles.infoItem}>
+                      <View style={[styles.icon, styles.phoneIcon]} />
+                      <Text style={styles.infoLabel}>Teléfonos:</Text>
+                      <Text style={styles.infoValue}>
+                        {event.extendedProps?.contactPhone || "N/A"}
+                      </Text>
+                    </View>
+
+                    {/* Spacer vacío para forzar Saldo Pendiente a la columna derecha */}
+                    <View style={styles.infoItem} />
 
                     {/* Saldo Pendiente */}
                     <View style={styles.infoItem}>
@@ -298,15 +298,6 @@ const EventListPDF = ({ events }) => {
                       </Text>
                     </View>
 
-                    {/* Teléfonos */}
-                    <View style={styles.infoItemFull}>
-                      <View style={[styles.icon, styles.phoneIcon]} />
-                      <Text style={styles.infoLabel}>Teléfonos:</Text>
-                      <Text style={styles.infoValue}>
-                        {event.extendedProps?.contactPhone || "N/A"}
-                      </Text>
-                    </View>
-
                     {/* Alimentación */}
                     <View style={styles.infoItemFull}>
                       <View style={[styles.icon, styles.foodIcon]} />
@@ -315,6 +306,98 @@ const EventListPDF = ({ events }) => {
                         {(event.extendedProps?.foodPackage || []).join(", ") ||
                           "No especificado"}
                       </Text>
+                    </View>
+
+                    {/* Historial de Pagos / Consignación */}
+                    <View style={{ width: "100%", marginBottom: 8 }}>
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          marginBottom: 4,
+                        }}
+                      >
+                        <View style={[styles.icon, styles.moneyIcon]} />
+                        <Text style={styles.infoLabel}>Consignación:</Text>
+                      </View>
+                      {event.extendedProps?.paymentHistory &&
+                      event.extendedProps.paymentHistory.length > 0 ? (
+                        <View style={{ paddingLeft: 20, width: "100%" }}>
+                          {event.extendedProps.paymentHistory.map(
+                            (payment, idx) => (
+                              <View
+                                key={idx}
+                                style={{
+                                  flexDirection: "row",
+                                  marginBottom: 2,
+                                }}
+                              >
+                                <Text
+                                  style={{
+                                    width: "30%",
+                                    color: "#666",
+                                    fontSize: 8,
+                                  }}
+                                >
+                                  {payment.date}
+                                </Text>
+                                <Text
+                                  style={{
+                                    width: "35%",
+                                    color: "#34a853",
+                                    fontWeight: "600",
+                                    fontSize: 8,
+                                  }}
+                                >
+                                  {formatCurrency(payment.amount)}
+                                </Text>
+                                <Text
+                                  style={{
+                                    width: "35%",
+                                    color: "#555",
+                                    fontSize: 8,
+                                  }}
+                                >
+                                  {payment.description || ""}
+                                </Text>
+                              </View>
+                            )
+                          )}
+                          <View
+                            style={{
+                              flexDirection: "row",
+                              marginTop: 4,
+                              paddingTop: 4,
+                              borderTop: "1pt solid #ddd",
+                            }}
+                          >
+                            <Text
+                              style={{
+                                fontSize: 9,
+                                fontWeight: "bold",
+                                color: "#333",
+                              }}
+                            >
+                              Total Abonado:{" "}
+                            </Text>
+                            <Text
+                              style={{
+                                fontSize: 9,
+                                fontWeight: "bold",
+                                color: "#34a853",
+                              }}
+                            >
+                              {formatCurrency(event.extendedProps?.deposit)}
+                            </Text>
+                          </View>
+                        </View>
+                      ) : (
+                        <View style={{ paddingLeft: 20 }}>
+                          <Text style={styles.infoValue}>
+                            {formatCurrency(event.extendedProps?.deposit)}
+                          </Text>
+                        </View>
+                      )}
                     </View>
                   </View>
 

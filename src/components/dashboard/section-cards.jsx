@@ -128,6 +128,9 @@ export default function SectionCards({
                           pendingAmount: event.pendingAmount,
                           eventDescription: event.eventDescription,
                           foodPackage: event.foodPackage,
+                          paymentHistory: Array.isArray(event.paymentHistory)
+                            ? event.paymentHistory
+                            : [],
                         },
                       }))}
                     />
