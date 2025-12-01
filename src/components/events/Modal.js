@@ -952,6 +952,7 @@ function ModalEvent({ isOpen, onClose, onSave, onDelete, event }) {
                     { value: "Paquete 1", label: "Paquete 1" },
                     { value: "Paquete 2", label: "Paquete 2" },
                     { value: "Paquete 3", label: "Paquete 3" },
+                    { value: "Menu Infantil", label: "Menu Infantil" },
                     { value: "Desayuno", label: "Desayuno" },
                     { value: "Refrigerio", label: "Refrigerio" },
                     { value: "Auditorio", label: "Auditorio" },
