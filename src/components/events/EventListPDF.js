@@ -72,18 +72,18 @@ const styles = StyleSheet.create({
   },
 
   peopleCountBadge: {
-    backgroundColor: "rgba(255,255,255,0.2)",
-    borderRadius: 12,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    minWidth: 50,
+    backgroundColor: "rgba(255,255,255,0.35)",
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    minWidth: 60,
     textAlign: "center",
   },
 
   peopleCountText: {
     color: "#ffffff",
-    fontSize: 10,
-    fontWeight: "500",
+    fontSize: 14,
+    fontWeight: "bold",
   },
 
   // Contenido del evento
