@@ -47,8 +47,8 @@ const EventCard = ({ event }) => (
       <h3 className="text-xl font-bold w-full">
         {event.extendedProps?.companyName || "Evento sin nombre"}
       </h3>
-      <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-semibold ml-2 flex-shrink-0">
-        {event.extendedProps?.peopleCount || "N/A"} pax
+      <span className="bg-white/35 px-4 py-1.5 rounded-full text-sm font-bold ml-2 flex-shrink-0 text-white border border-white/20 shadow-sm">
+        {event.extendedProps?.peopleCount || "0"} pax
       </span>
     </div>
 
@@ -61,8 +61,60 @@ const EventCard = ({ event }) => (
             Icon={FaMapMarkerAlt}
             label="Lugar"
             value={event.extendedProps?.eventLocation || "No especificado"}
-            iconColor="text-blue-500"
+            iconColor="text-green-500"
           />
+          <DetailItem
+            Icon={FaUtensils}
+            label="Alimentación"
+            value={
+              (event.extendedProps?.foodPackage || []).join(", ") ||
+              "No especificado"
+            }
+            iconColor="text-orange-500"
+          />
+
+          {/* Sección de Consignación / Historial de Pagos */}
+          <div className="mb-3">
+            <div className="flex items-center mb-1">
+              <FaMoneyBillWave className="text-green-500 mr-3 text-xl flex-shrink-0" />
+              <span className="font-semibold text-gray-700">Consignación:</span>
+            </div>
+
+            {event.extendedProps?.paymentHistory &&
+            event.extendedProps.paymentHistory.length > 0 ? (
+              <div className="ml-8 w-full">
+                {event.extendedProps.paymentHistory.map((payment, idx) => (
+                  <div key={idx} className="flex text-xs mb-1">
+                    <span className="w-1/3 text-gray-500">{payment.date}</span>
+                    <span className="w-1/3 text-green-600 font-semibold">
+                      {formatCurrency(payment.amount)}
+                    </span>
+                    <span className="w-1/3 text-gray-500 truncate">
+                      {payment.description || ""}
+                    </span>
+                  </div>
+                ))}
+                <div className="flex mt-2 pt-2 border-t border-gray-200 text-sm">
+                  <span className="font-bold text-gray-700 mr-2">
+                    Total Abonado:
+                  </span>
+                  <span className="font-bold text-green-600">
+                    {formatCurrency(event.extendedProps?.deposit)}
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <div className="ml-8">
+                <span className="text-gray-600">
+                  {formatCurrency(event.extendedProps?.deposit)}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Columna Derecha */}
+        <div>
           <DetailItem
             Icon={FaUsers}
             label="Responsable"
@@ -75,30 +127,11 @@ const EventCard = ({ event }) => (
             value={event.extendedProps?.contactPhone || "N/A"}
             iconColor="text-blue-500"
           />
-        </div>
-
-        {/* Columna Derecha */}
-        <div>
-          <DetailItem
-            Icon={FaMoneyBillWave}
-            label="Consignación"
-            value={formatCurrency(event.extendedProps.deposit)}
-            iconColor="text-green-500"
-          />
           <DetailItem
             Icon={FaMoneyBillWave}
             label="Saldo Pendiente"
-            value={formatCurrency(event.extendedProps.pendingAmount)}
+            value={formatCurrency(event.extendedProps?.pendingAmount)}
             iconColor="text-red-500"
-          />
-          <DetailItem
-            Icon={FaUtensils}
-            label="Alimentación"
-            value={
-              (event.extendedProps?.foodPackage || []).join(", ") ||
-              "No especificado"
-            }
-            iconColor="text-blue-500"
           />
         </div>
       </div>

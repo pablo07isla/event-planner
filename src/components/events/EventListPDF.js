@@ -202,6 +202,16 @@ const styles = StyleSheet.create({
   dateGroup: {
     marginBottom: 20,
   },
+
+  pageNumber: {
+    position: "absolute",
+    fontSize: 10,
+    bottom: 30,
+    left: 0,
+    right: 0,
+    textAlign: "center",
+    color: "#666",
+  },
 });
 
 const EventItem = ({ event, styles, ...props }) => (
@@ -393,7 +403,6 @@ const EventListPDF = ({ events }) => {
     <Document>
       <Page style={styles.page}>
         <Text style={styles.mainHeader}>Lista de Eventos</Text>
-
         {sortedDates.map((date, dateIndex) => {
           const dateEvents = grouped[date];
           return (
@@ -421,6 +430,14 @@ const EventListPDF = ({ events }) => {
             </View>
           );
         })}
+
+        <Text
+          style={styles.pageNumber}
+          render={({ pageNumber, totalPages }) =>
+            `${pageNumber} / ${totalPages}`
+          }
+          fixed
+        />
       </Page>
     </Document>
   );
