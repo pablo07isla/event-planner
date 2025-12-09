@@ -33,6 +33,13 @@ import { es } from "date-fns/locale";
 // Importamos la localización en español
 import { Calendar, Search, Building, Eye } from "lucide-react";
 import React, { useState, useEffect } from "react";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "../components/ui/tabs";
+import CompanyEditSheet from "../components/companies/CompanyEditSheet";
 
 const SearchEvents = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -52,6 +59,15 @@ const SearchEvents = () => {
   const [singleDatePopoverOpen, setSingleDatePopoverOpen] = useState(false);
   const [startDatePopoverOpen, setStartDatePopoverOpen] = useState(false);
   const [endDatePopoverOpen, setEndDatePopoverOpen] = useState(false);
+
+  // Estados para búsqueda de empresas
+  const [activeTab, setActiveTab] = useState("events");
+  const [companySearchResults, setCompanySearchResults] = useState([]);
+  const [companySearchTerm, setCompanySearchTerm] = useState("");
+  const [companyIdType, setCompanyIdType] = useState("");
+  const [companyIdNumber, setCompanyIdNumber] = useState("");
+  const [companySheetOpen, setCompanySheetOpen] = useState(false);
+  const [currentCompany, setCurrentCompany] = useState(null);
 
   // Cargar la lista de empresas al iniciar
   useEffect(() => {
@@ -79,6 +95,27 @@ const SearchEvents = () => {
       setSearchTerm("");
     }
   }, [searchMode]);
+
+  // Resetear campos y resultados cuando se cambia de tab
+  useEffect(() => {
+    if (activeTab === "events") {
+      // Limpiar búsqueda de empresas
+      setCompanySearchTerm("");
+      setCompanyIdType("");
+      setCompanyIdNumber("");
+      setCompanySearchResults([]);
+    } else if (activeTab === "companies") {
+      // Limpiar búsqueda de eventos
+      setSearchTerm("");
+      setCompanyId("");
+      setSingleDate(null);
+      setStartDate(null);
+      setEndDate(null);
+      setSearchResults([]);
+      setSearchMode("company");
+    }
+    setError(null);
+  }, [activeTab]);
 
   const handleSearch = async () => {
     setLoading(true);
@@ -214,6 +251,51 @@ const SearchEvents = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Función para buscar empresas
+  const handleCompanySearch = async () => {
+    setLoading(true);
+    setError(null);
+    setCompanySearchResults([]);
+
+    try {
+      let query = supabase.from("CompanyGroups").select("*");
+
+      if (companySearchTerm) {
+        query = query.ilike("companyName", `%${companySearchTerm}%`);
+      }
+      if (companyIdNumber) {
+        query = query.ilike("identificationNumber", `%${companyIdNumber}%`);
+      }
+      if (companyIdType) {
+        query = query.eq("identificationType", companyIdType);
+      }
+
+      const { data, error } = await query.order("companyName");
+      if (error) throw error;
+
+      setCompanySearchResults(data || []);
+    } catch (err) {
+      console.error("Error en la búsqueda de empresas:", err);
+      setError(`Error al buscar empresas: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handler para ver/editar empresa
+  const handleViewCompany = (company) => {
+    setCurrentCompany(company);
+    setCompanySheetOpen(true);
+  };
+
+  // Handler para actualizar empresa después de editar
+  const handleCompanySuccess = (updatedCompany) => {
+    setCompanySearchResults((prev) =>
+      prev.map((c) => (c.id === updatedCompany.id ? updatedCompany : c))
+    );
+    setCompanySheetOpen(false);
   };
 
   const handleViewEvent = (event) => {
@@ -495,328 +577,519 @@ const SearchEvents = () => {
           <div className="flex-1 min-h-0 min-w-0 overflow-auto p-4 lg:p-6">
             <div className="flex-1 p-8 overflow-auto">
               <h1 className="text-4xl font-bold tracking-tight mb-2">
-                Búsqueda de Eventos
+                Búsqueda
               </h1>
               <p className="text-muted-foreground mb-8">
-                Encuentra y gestiona eventos por empresa o fecha
+                Encuentra y gestiona eventos y empresas
               </p>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Filtros de Búsqueda</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-6">
-                    <div className="flex flex-wrap gap-3">
-                      <Button
-                        variant={
-                          searchMode === "company" ? "default" : "outline"
-                        }
-                        onClick={() => {
-                          setSearchMode("company");
-                          setSearchTerm(""); // Limpiar campo al cambiar
-                        }}
-                        className="flex items-center"
-                      >
-                        <Building className="h-4 w-4 mr-2" />
-                        Por Empresa
-                      </Button>
-                      <Button
-                        variant={
-                          searchMode === "singleDate" ? "default" : "outline"
-                        }
-                        onClick={() => {
-                          setSearchMode("singleDate");
-                          setStartDate(null);
-                          setEndDate(null);
-                        }}
-                        className="flex items-center"
-                      >
-                        <Calendar className="h-4 w-4 mr-2" />
-                        Fecha Específica
-                      </Button>
-                      <Button
-                        variant={
-                          searchMode === "dateRange" ? "default" : "outline"
-                        }
-                        onClick={() => {
-                          setSearchMode("dateRange");
-                          setSingleDate(null);
-                        }}
-                        className="flex items-center"
-                      >
-                        <Calendar className="h-4 w-4 mr-2" />
-                        Rango de Fechas
-                      </Button>
-                    </div>
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList className="grid w-full grid-cols-2 mb-6">
+                  <TabsTrigger
+                    value="events"
+                    className="flex items-center gap-2"
+                  >
+                    <Calendar className="h-4 w-4" />
+                    Eventos
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="companies"
+                    className="flex items-center gap-2"
+                  >
+                    <Building className="h-4 w-4" />
+                    Empresas
+                  </TabsTrigger>
+                </TabsList>
 
-                    {searchMode === "company" && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium">
-                            Nombre de Empresa
-                          </label>
-                          <div className="relative">
-                            <Input
-                              type="text"
-                              value={searchTerm}
-                              onChange={(e) => setSearchTerm(e.target.value)}
-                              placeholder="Buscar por nombre..."
-                              className="pl-10"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium">
-                            N° Identificación de Empresa
-                          </label>
-                          <div className="relative">
-                            <Input
-                              type="text"
-                              value={companyId}
-                              onChange={(e) => setCompanyId(e.target.value)}
-                              placeholder="Buscar por N° identificación..."
-                              className="pl-10"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {searchMode === "singleDate" && (
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">
-                          Fecha del Evento
-                        </label>
-                        <div>
-                          <Popover
-                            open={singleDatePopoverOpen}
-                            onOpenChange={setSingleDatePopoverOpen}
+                <TabsContent value="events">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Filtros de Búsqueda</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-6">
+                        <div className="flex flex-wrap gap-3">
+                          <Button
+                            variant={
+                              searchMode === "company" ? "default" : "outline"
+                            }
+                            onClick={() => {
+                              setSearchMode("company");
+                              setSearchTerm(""); // Limpiar campo al cambiar
+                            }}
+                            className="flex items-center"
                           >
-                            <PopoverTrigger asChild>
-                              <Button
-                                variant="outline"
-                                className={cn(
-                                  "w-full justify-start text-left font-normal",
-                                  !singleDate && "text-muted-foreground"
-                                )}
-                              >
-                                <Calendar className="mr-2 h-4 w-4" />
-                                {singleDate
-                                  ? formatButtonDate(singleDate)
-                                  : "Seleccionar fecha"}
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0">
-                              <CalendarUI
-                                mode="single"
-                                selected={singleDate}
-                                onSelect={(date) => {
-                                  setSingleDate(date);
-                                  setSingleDatePopoverOpen(false);
-                                }}
-                                initialFocus
-                                locale={es}
-                              />
-                            </PopoverContent>
-                          </Popover>
-                        </div>
-                      </div>
-                    )}
-
-                    {searchMode === "dateRange" && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium">Desde</label>
-                          <div>
-                            <Popover
-                              open={startDatePopoverOpen}
-                              onOpenChange={setStartDatePopoverOpen}
-                            >
-                              <PopoverTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  className={cn(
-                                    "w-full justify-start text-left font-normal",
-                                    !startDate && "text-muted-foreground"
-                                  )}
-                                >
-                                  <Calendar className="mr-2 h-4 w-4" />
-                                  {startDate
-                                    ? formatButtonDate(startDate)
-                                    : "Fecha inicio"}
-                                </Button>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-auto p-0">
-                                <CalendarUI
-                                  mode="single"
-                                  selected={startDate}
-                                  onSelect={(date) => {
-                                    setStartDate(date);
-                                    setStartDatePopoverOpen(false);
-                                  }}
-                                  initialFocus
-                                  disabled={(date) => endDate && date > endDate}
-                                  locale={es}
-                                />
-                              </PopoverContent>
-                            </Popover>
-                          </div>
+                            <Building className="h-4 w-4 mr-2" />
+                            Por Empresa
+                          </Button>
+                          <Button
+                            variant={
+                              searchMode === "singleDate"
+                                ? "default"
+                                : "outline"
+                            }
+                            onClick={() => {
+                              setSearchMode("singleDate");
+                              setStartDate(null);
+                              setEndDate(null);
+                            }}
+                            className="flex items-center"
+                          >
+                            <Calendar className="h-4 w-4 mr-2" />
+                            Fecha Específica
+                          </Button>
+                          <Button
+                            variant={
+                              searchMode === "dateRange" ? "default" : "outline"
+                            }
+                            onClick={() => {
+                              setSearchMode("dateRange");
+                              setSingleDate(null);
+                            }}
+                            className="flex items-center"
+                          >
+                            <Calendar className="h-4 w-4 mr-2" />
+                            Rango de Fechas
+                          </Button>
                         </div>
 
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium">Hasta</label>
-                          <div>
-                            <Popover
-                              open={endDatePopoverOpen}
-                              onOpenChange={setEndDatePopoverOpen}
-                            >
-                              <PopoverTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  className={cn(
-                                    "w-full justify-start text-left font-normal",
-                                    !endDate && "text-muted-foreground"
-                                  )}
-                                >
-                                  <Calendar className="mr-2 h-4 w-4" />
-                                  {endDate
-                                    ? formatButtonDate(endDate)
-                                    : "Fecha fin"}
-                                </Button>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-auto p-0">
-                                <CalendarUI
-                                  mode="single"
-                                  selected={endDate}
-                                  onSelect={(date) => {
-                                    setEndDate(date);
-                                    setEndDatePopoverOpen(false);
-                                  }}
-                                  initialFocus
-                                  disabled={(date) =>
-                                    startDate && date < startDate
+                        {searchMode === "company" && (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <label className="text-sm font-medium">
+                                Nombre de Empresa
+                              </label>
+                              <div className="relative">
+                                <Input
+                                  type="text"
+                                  value={searchTerm}
+                                  onChange={(e) =>
+                                    setSearchTerm(e.target.value)
                                   }
-                                  locale={es}
+                                  placeholder="Buscar por nombre..."
+                                  className="pl-10"
                                 />
-                              </PopoverContent>
-                            </Popover>
+                              </div>
+                            </div>
+
+                            <div className="space-y-2">
+                              <label className="text-sm font-medium">
+                                N° Identificación de Empresa
+                              </label>
+                              <div className="relative">
+                                <Input
+                                  type="text"
+                                  value={companyId}
+                                  onChange={(e) => setCompanyId(e.target.value)}
+                                  placeholder="Buscar por N° identificación..."
+                                  className="pl-10"
+                                />
+                              </div>
+                            </div>
                           </div>
+                        )}
+
+                        {searchMode === "singleDate" && (
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium">
+                              Fecha del Evento
+                            </label>
+                            <div>
+                              <Popover
+                                open={singleDatePopoverOpen}
+                                onOpenChange={setSingleDatePopoverOpen}
+                              >
+                                <PopoverTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    className={cn(
+                                      "w-full justify-start text-left font-normal",
+                                      !singleDate && "text-muted-foreground"
+                                    )}
+                                  >
+                                    <Calendar className="mr-2 h-4 w-4" />
+                                    {singleDate
+                                      ? formatButtonDate(singleDate)
+                                      : "Seleccionar fecha"}
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0">
+                                  <CalendarUI
+                                    mode="single"
+                                    selected={singleDate}
+                                    onSelect={(date) => {
+                                      setSingleDate(date);
+                                      setSingleDatePopoverOpen(false);
+                                    }}
+                                    initialFocus
+                                    locale={es}
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                            </div>
+                          </div>
+                        )}
+
+                        {searchMode === "dateRange" && (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <label className="text-sm font-medium">
+                                Desde
+                              </label>
+                              <div>
+                                <Popover
+                                  open={startDatePopoverOpen}
+                                  onOpenChange={setStartDatePopoverOpen}
+                                >
+                                  <PopoverTrigger asChild>
+                                    <Button
+                                      variant="outline"
+                                      className={cn(
+                                        "w-full justify-start text-left font-normal",
+                                        !startDate && "text-muted-foreground"
+                                      )}
+                                    >
+                                      <Calendar className="mr-2 h-4 w-4" />
+                                      {startDate
+                                        ? formatButtonDate(startDate)
+                                        : "Fecha inicio"}
+                                    </Button>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-auto p-0">
+                                    <CalendarUI
+                                      mode="single"
+                                      selected={startDate}
+                                      onSelect={(date) => {
+                                        setStartDate(date);
+                                        setStartDatePopoverOpen(false);
+                                      }}
+                                      initialFocus
+                                      disabled={(date) =>
+                                        endDate && date > endDate
+                                      }
+                                      locale={es}
+                                    />
+                                  </PopoverContent>
+                                </Popover>
+                              </div>
+                            </div>
+
+                            <div className="space-y-2">
+                              <label className="text-sm font-medium">
+                                Hasta
+                              </label>
+                              <div>
+                                <Popover
+                                  open={endDatePopoverOpen}
+                                  onOpenChange={setEndDatePopoverOpen}
+                                >
+                                  <PopoverTrigger asChild>
+                                    <Button
+                                      variant="outline"
+                                      className={cn(
+                                        "w-full justify-start text-left font-normal",
+                                        !endDate && "text-muted-foreground"
+                                      )}
+                                    >
+                                      <Calendar className="mr-2 h-4 w-4" />
+                                      {endDate
+                                        ? formatButtonDate(endDate)
+                                        : "Fecha fin"}
+                                    </Button>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-auto p-0">
+                                    <CalendarUI
+                                      mode="single"
+                                      selected={endDate}
+                                      onSelect={(date) => {
+                                        setEndDate(date);
+                                        setEndDatePopoverOpen(false);
+                                      }}
+                                      initialFocus
+                                      disabled={(date) =>
+                                        startDate && date < startDate
+                                      }
+                                      locale={es}
+                                    />
+                                  </PopoverContent>
+                                </Popover>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="flex justify-center mt-6">
+                          <Button
+                            onClick={handleSearch}
+                            className="w-full sm:w-auto"
+                          >
+                            <Search className="h-5 w-5 mr-2" />
+                            Buscar
+                          </Button>
                         </div>
                       </div>
-                    )}
-
-                    <div className="flex justify-center mt-6">
-                      <Button
-                        onClick={handleSearch}
-                        className="w-full sm:w-auto"
-                      >
-                        <Search className="h-5 w-5 mr-2" />
-                        Buscar
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {loading && (
-                <div className="flex justify-center my-8">
-                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-                </div>
-              )}
-
-              {error && (
-                <Card className="mt-8 border-destructive">
-                  <CardContent className="pt-6">
-                    <p className="text-destructive">{error}</p>
-                  </CardContent>
-                </Card>
-              )}
-
-              {searchResults.length > 0 ? (
-                <Card className="mt-8">
-                  <CardContent className="p-0">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Empresa</TableHead>
-                          <TableHead>Contacto</TableHead>
-                          <TableHead>Fecha del Evento</TableHead>
-                          <TableHead>Correo electrónico</TableHead>
-                          <TableHead>Estado</TableHead>
-                          <TableHead>Acciones</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {searchResults.map((event) => (
-                          <TableRow key={event.id}>
-                            <TableCell>
-                              <div className="font-medium">
-                                {event.companyName}
-                              </div>
-                              <div className="text-sm text-muted-foreground">
-                                {event.peopleCount} personas
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div>{event.contactName}</div>
-                              <div className="text-sm text-muted-foreground">
-                                {event.contactPhone}
-                              </div>
-                            </TableCell>
-                            <TableCell>{formatDate(event.start)}</TableCell>
-                            <TableCell>{event.email}</TableCell>
-                            <TableCell>
-                              <Badge
-                                className={`${
-                                  getStatusColor(event.eventStatus).bg
-                                } ${getStatusColor(event.eventStatus).text}`}
-                              >
-                                {event.eventStatus}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleViewEvent(event)}
-                                className="flex items-center"
-                              >
-                                <Eye className="h-4 w-4 mr-1" />
-                                Ver
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </CardContent>
-                </Card>
-              ) : (
-                !loading && (
-                  <Card className="mt-8">
-                    <CardContent className="text-center py-6">
-                      <div className="rounded-full bg-muted w-12 h-12 flex items-center justify-center mx-auto mb-4">
-                        <Search className="h-6 w-6 text-muted-foreground" />
-                      </div>
-                      <h3 className="text-lg font-medium mb-2">
-                        No hay resultados que mostrar
-                      </h3>
-                      <p className="text-muted-foreground">
-                        {searchResults.length === 0 &&
-                        (singleDate ||
-                          startDate ||
-                          endDate ||
-                          searchTerm ||
-                          companyId)
-                          ? "No se encontraron eventos que coincidan con tu búsqueda. Intenta con otros criterios."
-                          : "Utiliza los filtros para buscar eventos por empresa o fecha."}
-                      </p>
                     </CardContent>
                   </Card>
-                )
-              )}
+
+                  {loading && (
+                    <div className="flex justify-center my-8">
+                      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+                    </div>
+                  )}
+
+                  {error && (
+                    <Card className="mt-8 border-destructive">
+                      <CardContent className="pt-6">
+                        <p className="text-destructive">{error}</p>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {searchResults.length > 0 ? (
+                    <Card className="mt-8">
+                      <CardContent className="p-0">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Empresa</TableHead>
+                              <TableHead>Contacto</TableHead>
+                              <TableHead>Fecha del Evento</TableHead>
+                              <TableHead>Correo electrónico</TableHead>
+                              <TableHead>Estado</TableHead>
+                              <TableHead>Acciones</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {searchResults.map((event) => (
+                              <TableRow key={event.id}>
+                                <TableCell>
+                                  <div className="font-medium">
+                                    {event.companyName}
+                                  </div>
+                                  <div className="text-sm text-muted-foreground">
+                                    {event.peopleCount} personas
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div>{event.contactName}</div>
+                                  <div className="text-sm text-muted-foreground">
+                                    {event.contactPhone}
+                                  </div>
+                                </TableCell>
+                                <TableCell>{formatDate(event.start)}</TableCell>
+                                <TableCell>{event.email}</TableCell>
+                                <TableCell>
+                                  <Badge
+                                    className={`${
+                                      getStatusColor(event.eventStatus).bg
+                                    } ${
+                                      getStatusColor(event.eventStatus).text
+                                    }`}
+                                  >
+                                    {event.eventStatus}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleViewEvent(event)}
+                                    className="flex items-center"
+                                  >
+                                    <Eye className="h-4 w-4 mr-1" />
+                                    Ver
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    !loading && (
+                      <Card className="mt-8">
+                        <CardContent className="text-center py-6">
+                          <div className="rounded-full bg-muted w-12 h-12 flex items-center justify-center mx-auto mb-4">
+                            <Search className="h-6 w-6 text-muted-foreground" />
+                          </div>
+                          <h3 className="text-lg font-medium mb-2">
+                            No hay resultados que mostrar
+                          </h3>
+                          <p className="text-muted-foreground">
+                            {searchResults.length === 0 &&
+                            (singleDate ||
+                              startDate ||
+                              endDate ||
+                              searchTerm ||
+                              companyId)
+                              ? "No se encontraron eventos que coincidan con tu búsqueda. Intenta con otros criterios."
+                              : "Utiliza los filtros para buscar eventos por empresa o fecha."}
+                          </p>
+                        </CardContent>
+                      </Card>
+                    )
+                  )}
+                </TabsContent>
+
+                <TabsContent value="companies">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Filtros de Búsqueda de Empresas</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium">
+                              Nombre de Empresa
+                            </label>
+                            <Input
+                              type="text"
+                              value={companySearchTerm}
+                              onChange={(e) =>
+                                setCompanySearchTerm(e.target.value)
+                              }
+                              placeholder="Buscar por nombre..."
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium">
+                              Tipo de Identificación
+                            </label>
+                            <select
+                              value={companyIdType}
+                              onChange={(e) => setCompanyIdType(e.target.value)}
+                              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                            >
+                              <option value="">Todos</option>
+                              <option value="NIT">NIT</option>
+                              <option value="CC">CC</option>
+                              <option value="CE">CE</option>
+                              <option value="PP">PP</option>
+                            </select>
+                          </div>
+
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium">
+                              N° Identificación
+                            </label>
+                            <Input
+                              type="text"
+                              value={companyIdNumber}
+                              onChange={(e) =>
+                                setCompanyIdNumber(e.target.value)
+                              }
+                              placeholder="Buscar por N°..."
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex justify-center">
+                          <Button
+                            onClick={handleCompanySearch}
+                            className="w-full sm:w-auto"
+                          >
+                            <Search className="h-5 w-5 mr-2" />
+                            Buscar Empresas
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {loading && (
+                    <div className="flex justify-center my-8">
+                      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+                    </div>
+                  )}
+
+                  {error && (
+                    <Card className="mt-8 border-destructive">
+                      <CardContent className="pt-6">
+                        <p className="text-destructive">{error}</p>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {companySearchResults.length > 0 ? (
+                    <Card className="mt-8">
+                      <CardContent className="p-0">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Empresa</TableHead>
+                              <TableHead>Identificación</TableHead>
+                              <TableHead>Contacto</TableHead>
+                              <TableHead>Email</TableHead>
+                              <TableHead>Ciudad</TableHead>
+                              <TableHead>Acciones</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {companySearchResults.map((company) => (
+                              <TableRow key={company.id}>
+                                <TableCell>
+                                  <div className="font-medium">
+                                    {company.companyName}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div>{company.identificationType}</div>
+                                  <div className="text-sm text-muted-foreground">
+                                    {company.identificationNumber}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div>{company.contactPerson}</div>
+                                  <div className="text-sm text-muted-foreground">
+                                    {company.phone}
+                                  </div>
+                                </TableCell>
+                                <TableCell>{company.email}</TableCell>
+                                <TableCell>{company.city || "-"}</TableCell>
+                                <TableCell>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleViewCompany(company)}
+                                    className="flex items-center"
+                                  >
+                                    <Eye className="h-4 w-4 mr-1" />
+                                    Ver/Editar
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    !loading && (
+                      <Card className="mt-8">
+                        <CardContent className="text-center py-6">
+                          <div className="rounded-full bg-muted w-12 h-12 flex items-center justify-center mx-auto mb-4">
+                            <Building className="h-6 w-6 text-muted-foreground" />
+                          </div>
+                          <h3 className="text-lg font-medium mb-2">
+                            No hay resultados que mostrar
+                          </h3>
+                          <p className="text-muted-foreground">
+                            {companySearchResults.length === 0 &&
+                            (companySearchTerm ||
+                              companyIdNumber ||
+                              companyIdType)
+                              ? "No se encontraron empresas que coincidan con tu búsqueda."
+                              : "Utiliza los filtros para buscar empresas."}
+                          </p>
+                        </CardContent>
+                      </Card>
+                    )
+                  )}
+                </TabsContent>
+              </Tabs>
 
               <ModalEvent
                 isOpen={modalOpen}
@@ -824,6 +1097,13 @@ const SearchEvents = () => {
                 onSave={handleSaveEvent}
                 onDelete={handleDeleteEvent}
                 event={currentEvent}
+              />
+
+              <CompanyEditSheet
+                open={companySheetOpen}
+                onClose={() => setCompanySheetOpen(false)}
+                company={currentCompany}
+                onSuccess={handleCompanySuccess}
               />
             </div>
           </div>
