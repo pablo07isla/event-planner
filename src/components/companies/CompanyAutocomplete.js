@@ -33,7 +33,7 @@ const CompanyAutocomplete = ({ value, onChange, placeholder }) => {
     setLoading(true);
     supabase
       .from("CompanyGroups")
-      .select("id, companyName")
+      .select("id, companyName, contactPerson, phone, email")
       .ilike("companyName", `%${query}%`)
       .then(({ data }) => {
         setOptions(data || []);
@@ -47,7 +47,13 @@ const CompanyAutocomplete = ({ value, onChange, placeholder }) => {
   }, [query]);
 
   const handleSelect = (company) => {
-    onChange({ companyName: company.companyName, companyGroupId: company.id });
+    onChange({
+      companyName: company.companyName,
+      companyGroupId: company.id,
+      contactPerson: company.contactPerson,
+      phone: company.phone,
+      email: company.email,
+    });
     setShowDropdown(false);
     setQuery(company.companyName);
   };
