@@ -153,6 +153,9 @@ const CompanyAutocomplete = ({ value, onChange, placeholder }) => {
                 onChange({
                   companyName: empresa.companyName,
                   companyGroupId: empresa.id,
+                  contactPerson: empresa.contactPerson,
+                  phone: empresa.phone,
+                  email: empresa.email,
                 });
                 setQuery(empresa.companyName);
               }

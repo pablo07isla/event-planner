@@ -29,7 +29,10 @@ const formSchema = z.object({
   endDate: z.string().min(1, "Fecha Fin es requerida"),
   companyName: z.string().min(1, "Nombre Empresa/Grupo es requerido"),
   companyGroupId: z.any(), // Can be string or number or null
-  peopleCount: z.coerce.number().min(1, "N° de personas es requerido"),
+  peopleCount: z.union([
+    z.string().length(0),
+    z.coerce.number().min(1, "N° de personas es requerido"),
+  ]),
   contactName: z.string().min(1, "Nombre Responsable es requerido"),
   contactPhone: z.string().min(1, "Teléfono es requerido"),
   email: z.string().email("Email inválido").min(1, "Email es requerido"),
@@ -57,6 +60,7 @@ export default function EventForm({
 
   const form = useForm({
     resolver: zodResolver(formSchema),
+    mode: "onSubmit",
     defaultValues: {
       startDate: "",
       endDate: "",
@@ -286,6 +290,18 @@ export default function EventForm({
                     onChange={(val) => {
                       field.onChange(val.companyName);
                       form.setValue("companyGroupId", val.companyGroupId);
+                      if (val.contactPerson)
+                        form.setValue("contactName", val.contactPerson, {
+                          shouldValidate: true,
+                        });
+                      if (val.phone)
+                        form.setValue("contactPhone", val.phone, {
+                          shouldValidate: true,
+                        });
+                      if (val.email)
+                        form.setValue("email", val.email, {
+                          shouldValidate: true,
+                        });
                     }}
                     placeholder="Buscar o crear empresa..."
                   />
