@@ -142,6 +142,13 @@ export default function EventForm({
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
+    // Require event to be saved before uploading files
+    if (!event?.id) {
+      toast.error("Por favor guarda el evento antes de adjuntar archivos");
+      e.target.value = null;
+      return;
+    }
+
     setUploadingFiles(true);
     try {
       const currentAttachments = form.getValues("attachments") || [];
@@ -153,7 +160,13 @@ export default function EventForm({
         const fileName = `${Math.random()
           .toString(36)
           .substring(2, 15)}_${Date.now()}.${fileExt}`;
-        const filePath = `${event?.id || "new-event"}/${fileName}`;
+
+        // Use event ID if it exists, otherwise generate a unique temporary ID
+        // This ensures files are stored in a unique folder even for new events
+        const eventFolder =
+          event?.id ||
+          `temp-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+        const filePath = `${eventFolder}/${fileName}`;
 
         const { error } = await supabase.storage
           .from("event-images")
