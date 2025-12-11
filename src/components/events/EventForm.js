@@ -236,8 +236,40 @@ export default function EventForm({
     onSave(data);
   };
 
-  const handleDownloadAttachment = (url) => {
-    window.open(url, "_blank");
+  const handleDownloadAttachment = async (url, filename) => {
+    try {
+      // Extract the file path from the URL
+      const urlParts = url.split("/");
+      const bucketIndex = urlParts.findIndex((part) => part === "event-images");
+
+      if (bucketIndex === -1) {
+        // If we can't find the bucket in the URL, just open it directly
+        window.open(url, "_blank");
+        return;
+      }
+
+      // Get the path after the bucket name
+      const filePath = urlParts.slice(bucketIndex + 1).join("/");
+
+      // Create a signed URL that's valid for 60 seconds
+      const { data, error } = await supabase.storage
+        .from("event-images")
+        .createSignedUrl(filePath, 60);
+
+      if (error) {
+        console.error("Error creating signed URL:", error);
+        // Fallback to direct URL
+        window.open(url, "_blank");
+        return;
+      }
+
+      // Open the signed URL
+      window.open(data.signedUrl, "_blank");
+    } catch (err) {
+      console.error("Error downloading file:", err);
+      // Fallback to direct URL
+      window.open(url, "_blank");
+    }
   };
 
   return (

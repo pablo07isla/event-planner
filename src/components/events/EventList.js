@@ -325,47 +325,110 @@ const EventList = ({ events, onClose }) => {
 
       {/* Paginación */}
       {totalPages > 1 && (
-        <div className="flex justify-center items-center space-x-2 mt-6">
+        <div className="flex justify-center items-center flex-wrap gap-2 mt-6 px-4">
           <button
             onClick={() => setCurrentPage(1)}
             disabled={currentPage === 1}
-            className="px-3 py-2 bg-white text-gray-700 border rounded-lg disabled:opacity-50 hover:bg-gray-100"
+            className="px-3 py-2 bg-white text-gray-700 border rounded-lg disabled:opacity-50 hover:bg-gray-100 text-sm"
           >
             Primera
           </button>
           <button
             onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
             disabled={currentPage === 1}
-            className="px-3 py-2 bg-white text-gray-700 border rounded-lg disabled:opacity-50 hover:bg-gray-100"
+            className="px-3 py-2 bg-white text-gray-700 border rounded-lg disabled:opacity-50 hover:bg-gray-100 text-sm"
           >
             Anterior
           </button>
-          {Array.from({ length: totalPages }, (_, i) => (
-            <button
-              key={i + 1}
-              onClick={() => setCurrentPage(i + 1)}
-              className={`px-3 py-2 rounded-lg ${
-                i + 1 === currentPage
-                  ? "bg-blue-600 text-white"
-                  : "bg-white text-gray-700 border hover:bg-gray-100"
-              }`}
-            >
-              {i + 1}
-            </button>
-          ))}
+
+          {/* Mostrar números de página de forma inteligente */}
+          {(() => {
+            const pageNumbers = [];
+            const maxVisiblePages = 5;
+
+            if (totalPages <= maxVisiblePages + 2) {
+              // Si hay pocas páginas, mostrar todas
+              for (let i = 1; i <= totalPages; i++) {
+                pageNumbers.push(i);
+              }
+            } else {
+              // Mostrar primera página
+              pageNumbers.push(1);
+
+              // Calcular rango de páginas a mostrar
+              let startPage = Math.max(2, currentPage - 1);
+              let endPage = Math.min(totalPages - 1, currentPage + 1);
+
+              // Ajustar si estamos cerca del inicio
+              if (currentPage <= 3) {
+                endPage = Math.min(maxVisiblePages, totalPages - 1);
+              }
+
+              // Ajustar si estamos cerca del final
+              if (currentPage >= totalPages - 2) {
+                startPage = Math.max(2, totalPages - maxVisiblePages + 1);
+              }
+
+              // Agregar "..." si es necesario
+              if (startPage > 2) {
+                pageNumbers.push("...");
+              }
+
+              // Agregar páginas del rango
+              for (let i = startPage; i <= endPage; i++) {
+                pageNumbers.push(i);
+              }
+
+              // Agregar "..." si es necesario
+              if (endPage < totalPages - 1) {
+                pageNumbers.push("...");
+              }
+
+              // Mostrar última página
+              pageNumbers.push(totalPages);
+            }
+
+            return pageNumbers.map((page, index) => {
+              if (page === "...") {
+                return (
+                  <span
+                    key={`ellipsis-${index}`}
+                    className="px-2 py-2 text-gray-500"
+                  >
+                    ...
+                  </span>
+                );
+              }
+
+              return (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`px-3 py-2 rounded-lg text-sm ${
+                    page === currentPage
+                      ? "bg-blue-600 text-white"
+                      : "bg-white text-gray-700 border hover:bg-gray-100"
+                  }`}
+                >
+                  {page}
+                </button>
+              );
+            });
+          })()}
+
           <button
             onClick={() =>
               setCurrentPage((prev) => Math.min(prev + 1, totalPages))
             }
             disabled={currentPage === totalPages}
-            className="px-3 py-2 bg-white text-gray-700 border rounded-lg disabled:opacity-50 hover:bg-gray-100"
+            className="px-3 py-2 bg-white text-gray-700 border rounded-lg disabled:opacity-50 hover:bg-gray-100 text-sm"
           >
             Siguiente
           </button>
           <button
             onClick={() => setCurrentPage(totalPages)}
             disabled={currentPage === totalPages}
-            className="px-3 py-2 bg-white text-gray-700 border rounded-lg disabled:opacity-50 hover:bg-gray-100"
+            className="px-3 py-2 bg-white text-gray-700 border rounded-lg disabled:opacity-50 hover:bg-gray-100 text-sm"
           >
             Última
           </button>

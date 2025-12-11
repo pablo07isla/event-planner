@@ -64,7 +64,26 @@ export default function CompanySheetForm({
         .from("CompanyGroups")
         .insert([{ ...form }])
         .select();
-      if (error) throw error;
+
+      if (error) {
+        // Detectar error de número de identificación duplicado
+        if (
+          error.code === "23505" &&
+          error.message.includes("identification_number_key")
+        ) {
+          throw new Error(
+            `Ya existe una empresa con el número de identificación ${form.identificationNumber}`
+          );
+        }
+        // Detectar otros errores de constraint único
+        if (error.code === "23505") {
+          throw new Error(
+            "Ya existe una empresa con estos datos. Por favor verifica la información."
+          );
+        }
+        throw error;
+      }
+
       setMessage("Empresa creada exitosamente");
       setForm(initialForm);
       if (onSuccess) onSuccess(data[0]);
@@ -73,6 +92,7 @@ export default function CompanySheetForm({
         onClose && onClose();
       }, 1200);
     } catch (err) {
+      console.error("Error al guardar empresa:", err);
       setMessage(err.message || "Error al guardar");
     } finally {
       setLoading(false);
