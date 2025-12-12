@@ -31,7 +31,8 @@ import { supabase } from "../supabaseClient";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 // Importamos la localización en español
-import { Calendar, Search, Building, Eye } from "lucide-react";
+import { Calendar, Search, Building, Eye, Download } from "lucide-react";
+import * as XLSX from "xlsx";
 import React, { useState, useEffect } from "react";
 import {
   Tabs,
@@ -484,6 +485,58 @@ const SearchEvents = () => {
     return format(date, "PPP", { locale: es });
   };
 
+  const handleDownloadExcel = () => {
+    if (searchResults.length === 0) return;
+
+    console.log("Generando Excel con", searchResults.length, "registros");
+
+    const exportData = searchResults.map((event) => {
+      // Calcular total si es posible, o simplemente mostrar abono y pendiente
+      const deposit = event.deposit || 0;
+      const pending = event.pendingAmount || 0;
+      const total = deposit + pending;
+
+      return {
+        Empresa: event.companyName || "N/A",
+        Contacto: event.contactName || "N/A",
+        Teléfono: event.contactPhone || "N/A",
+        Email: event.email || "N/A",
+        "Fecha Inicio": isValidDate(event.start)
+          ? format(parseISO(event.start), "dd/MM/yyyy HH:mm", { locale: es })
+          : "Fecha inválida",
+        "Fecha Fin": isValidDate(event.end)
+          ? format(parseISO(event.end), "dd/MM/yyyy HH:mm", { locale: es })
+          : "Fecha inválida",
+        Personas: event.peopleCount || 0,
+        Ubicación: event.eventLocation || "",
+        Estado: event.eventStatus || "Pendiente",
+        Descripción: event.eventDescription || "",
+        Abono: deposit,
+        Pendiente: pending,
+        "Total (Est. from Abono+Pend)": total,
+      };
+    });
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Eventos");
+
+    // Generar nombre de archivo con fecha actual
+    const fileName = `listado_eventos_${format(
+      new Date(),
+      "yyyy-MM-dd_HH-mm"
+    )}.xlsx`;
+    XLSX.writeFile(wb, fileName);
+  };
+
+  const isValidDate = (dateString) => {
+    try {
+      return !isNaN(new Date(dateString).getTime());
+    } catch (e) {
+      return false;
+    }
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case "Pendiente":
@@ -847,6 +900,20 @@ const SearchEvents = () => {
 
                   {searchResults.length > 0 ? (
                     <Card className="mt-8">
+                      <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-xl">
+                          Resultados encontrados ({searchResults.length})
+                        </CardTitle>
+                        <Button
+                          onClick={handleDownloadExcel}
+                          variant="outline"
+                          size="sm"
+                          className="ml-auto"
+                        >
+                          <Download className="mr-2 h-4 w-4" />
+                          Descargar Excel
+                        </Button>
+                      </CardHeader>
                       <CardContent className="p-0">
                         <Table>
                           <TableHeader>
@@ -884,7 +951,7 @@ const SearchEvents = () => {
                                       getStatusColor(event.eventStatus).bg
                                     } ${
                                       getStatusColor(event.eventStatus).text
-                                    }`}
+                                    } whitespace-nowrap`}
                                   >
                                     {event.eventStatus}
                                   </Badge>
