@@ -128,7 +128,7 @@ export default function ModalEvent({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto z-[10000]">
           <DialogHeader>
             <DialogTitle>
               {event?.id ? "Editar Evento" : "Nuevo Evento"}
