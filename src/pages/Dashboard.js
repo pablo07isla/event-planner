@@ -55,8 +55,19 @@ export default function Dashboard() {
       const eventData = {};
       for (let [key, value] of formData.entries()) {
         let mappedKey = key;
-        if (key === "startDate") mappedKey = "start";
-        if (key === "endDate") mappedKey = "end";
+        if (key === "startDate") {
+          mappedKey = "start";
+          // Ensure correct timezone handling by converting to ISO string
+          if (value) {
+            value = new Date(value).toISOString();
+          }
+        }
+        if (key === "endDate") {
+          mappedKey = "end";
+          if (value) {
+            value = new Date(value).toISOString();
+          }
+        }
         if (mappedKey === "foodPackage") {
           eventData[mappedKey] = value ? value.split(",") : [];
         } else if (mappedKey === "attachments") {

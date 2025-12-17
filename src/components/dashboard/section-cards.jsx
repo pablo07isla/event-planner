@@ -7,6 +7,10 @@ import ModalEvent from "../events/Modal";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import EventListPDF from "../events/EventListPDF";
 import { IconPrinter } from "@tabler/icons-react";
+import { BrainCircuit } from "lucide-react"; // AI Icon
+import AIAnalysisModal from "./ai-analysis-modal";
+import { supabase } from "../../supabaseClient";
+import { toast } from "sonner";
 
 function parseToLocalDate(dateString) {
   // Si viene como 'YYYY-MM-DD', fuerza a local
@@ -35,13 +39,19 @@ export default function SectionCards({
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
 
+  // AI Modal State
+  const [aiModalOpen, setAiModalOpen] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiProgress, setAiProgress] = useState(null);
+  const [aiResults, setAiResults] = useState(null);
+  const [aiDateLabel, setAiDateLabel] = useState("");
+
   const today = new Date();
   const tomorrow = new Date(today);
   tomorrow.setDate(today.getDate() + 1);
   const afterTomorrow = new Date(today);
   afterTomorrow.setDate(today.getDate() + 2);
 
-  // Cambia 'date' por 'start' y ajusta nombre/cantidad
   const eventsToday = events.filter(
     (e) =>
       isSameDay(parseToLocalDate(e.start), today) &&
@@ -58,7 +68,6 @@ export default function SectionCards({
       e.eventStatus !== "Cancelado"
   );
 
-  // Calcular el total de personas para cada día
   const totalPeopleToday = eventsToday.reduce(
     (acc, e) => acc + (parseInt(e.peopleCount) || 0),
     0
@@ -72,12 +81,144 @@ export default function SectionCards({
     0
   );
 
-  // Obtener el nombre del día de la semana para pasado mañana
   const afterTomorrowDayName = afterTomorrow.toLocaleDateString("es-ES", {
     weekday: "long",
   });
 
-  // Componente para renderizar cada tarjeta
+  const handleAnalyzeDay = async (dayEvents, title) => {
+    if (dayEvents.length === 0) {
+      toast.info("No hay eventos para analizar en este día.");
+      return;
+    }
+
+    setAiModalOpen(true);
+    setAiLoading(true);
+    setAiDateLabel(typeof title === "string" ? title : "Día seleccionado");
+    setAiResults(null);
+
+    const aggregatedItems = {}; // { key: { mealType, category, quantity, notes: Set() } }
+    const allWarnings = [];
+    let completed = 0;
+
+    try {
+      for (const event of dayEvents) {
+        setAiProgress({ current: completed + 1, total: dayEvents.length });
+
+        const { data, error } = await supabase.functions.invoke(
+          "catering-intelligence",
+          {
+            body: { eventId: event.id },
+          }
+        );
+
+        if (error) {
+          console.error("AI Error for event", event.id, error);
+          allWarnings.push(
+            `Error analizando evento ${event.companyName || event.title}: ${
+              error.message
+            }`
+          );
+        } else if (data && data.success) {
+          const result = data.data || { mealGroups: {} };
+          const mealGroups = result.mealGroups || {};
+
+          // Check if no food detected
+          const hasMeals = Object.values(mealGroups).some(
+            (items) => items && items.length > 0
+          );
+          if (!hasMeals && event.peopleCount > 0) {
+            allWarnings.push(
+              `Evento "${event.companyName || event.title}" (${
+                event.peopleCount
+              } pax) no tiene comida detectada.`
+            );
+          }
+
+          // Aggregate items from all meal groups
+          Object.entries(mealGroups).forEach(([mealType, items]) => {
+            if (!items || !Array.isArray(items)) return;
+
+            items.forEach((item) => {
+              const category = item.category || "Otro";
+              const key = `${mealType}::${category}`;
+
+              if (!aggregatedItems[key]) {
+                aggregatedItems[key] = {
+                  mealType: mealType,
+                  category: category,
+                  quantity: 0,
+                  notes: new Set(),
+                };
+              }
+              aggregatedItems[key].quantity += item.quantity || 0;
+              if (item.notes) aggregatedItems[key].notes.add(item.notes);
+            });
+          });
+        }
+        completed++;
+      }
+
+      // Final Assembly - group by mealType for display
+      const itemsByMealType = {};
+      Object.values(aggregatedItems).forEach((i) => {
+        const mealType = i.mealType || "OTRO";
+        if (!itemsByMealType[mealType]) {
+          itemsByMealType[mealType] = [];
+        }
+        itemsByMealType[mealType].push({
+          category: i.category,
+          quantity: i.quantity,
+          notes: Array.from(i.notes).join("; "),
+        });
+      });
+
+      // Sort meal types in preferred order
+      const mealTypeOrder = [
+        "ALMUERZO",
+        "REFRIGERIO",
+        "DESAYUNO",
+        "MENU INFANTIL",
+        "VEGETARIANO",
+        "OTRO",
+      ];
+      const sortedMealGroups = {};
+      mealTypeOrder.forEach((type) => {
+        if (itemsByMealType[type] && itemsByMealType[type].length > 0) {
+          sortedMealGroups[type] = itemsByMealType[type];
+        }
+      });
+      // Add any remaining types not in the order
+      Object.keys(itemsByMealType).forEach((type) => {
+        if (!sortedMealGroups[type]) {
+          sortedMealGroups[type] = itemsByMealType[type];
+        }
+      });
+
+      // Calculate totals
+      const totalPaxInEvents = dayEvents.reduce(
+        (sum, e) => sum + (e.peopleCount || 0),
+        0
+      );
+      const totalFoodQuantity = Object.values(sortedMealGroups)
+        .flat()
+        .reduce((sum, i) => sum + i.quantity, 0);
+
+      setAiResults({
+        mealGroups: sortedMealGroups,
+        warnings: allWarnings,
+        totalPax: totalPaxInEvents,
+        totalFood: totalFoodQuantity,
+        eventsAnalyzed: dayEvents.length,
+      });
+    } catch (err) {
+      console.error("Batch Analysis Flow Error", err);
+      toast.error("Error en el análisis de IA");
+    } finally {
+      setAiLoading(false);
+      refreshEvents();
+    }
+  };
+
   const EventCard = ({
     title,
     events,
@@ -111,6 +252,21 @@ export default function SectionCards({
                   <Trans>pax</Trans>
                 </span>
               </Badge>
+
+              {/* AI Button */}
+              {!loading && events.length > 0 && (
+                <button
+                  className="p-2 rounded hover:bg-purple-100 transition ml-2 text-purple-600 border border-purple-200 bg-white"
+                  title="Analizar con IA (Catering)"
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent card click? Actually header doesn't trigger card click
+                    handleAnalyzeDay(events, title);
+                  }}
+                >
+                  <BrainCircuit className="h-6 w-6" />
+                </button>
+              )}
+
               {/* Botón de imprimir PDF */}
               {!loading && events.length > 0 && (
                 <PDFDownloadLink
@@ -153,13 +309,6 @@ export default function SectionCards({
               )}
             </div>
           </div>
-          {/* {!loading && events.length === 0 && (
-            <div className="flex justify-center">
-              <Badge variant="secondary" className="text-gray-500">
-                <Trans>Sin eventos</Trans>
-              </Badge>
-            </div>
-          )} */}
         </CardHeader>
         <CardFooter className="pt-0 flex-1 flex flex-col">
           {loading ? (
@@ -211,54 +360,66 @@ export default function SectionCards({
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-4 lg:px-6">
-      <EventCard
-        title={<Trans>Hoy</Trans>}
-        events={eventsToday}
-        totalPeople={totalPeopleToday}
-        bgColor="bg-gradient-to-br from-blue-50 to-blue-100"
-        borderColor="border-blue-200"
-        badgeColor="bg-blue-500"
-        textColor="text-white"
-        emptyMessage={<Trans>No hay eventos para hoy</Trans>}
-      />
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-4 lg:px-6">
+        <EventCard
+          title={<Trans>Hoy</Trans>}
+          events={eventsToday}
+          totalPeople={totalPeopleToday}
+          bgColor="bg-gradient-to-br from-blue-50 to-blue-100"
+          borderColor="border-blue-200"
+          badgeColor="bg-blue-500"
+          textColor="text-white"
+          emptyMessage={<Trans>No hay eventos para hoy</Trans>}
+        />
 
-      <EventCard
-        title={<Trans>Mañana</Trans>}
-        events={eventsTomorrow}
-        totalPeople={totalPeopleTomorrow}
-        bgColor="bg-gradient-to-br from-green-50 to-green-100"
-        borderColor="border-green-200"
-        badgeColor="bg-green-500"
-        textColor="text-white"
-        emptyMessage={<Trans>No hay eventos para mañana</Trans>}
-      />
+        <EventCard
+          title={<Trans>Mañana</Trans>}
+          events={eventsTomorrow}
+          totalPeople={totalPeopleTomorrow}
+          bgColor="bg-gradient-to-br from-green-50 to-green-100"
+          borderColor="border-green-200"
+          badgeColor="bg-green-500"
+          textColor="text-white"
+          emptyMessage={<Trans>No hay eventos para mañana</Trans>}
+        />
 
-      <EventCard
-        title={afterTomorrowDayName}
-        events={eventsAfterTomorrow}
-        totalPeople={totalPeopleAfterTomorrow}
-        bgColor="bg-gradient-to-br from-amber-50 to-amber-100"
-        borderColor="border-amber-200"
-        badgeColor="bg-amber-500"
-        textColor="text-white"
-        emptyMessage={<Trans>No hay eventos para pasado mañana</Trans>}
-      />
+        <EventCard
+          title={afterTomorrowDayName}
+          events={eventsAfterTomorrow}
+          totalPeople={totalPeopleAfterTomorrow}
+          bgColor="bg-gradient-to-br from-amber-50 to-amber-100"
+          borderColor="border-amber-200"
+          badgeColor="bg-amber-500"
+          textColor="text-white"
+          emptyMessage={<Trans>No hay eventos para pasado mañana</Trans>}
+        />
 
-      {/* Modal para ver el evento */}
-      <ModalEvent
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSave={async (formData) => {
-          await onSave(formData);
-          setModalOpen(false);
-        }}
-        onDelete={(id) => {
-          onDelete(id);
-          setModalOpen(false);
-        }}
-        event={selectedEvent}
+        {/* Modal para ver el evento */}
+        <ModalEvent
+          isOpen={modalOpen}
+          onClose={() => setModalOpen(false)}
+          onSave={async (formData) => {
+            await onSave(formData);
+            setModalOpen(false);
+          }}
+          onDelete={(id) => {
+            onDelete(id);
+            setModalOpen(false);
+          }}
+          event={selectedEvent}
+        />
+      </div>
+
+      {/* AI Modal */}
+      <AIAnalysisModal
+        isOpen={aiModalOpen}
+        onClose={() => setAiModalOpen(false)}
+        loading={aiLoading}
+        progress={aiProgress}
+        results={aiResults}
+        dateLabel={aiDateLabel}
       />
-    </div>
+    </>
   );
 }

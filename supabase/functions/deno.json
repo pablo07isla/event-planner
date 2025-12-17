@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "lib": ["deno.ns", "deno.window", "dom"],
+    "strict": true
+  },
+  "imports": {
+    "jsr:@supabase/supabase-js": "jsr:@supabase/supabase-js@2"
+  }
+}
