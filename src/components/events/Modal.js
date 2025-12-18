@@ -148,7 +148,7 @@ export default function ModalEvent({
       {/* PDF Modal using shadcn Dialog as well, with higher z-index if needed (controlled by Dialog primitive) */}
       {showPdfModal && (
         <Dialog open={showPdfModal} onOpenChange={setShowPdfModal}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto z-[9999]">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto z-[10001]">
             <DialogHeader>
               <DialogTitle>Vista Previa PDF</DialogTitle>
             </DialogHeader>
