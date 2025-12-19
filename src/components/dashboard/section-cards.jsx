@@ -9,7 +9,6 @@ import EventListPDF from "../events/EventListPDF";
 import { IconPrinter } from "@tabler/icons-react";
 import { BrainCircuit } from "lucide-react"; // AI Icon
 import AIAnalysisModal from "./ai-analysis-modal";
-import { supabase } from "../../supabaseClient";
 import { toast } from "sonner";
 
 function parseToLocalDate(dateString) {
@@ -85,138 +84,133 @@ export default function SectionCards({
     weekday: "long",
   });
 
-  const handleAnalyzeDay = async (dayEvents, title) => {
+  const handleViewAnalysis = (dayEvents, title) => {
     if (dayEvents.length === 0) {
-      toast.info("No hay eventos para analizar en este día.");
+      toast.info("No hay eventos para ver.");
       return;
     }
 
-    setAiModalOpen(true);
-    setAiLoading(true);
     setAiDateLabel(typeof title === "string" ? title : "Día seleccionado");
-    setAiResults(null);
 
     const aggregatedItems = {}; // { key: { mealType, category, quantity, notes: Set() } }
     const allWarnings = [];
-    let completed = 0;
 
-    try {
-      for (const event of dayEvents) {
-        setAiProgress({ current: completed + 1, total: dayEvents.length });
+    let eventsWithData = 0;
 
-        const { data, error } = await supabase.functions.invoke(
-          "catering-intelligence",
-          {
-            body: { eventId: event.id },
-          }
-        );
+    dayEvents.forEach((event) => {
+      // Data is now pre-calculated in DB by Webhook
+      const storedAnalysis = event.catering_intelligence;
+      const mealGroups = storedAnalysis?.mealGroups || {};
 
-        if (error) {
-          console.error("AI Error for event", event.id, error);
+      // Check if no food detected but event has people
+      const hasMeals = Object.values(mealGroups).some(
+        (items) => items && items.length > 0
+      );
+
+      if (!hasMeals && event.peopleCount > 0) {
+        // Silently ignore or maybe add a visual indicator?
+        // For now let's just log it to warnings if entirely missing to hint user might need to wait
+        if (!storedAnalysis) {
+          // allWarnings.push(`[${event.companyName}] Análisis pendiente o no disponible.`);
+        } else {
           allWarnings.push(
-            `Error analizando evento ${event.companyName || event.title}: ${
-              error.message
-            }`
+            `Evento "${event.companyName || event.title}" (${
+              event.peopleCount
+            } pax) no tiene comida detectada.`
           );
-        } else if (data && data.success) {
-          const result = data.data || { mealGroups: {} };
-          const mealGroups = result.mealGroups || {};
-
-          // Check if no food detected
-          const hasMeals = Object.values(mealGroups).some(
-            (items) => items && items.length > 0
-          );
-          if (!hasMeals && event.peopleCount > 0) {
-            allWarnings.push(
-              `Evento "${event.companyName || event.title}" (${
-                event.peopleCount
-              } pax) no tiene comida detectada.`
-            );
-          }
-
-          // Aggregate items from all meal groups
-          Object.entries(mealGroups).forEach(([mealType, items]) => {
-            if (!items || !Array.isArray(items)) return;
-
-            items.forEach((item) => {
-              const category = item.category || "Otro";
-              const key = `${mealType}::${category}`;
-
-              if (!aggregatedItems[key]) {
-                aggregatedItems[key] = {
-                  mealType: mealType,
-                  category: category,
-                  quantity: 0,
-                  notes: new Set(),
-                };
-              }
-              aggregatedItems[key].quantity += item.quantity || 0;
-              if (item.notes) aggregatedItems[key].notes.add(item.notes);
-            });
-          });
         }
-        completed++;
       }
 
-      // Final Assembly - group by mealType for display
-      const itemsByMealType = {};
-      Object.values(aggregatedItems).forEach((i) => {
-        const mealType = i.mealType || "OTRO";
-        if (!itemsByMealType[mealType]) {
-          itemsByMealType[mealType] = [];
-        }
-        itemsByMealType[mealType].push({
-          category: i.category,
-          quantity: i.quantity,
-          notes: Array.from(i.notes).join("; "),
+      if (storedAnalysis) eventsWithData++;
+
+      // Aggregate items from all meal groups
+      Object.entries(mealGroups).forEach(([mealType, items]) => {
+        if (!items || !Array.isArray(items)) return;
+
+        items.forEach((item) => {
+          const category = item.category || "Otro";
+          const key = `${mealType}::${category}`;
+
+          if (!aggregatedItems[key]) {
+            aggregatedItems[key] = {
+              mealType: mealType,
+              category: category,
+              quantity: 0,
+              notes: new Set(),
+            };
+          }
+          aggregatedItems[key].quantity += item.quantity || 0;
+          if (item.notes) aggregatedItems[key].notes.add(item.notes);
         });
       });
+    });
 
-      // Sort meal types in preferred order
-      const mealTypeOrder = [
-        "ALMUERZO",
-        "REFRIGERIO",
-        "DESAYUNO",
-        "MENU INFANTIL",
-        "VEGETARIANO",
-        "OTRO",
-      ];
-      const sortedMealGroups = {};
-      mealTypeOrder.forEach((type) => {
-        if (itemsByMealType[type] && itemsByMealType[type].length > 0) {
-          sortedMealGroups[type] = itemsByMealType[type];
-        }
+    // Final Assembly - group by mealType for display
+    const itemsByMealType = {};
+    Object.values(aggregatedItems).forEach((i) => {
+      const mealType = i.mealType || "OTRO";
+      if (!itemsByMealType[mealType]) {
+        itemsByMealType[mealType] = [];
+      }
+      itemsByMealType[mealType].push({
+        category: i.category,
+        quantity: i.quantity,
+        notes: Array.from(i.notes).join("; "),
       });
-      // Add any remaining types not in the order
-      Object.keys(itemsByMealType).forEach((type) => {
-        if (!sortedMealGroups[type]) {
-          sortedMealGroups[type] = itemsByMealType[type];
-        }
-      });
+    });
 
-      // Calculate totals
-      const totalPaxInEvents = dayEvents.reduce(
-        (sum, e) => sum + (e.peopleCount || 0),
-        0
+    // Sort meal types in preferred order
+    const mealTypeOrder = [
+      "ALMUERZO",
+      "REFRIGERIO",
+      "DESAYUNO",
+      "MENU INFANTIL",
+      "VEGETARIANO",
+      "OTRO",
+    ];
+    const sortedMealGroups = {};
+    mealTypeOrder.forEach((type) => {
+      if (itemsByMealType[type] && itemsByMealType[type].length > 0) {
+        sortedMealGroups[type] = itemsByMealType[type];
+      }
+    });
+    // Add any remaining types not in the order
+    Object.keys(itemsByMealType).forEach((type) => {
+      if (!sortedMealGroups[type]) {
+        sortedMealGroups[type] = itemsByMealType[type];
+      }
+    });
+
+    // Calculate totals
+    const totalPaxInEvents = dayEvents.reduce(
+      (sum, e) => sum + (e.peopleCount || 0),
+      0
+    );
+    const totalFoodQuantity = Object.values(sortedMealGroups)
+      .flat()
+      .reduce((sum, i) => sum + i.quantity, 0);
+
+    // Simple warning for big mismatch
+    if (totalFoodQuantity < totalPaxInEvents * 0.5 && totalPaxInEvents > 0) {
+      allWarnings.push(
+        "⚠️ Alerta: Cantidad total de comida parece baja respecto al número de personas."
       );
-      const totalFoodQuantity = Object.values(sortedMealGroups)
-        .flat()
-        .reduce((sum, i) => sum + i.quantity, 0);
-
-      setAiResults({
-        mealGroups: sortedMealGroups,
-        warnings: allWarnings,
-        totalPax: totalPaxInEvents,
-        totalFood: totalFoodQuantity,
-        eventsAnalyzed: dayEvents.length,
-      });
-    } catch (err) {
-      console.error("Batch Analysis Flow Error", err);
-      toast.error("Error en el análisis de IA");
-    } finally {
-      setAiLoading(false);
-      refreshEvents();
     }
+
+    if (eventsWithData < dayEvents.length && dayEvents.length > 0) {
+      // Optional: warn that some events are not yet analyzed
+      // allWarnings.push("ℹ️ Algunos eventos aún no han sido procesados por la IA.");
+    }
+
+    setAiResults({
+      mealGroups: sortedMealGroups,
+      warnings: allWarnings,
+      totalPax: totalPaxInEvents,
+      totalFood: totalFoodQuantity,
+      eventsAnalyzed: dayEvents.length,
+    });
+
+    setAiModalOpen(true);
   };
 
   const EventCard = ({
@@ -257,10 +251,10 @@ export default function SectionCards({
               {!loading && events.length > 0 && (
                 <button
                   className="p-2 rounded hover:bg-purple-100 transition ml-2 text-purple-600 border border-purple-200 bg-white"
-                  title="Analizar con IA (Catering)"
+                  title="Ver Análisis de Catering (IA)"
                   onClick={(e) => {
-                    e.stopPropagation(); // Prevent card click? Actually header doesn't trigger card click
-                    handleAnalyzeDay(events, title);
+                    e.stopPropagation();
+                    handleViewAnalysis(events, title);
                   }}
                 >
                   <BrainCircuit className="h-6 w-6" />

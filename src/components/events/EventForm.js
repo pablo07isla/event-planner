@@ -571,7 +571,7 @@ export default function EventForm({
                   Eliminar
                 </Button>
               </AlertDialogTrigger>
-              <AlertDialogContent>
+              <AlertDialogContent className="z-[10001]">
                 <AlertDialogHeader>
                   <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
                   <AlertDialogDescription>

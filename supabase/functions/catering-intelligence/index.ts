@@ -109,6 +109,7 @@ STANDARD CATEGORIES (use EXACTLY these names, grouped by meal type):
 - Huevos Pericos
 - Huevos Revueltos
 - Huevos Cacerola
+- Huevos Rancheros
 - Calentado
 - Café
 - Café con Leche
@@ -150,7 +151,7 @@ RULES:
     `;
 
     const geminiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${geminiApiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
