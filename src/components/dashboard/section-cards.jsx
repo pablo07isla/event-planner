@@ -84,13 +84,27 @@ export default function SectionCards({
     weekday: "long",
   });
 
-  const handleViewAnalysis = (dayEvents, title) => {
+  const handleViewAnalysis = (dayEvents, title, dateObj) => {
     if (dayEvents.length === 0) {
       toast.info("No hay eventos para ver.");
       return;
     }
 
-    setAiDateLabel(typeof title === "string" ? title : "Día seleccionado");
+    let dateStr = "Día seleccionado";
+    if (dateObj instanceof Date) {
+      dateStr = dateObj.toLocaleDateString("es-ES", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+      // Capitalize first letter
+      dateStr = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+    } else if (typeof title === "string") {
+      dateStr = title;
+    }
+
+    setAiDateLabel(dateStr);
 
     const aggregatedItems = {}; // { key: { mealType, category, quantity, notes: Set() } }
     const allWarnings = [];
@@ -222,21 +236,22 @@ export default function SectionCards({
     badgeColor,
     textColor,
     emptyMessage,
+    date,
   }) => {
     return (
       <Card className={`${bgColor} ${borderColor} h-full flex flex-col`}>
         <CardHeader className="pb-4">
-          <div className="flex items-center gap-4 mb-3 w-full justify-between">
-            <CardDescription className="text-lg font-semibold text-gray-700 capitalize flex-1">
+          <div className="flex items-center justify-between gap-2 mb-3 w-full">
+            <CardDescription className="text-lg font-semibold text-gray-700 capitalize shrink-0">
               {title}
             </CardDescription>
-            <div className="flex items-center gap-2 flex-1 justify-center">
+            <div className="flex items-center gap-2 shrink-0">
               <IconCalendarEvent className="h-6 w-6 text-gray-600" />
               <span className="text-xl font-bold tabular-nums text-gray-900">
                 {loading ? "..." : events.length}
               </span>
             </div>
-            <div className="flex items-center gap-1 flex-1 justify-end">
+            <div className="flex items-center gap-1 shrink-0 justify-end">
               <Badge
                 variant="secondary"
                 className="bg-white/80 border-white/40 text-xl font-bold tabular-nums text-gray-900 px-3 py-2"
@@ -254,7 +269,7 @@ export default function SectionCards({
                   title="Ver Análisis de Catering (IA)"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleViewAnalysis(events, title);
+                    handleViewAnalysis(events, title, date);
                   }}
                 >
                   <BrainCircuit className="h-6 w-6" />
@@ -365,6 +380,7 @@ export default function SectionCards({
           badgeColor="bg-blue-500"
           textColor="text-white"
           emptyMessage={<Trans>No hay eventos para hoy</Trans>}
+          date={today}
         />
 
         <EventCard
@@ -376,6 +392,7 @@ export default function SectionCards({
           badgeColor="bg-green-500"
           textColor="text-white"
           emptyMessage={<Trans>No hay eventos para mañana</Trans>}
+          date={tomorrow}
         />
 
         <EventCard
@@ -387,6 +404,7 @@ export default function SectionCards({
           badgeColor="bg-amber-500"
           textColor="text-white"
           emptyMessage={<Trans>No hay eventos para pasado mañana</Trans>}
+          date={afterTomorrow}
         />
 
         {/* Modal para ver el evento */}

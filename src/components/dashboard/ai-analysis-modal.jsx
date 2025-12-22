@@ -14,7 +14,13 @@ import {
   AlertTriangle,
   CheckCircle2,
   BrainCircuit,
+  Copy,
+  Mail,
+  MessageCircle,
+  Check,
+  Send,
 } from "lucide-react";
+import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import {
   Table,
@@ -34,6 +40,88 @@ export default function AIAnalysisModal({
   results, // { items: [{name, quantity, notes}], warnings: [], totalPax: 0, eventsAnalyzed: 0 }
   dateLabel,
 }) {
+  const [copied, setCopied] = React.useState(false);
+
+  const generateShareText = () => {
+    if (!results) return "";
+
+    const lines = [];
+    lines.push(`*Análisis de Catering ${dateLabel ? `- ${dateLabel}` : ""}*`);
+    lines.push("");
+    lines.push(`👥 *Total Pax:* ${results.totalPax}`);
+    lines.push(`📅 *Eventos:* ${results.eventsAnalyzed}`);
+
+    if (results.warnings && results.warnings.length > 0) {
+      lines.push("");
+      lines.push(`⚠️ *Alertas (${results.warnings.length}):*`);
+      results.warnings.forEach((w) => lines.push(`• ${w}`));
+    }
+
+    if (results.mealGroups && Object.keys(results.mealGroups).length > 0) {
+      lines.push("");
+      lines.push("🍽️ *Detalle:*");
+      Object.entries(results.mealGroups).forEach(([type, items]) => {
+        lines.push(`*${type}*`);
+        items.forEach((item) =>
+          lines.push(`  • ${item.quantity} x ${item.category}`)
+        );
+      });
+    }
+
+    return lines.join("\n");
+  };
+
+  const handleCopy = () => {
+    const text = generateShareText();
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleWhatsApp = () => {
+    const text = generateShareText();
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const baseUrl = isMobile
+      ? "https://api.whatsapp.com/send"
+      : "https://web.whatsapp.com/send";
+    const url = `${baseUrl}?text=${encodeURIComponent(text)}`;
+    window.open(url, "_blank");
+  };
+
+  const handleEmail = () => {
+    const text = generateShareText();
+    const subject = encodeURIComponent(`Resumen Catering ${dateLabel || ""}`);
+    const body = encodeURIComponent(text);
+    window.open(`mailto:?subject=${subject}&body=${body}`, "_blank");
+  };
+
+  const handleSendToN8N = async () => {
+    try {
+      // Import supabase client
+      const { supabase } = await import("../../supabaseClient");
+
+      // Call Supabase Edge Function
+      const { data, error } = await supabase.functions.invoke("send-to-n8n", {
+        body: results,
+      });
+
+      if (error) {
+        console.error("Supabase function error:", error);
+        toast.error("Error al enviar a n8n");
+        return;
+      }
+
+      if (data?.success) {
+        toast.success("Enviado a n8n correctamente");
+      } else {
+        toast.error("Error al enviar a n8n");
+        console.error("n8n error:", data?.error);
+      }
+    } catch (error) {
+      console.error("Error sending to n8n:", error);
+      toast.error("Error de conexión con n8n");
+    }
+  };
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-hidden flex flex-col">
@@ -73,7 +161,7 @@ export default function AIAnalysisModal({
           ) : results ? (
             <div className="space-y-6">
               {/* Resumen General */}
-              <div className="grid gap-4 md:grid-cols-3">
+              <div className="grid gap-4 md:grid-cols-2">
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">
@@ -114,32 +202,6 @@ export default function AIAnalysisModal({
                     </div>
                     <p className="text-xs text-muted-foreground">
                       <Trans>Analizados hoy</Trans>
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      <Trans>Alertas</Trans>
-                    </CardTitle>
-                    <AlertTriangle
-                      className={`h-4 w-4 ${
-                        results.warnings.length > 0
-                          ? "text-red-500"
-                          : "text-muted-foreground"
-                      }`}
-                    />
-                  </CardHeader>
-                  <CardContent>
-                    <div
-                      className={`text-2xl font-bold ${
-                        results.warnings.length > 0 ? "text-red-500" : ""
-                      }`}
-                    >
-                      {results.warnings.length}
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      <Trans>Inconsistencias</Trans>
                     </p>
                   </CardContent>
                 </Card>
@@ -224,13 +286,68 @@ export default function AIAnalysisModal({
           ) : null}
         </div>
 
-        <DialogFooter className="sm:justify-between">
-          <div className="text-xs text-muted-foreground self-center">
-            <Trans>Powered by Google Gemini</Trans>
+        <DialogFooter className="sm:justify-between gap-4 sm:gap-0">
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            {results && !loading && (
+              <div className="flex gap-2 w-full sm:w-auto">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 sm:flex-none gap-2"
+                  onClick={handleCopy}
+                >
+                  {copied ? (
+                    <Check className="h-4 w-4 text-green-500" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
+                  <span className="sr-only sm:not-sr-only">
+                    <Trans>Copiar</Trans>
+                  </span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 sm:flex-none gap-2"
+                  onClick={handleWhatsApp}
+                >
+                  <MessageCircle className="h-4 w-4 text-green-600" />
+                  <span className="sr-only sm:not-sr-only">WhatsApp</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 sm:flex-none gap-2"
+                  onClick={handleEmail}
+                >
+                  <Mail className="h-4 w-4 text-blue-500" />
+                  <span className="sr-only sm:not-sr-only">Email</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 sm:flex-none gap-2"
+                  onClick={handleSendToN8N}
+                >
+                  <Send className="h-4 w-4 text-orange-500" />
+                  <span className="sr-only sm:not-sr-only">n8n</span>
+                </Button>
+              </div>
+            )}
           </div>
-          <Button type="button" variant="secondary" onClick={onClose}>
-            <Trans>Cerrar</Trans>
-          </Button>
+
+          <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto">
+            <div className="text-xs text-muted-foreground hidden sm:block">
+              <Trans>Powered by Google Gemini</Trans>
+            </div>
+            <Button type="button" variant="secondary" onClick={onClose}>
+              <Trans>Cerrar</Trans>
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
