@@ -100,9 +100,16 @@ export default function AIAnalysisModal({
       // Import supabase client
       const { supabase } = await import("../../supabaseClient");
 
+      // Prepare refined payload
+      const { totalFood, ...restOfResults } = results;
+      const payload = {
+        ...restOfResults,
+        date: dateLabel,
+      };
+
       // Call Supabase Edge Function
       const { data, error } = await supabase.functions.invoke("send-to-n8n", {
-        body: results,
+        body: payload,
       });
 
       if (error) {
