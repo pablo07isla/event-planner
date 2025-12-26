@@ -105,6 +105,7 @@ export default function AIAnalysisModal({
       const payload = {
         ...restOfResults,
         date: dateLabel,
+        channel: "whatsapp",
       };
 
       // Call Supabase Edge Function
@@ -119,14 +120,14 @@ export default function AIAnalysisModal({
       }
 
       if (data?.success) {
-        toast.success("Enviado a n8n correctamente");
+        toast.success("Análisis enviado a WhatsApp correctamente");
       } else {
-        toast.error("Error al enviar a n8n");
+        toast.error("Error al enviar a WhatsApp");
         console.error("n8n error:", data?.error);
       }
     } catch (error) {
       console.error("Error sending to n8n:", error);
-      toast.error("Error de conexión con n8n");
+      toast.error("Error de conexión con WhatsApp");
     }
   };
   return (
@@ -337,11 +338,11 @@ export default function AIAnalysisModal({
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="flex-1 sm:flex-none gap-2"
+                  className="flex-1 sm:flex-none gap-2 bg-green-50 hover:bg-green-100 border-green-200"
                   onClick={handleSendToN8N}
                 >
-                  <Send className="h-4 w-4 text-orange-500" />
-                  <span className="sr-only sm:not-sr-only">n8n</span>
+                  <MessageCircle className="h-4 w-4 text-green-600" />
+                  <span className="sr-only sm:not-sr-only">WhatsApp AI</span>
                 </Button>
               </div>
             )}
