@@ -10,7 +10,10 @@ import {
   FaUtensils,
   FaFilePdf,
   FaCalendarAlt,
+  FaSlack,
 } from "react-icons/fa";
+import { pdf } from "@react-pdf/renderer";
+import { toast } from "sonner";
 
 // Constants
 const EVENTS_PER_PAGE = 2;
@@ -178,6 +181,7 @@ EventCard.propTypes = {
 const EventList = ({ events, onClose }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [isSending, setIsSending] = useState(false);
 
   // Event processing logic
   const processEvents = useMemo(() => {
@@ -244,54 +248,126 @@ const EventList = ({ events, onClose }) => {
     }, 1000);
   };
 
+  const handleSendToSlack = async () => {
+    setIsSending(true);
+    try {
+      const { supabase } = await import("../../supabaseClient");
+
+      // Generar el blob del PDF usando el componente EventListPDF
+      const blob = await pdf(<EventListPDF events={events} />).toBlob();
+
+      // Preparar FormData para enviar el archivo
+      const formData = new FormData();
+      formData.append("file", blob, "reporte_eventos.pdf");
+
+      // Llamar a la Edge Function de Supabase
+      // Invoke devuelve { data, error }
+      const { data, error } = await supabase.functions.invoke("send-to-n8n", {
+        body: formData,
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        toast.success("PDF enviado a Slack correctamente");
+      } else {
+        throw new Error("La función no devolvió éxito");
+      }
+    } catch (error) {
+      console.error("Error al enviar PDF a Slack:", error);
+      toast.error("Error al enviar el PDF a Slack");
+    } finally {
+      setIsSending(false);
+    }
+  };
+
   return (
     <div className="w-full max-w-7xl mx-auto px-4 py-6">
       {/* Encabezado y Botón de PDF */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Lista de Eventos</h1>
-        <PDFDownloadLink
-          document={<EventListPDF events={events} />}
-          fileName="reporte_eventos.pdf"
-        >
-          {({ loading, url }) => (
-            <button
-              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-300 disabled:opacity-50"
-              disabled={loading}
-              onClick={handlePDFDownload}
-            >
-              {loading ? (
-                <>
-                  <svg
-                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  Generando PDF...
-                </>
-              ) : (
-                <>
-                  <FaFilePdf className="mr-2" />
-                  Descargar PDF
-                </>
-              )}
-            </button>
-          )}
-        </PDFDownloadLink>
+        <div className="flex items-center gap-3">
+          <button
+            className="inline-flex items-center px-4 py-2 bg-slate-800 text-white rounded-lg shadow-md hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 transition-colors duration-300 disabled:opacity-50"
+            disabled={isSending}
+            onClick={handleSendToSlack}
+          >
+            {isSending ? (
+              <>
+                <svg
+                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Enviando...
+              </>
+            ) : (
+              <>
+                <FaSlack className="mr-2" />
+                Enviar a Slack
+              </>
+            )}
+          </button>
+
+          <PDFDownloadLink
+            document={<EventListPDF events={events} />}
+            fileName="reporte_eventos.pdf"
+          >
+            {({ loading, url }) => (
+              <button
+                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-300 disabled:opacity-50"
+                disabled={loading || isSending}
+                onClick={handlePDFDownload}
+              >
+                {loading ? (
+                  <>
+                    <svg
+                      className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Generando...
+                  </>
+                ) : (
+                  <>
+                    <FaFilePdf className="mr-2" />
+                    Descargar
+                  </>
+                )}
+              </button>
+            )}
+          </PDFDownloadLink>
+        </div>
       </div>
 
       {/* Lista de Eventos */}

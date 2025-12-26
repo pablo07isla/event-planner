@@ -20,18 +20,21 @@ serve(async (req) => {
       throw new Error("N8N_WEBHOOK_URL not configured");
     }
 
-    // Get the payload from the request
-    const payload = await req.json();
+    const contentType = req.headers.get("content-type");
+    console.log(
+      "Forwarding to n8n:",
+      n8nWebhookUrl,
+      "Content-Type:",
+      contentType
+    );
 
-    console.log("Forwarding to n8n:", n8nWebhookUrl);
-
-    // Forward the request to n8n
+    // Forward the request to n8n as a stream
     const response = await fetch(n8nWebhookUrl, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": contentType || "application/json",
       },
-      body: JSON.stringify(payload),
+      body: req.body,
     });
 
     const data = await response.json().catch(() => ({}));
