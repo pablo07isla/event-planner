@@ -1,77 +1,105 @@
 # Event Planner
 
-Aplicación de gestión de eventos desarrollada con React y Supabase.
+Aplicación integral para la gestión y planificación de eventos, impulsada por React y Supabase. Esta plataforma permite administrar eventos, clientes y análisis de datos con herramientas modernas de IA e integración con mensajería.
 
-## Scripts disponibles
+## 🚀 Características Principales
+
+- **Dashboard Interactivo**: Visualización de métricas clave y próximos eventos.
+- **Gestión de Calendario**: Vista completa de eventos con `@fullcalendar/react`.
+- **Análisis con IA**: Integración de inteligencia artificial para análisis de catering y eventos.
+- **Reportes y Exportación**: Generación de PDFs detallados de eventos y listados.
+- **Integraciones**:
+  - **WhatsApp**: Envío de reportes y mensajes directos.
+  - **Slack**: Notificaciones y envío de documentos.
+- **Multi-idioma**: Soporte i18n con LinguiJS.
+- **UI Moderna**: Interfaz construida con Shadcn/ui, Tailwind CSS y Bootstrap.
+
+## 🛠 Tech Stack
+
+### Frontend
+
+- **Framework**: [React](https://reactjs.org/) (v18)
+- **Build Tool**: Create React App
+- **Lenguaje**: JavaScript / JSX
+- **Estado & Datos**: React Hooks, Axios
+
+### UI & Estilos
+
+- **Framework CSS**: [Tailwind CSS](https://tailwindcss.com/) & [Bootstrap 5](https://getbootstrap.com/)
+- **Componentes**: [Shadcn/ui](https://ui.shadcn.com/) (@radix-ui primitives)
+- **Iconos**: Lucide React, FontAwesome, React Icons
+- **Visualización de Datos**: Recharts
+
+### Backend & Servicios
+
+- **BaaS**: [Supabase](https://supabase.com/) (Base de datos, Autenticación, Edge Functions)
+- **Email**: Integración para notificaciones.
+
+### Utilidades
+
+- **Manejo de Fechas**: date-fns
+- **Formularios**: React Hook Form + Zod
+- **PDF**: jsPDF, html2canvas, @react-pdf/renderer
+- **Internacionalización**: @lingui/core
+
+## 📂 Estructura del Proyecto
+
+```
+src/
+├── assets/           # Imágenes y recursos estáticos
+├── components/       # Componentes de la aplicación
+│   ├── auth/         # Componentes de autenticación
+│   ├── dashboard/    # Widgets y secciones del dashboard
+│   ├── events/       # Listados, calendario y detalles de eventos
+│   ├── ui/           # Componentes base (Shadcn/ui)
+│   └── ...
+├── hooks/            # Custom hooks (e.g., useEventSearch)
+├── lib/              # Configuraciones de librerías (utils, axios)
+├── locales/          # Archivos de traducción (i18n)
+├── pages/            # Vistas principales (Rutas)
+├── utils/            # Funciones auxiliares generales
+└── ...
+```
+
+## 🚦 Scripts Disponibles
 
 En el directorio del proyecto puedes ejecutar:
 
 ### `npm start`
 
-Inicia la app en modo desarrollo.\
+Inicia la aplicación en modo desarrollo.\
 Abre [http://localhost:3000](http://localhost:3000) para verla en tu navegador.
-
-La página se recargará cuando hagas cambios.\
-También puedes ver cualquier error de lint en la consola.
 
 ### `npm test`
 
-Lanza el test runner en modo interactivo.\
-Consulta la sección sobre [ejecución de pruebas](https://facebook.github.io/create-react-app/docs/running-tests) para más información.
+Lanza el runner de pruebas en modo interactivo.
 
 ### `npm run build`
 
-Construye la app para producción en la carpeta `build`.\
-Agrupa correctamente React en modo producción y optimiza la construcción para el mejor rendimiento.
+Construye la aplicación para producción en la carpeta `build`.
+Optimiza React para el mejor rendimiento.
 
-La construcción está minificada y los nombres de archivo incluyen los hashes.\
-¡Tu app está lista para ser desplegada!
+## ⚙️ Configuración
 
-Consulta la sección sobre [despliegue](https://facebook.github.io/create-react-app/docs/deployment) para más información.
+Para ejecutar este proyecto, necesitarás configurar las variables de entorno para Supabase.
+Crea un archivo `.env` en la raíz del proyecto (basado en `.env.example` si existe) con:
 
-### `npm run eject`
+```env
+REACT_APP_SUPABASE_URL=tu_url_de_supabase
+REACT_APP_SUPABASE_ANON_KEY=tu_clave_anonima
+```
 
-**¡Advertencia! Esta acción es irreversible.**
+> **Nota**: Asegúrate de tener configuradas las Edge Functions necesarias para las integraciones de IA y mensajería.
 
-Si no estás satisfecho con la herramienta de construcción y las opciones de configuración, puedes `eject` en cualquier momento. Este comando eliminará la única dependencia de construcción de tu proyecto.
+## 📝 Guía de Estilo
 
-En su lugar, copiará todos los archivos de configuración y las dependencias transitivas (webpack, Babel, ESLint, etc.) directamente a tu proyecto para que tengas control total sobre ellos. Todos los comandos excepto `eject` seguirán funcionando, pero apuntarán a los scripts copiados para que puedas ajustarlos. En este punto, estás por tu cuenta.
+El proyecto sigue una guía de estilo estricta para mantener la consistencia:
 
-Nunca tienes que usar `eject`. El conjunto de características curadas es adecuado para implementaciones pequeñas y medianas, y no deberías sentirte obligado a usar esta característica. Sin embargo, entendemos que esta herramienta no sería útil si no pudieras personalizarla cuando estés listo para hacerlo.
-
----
-
-## Estructura del proyecto
-
-- `src/components/` — Componentes reutilizables (auth, companies, dashboard, events, etc.)
-- `src/pages/` — Vistas principales (Dashboard, EventCalendar, SearchEvents)
-- `src/assets/` — Recursos estáticos (imágenes, SVG, etc.)
-- `src/utils/` — Funciones utilitarias
-- `src/hooks/` — Custom hooks
-- `src/locales/` — Archivos de internacionalización
-
-## Características principales
-
-- Gestión de eventos con calendario y dashboard
-- Búsqueda y filtrado de eventos
-- Exportación de eventos a PDF
-- Autenticación de usuarios (Supabase)
-- Soporte para múltiples empresas
-- Interfaz moderna con Tailwind CSS y Bootstrap
-
-## Notas de desarrollo
-
-- El archivo `src/assets/tailwindcss.svg` es utilizado como logo en la autenticación.
-- Para estilos personalizados de calendario, ver `src/components/events/EventCalendar.css`.
-- Las rutas protegidas requieren autenticación.
-
-## Documentación adicional
-
-- [Documentación oficial de React](https://reactjs.org/)
-- [Documentación de Supabase](https://supabase.com/docs)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [Bootstrap](https://getbootstrap.com/)
+- Componentes en `PascalCase`.
+- Hooks en `camelCase` con prefijo `use`.
+- Estilos con Tailwind CSS y utilidades `cn()`.
+- Preferencia por componentes funcionales y Hooks.
 
 ---
 
-Para dudas o contribuciones, contacta al equipo de desarrollo.
+Desarrollado con ❤️ por el equipo de Event Planner.
