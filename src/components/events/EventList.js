@@ -262,7 +262,7 @@ const EventList = ({ events, onClose }) => {
       formData.append("channel", "whatsapp");
 
       // Llamar a la Edge Function de Supabase
-      const { data, error } = await supabase.functions.invoke("send-to-n8n", {
+      const { data, error } = await supabase.functions.invoke("send-whatsapp", {
         body: formData,
       });
 

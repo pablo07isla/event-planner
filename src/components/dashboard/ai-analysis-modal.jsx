@@ -13,7 +13,7 @@ import {
   Loader2,
   AlertTriangle,
   CheckCircle2,
-  BrainCircuit,
+  Sparkles,
   Copy,
   Mail,
   MessageCircle,
@@ -21,6 +21,7 @@ import {
   Send,
 } from "lucide-react";
 import { toast } from "sonner";
+import { FaWhatsapp } from "react-icons/fa";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import {
   Table,
@@ -41,6 +42,7 @@ export default function AIAnalysisModal({
   dateLabel,
 }) {
   const [copied, setCopied] = React.useState(false);
+  const [isSending, setIsSending] = React.useState(false);
 
   const generateShareText = () => {
     if (!results) return "";
@@ -95,7 +97,8 @@ export default function AIAnalysisModal({
     window.open(`mailto:?subject=${subject}&body=${body}`, "_blank");
   };
 
-  const handleSendToN8N = async () => {
+  const handleSendToWhatsApp = async () => {
+    setIsSending(true);
     try {
       // Import supabase client
       const { supabase } = await import("../../supabaseClient");
@@ -109,13 +112,13 @@ export default function AIAnalysisModal({
       };
 
       // Call Supabase Edge Function
-      const { data, error } = await supabase.functions.invoke("send-to-n8n", {
+      const { data, error } = await supabase.functions.invoke("send-whatsapp", {
         body: payload,
       });
 
       if (error) {
         console.error("Supabase function error:", error);
-        toast.error("Error al enviar a n8n");
+        toast.error("Error al enviar a WhatsApp");
         return;
       }
 
@@ -123,11 +126,13 @@ export default function AIAnalysisModal({
         toast.success("Análisis enviado a WhatsApp correctamente");
       } else {
         toast.error("Error al enviar a WhatsApp");
-        console.error("n8n error:", data?.error);
+        console.error("WhatsApp error:", data?.error);
       }
     } catch (error) {
-      console.error("Error sending to n8n:", error);
+      console.error("Error sending to WhatsApp:", error);
       toast.error("Error de conexión con WhatsApp");
+    } finally {
+      setIsSending(false);
     }
   };
   return (
@@ -135,7 +140,7 @@ export default function AIAnalysisModal({
       <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
-            <BrainCircuit className="h-6 w-6 text-purple-600" />
+            <Sparkles className="h-6 w-6 text-purple-600" />
             <Trans>Análisis Inteligente de Catering</Trans>
             {dateLabel && (
               <span className="text-muted-foreground">- {dateLabel}</span>
@@ -310,39 +315,21 @@ export default function AIAnalysisModal({
                   ) : (
                     <Copy className="h-4 w-4" />
                   )}
-                  <span className="sr-only sm:not-sr-only">
-                    <Trans>Copiar</Trans>
-                  </span>
+                  <Trans>Copiar</Trans>
                 </Button>
+
                 <Button
                   type="button"
-                  variant="outline"
-                  size="sm"
-                  className="flex-1 sm:flex-none gap-2"
-                  onClick={handleWhatsApp}
+                  className="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 text-white gap-2"
+                  onClick={handleSendToWhatsApp}
+                  disabled={isSending}
                 >
-                  <MessageCircle className="h-4 w-4 text-green-600" />
-                  <span className="sr-only sm:not-sr-only">WhatsApp</span>
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="flex-1 sm:flex-none gap-2"
-                  onClick={handleEmail}
-                >
-                  <Mail className="h-4 w-4 text-blue-500" />
-                  <span className="sr-only sm:not-sr-only">Email</span>
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="flex-1 sm:flex-none gap-2 bg-green-50 hover:bg-green-100 border-green-200"
-                  onClick={handleSendToN8N}
-                >
-                  <MessageCircle className="h-4 w-4 text-green-600" />
-                  <span className="sr-only sm:not-sr-only">WhatsApp AI</span>
+                  {isSending ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-white" />
+                  ) : (
+                    <FaWhatsapp className="h-4 w-4" />
+                  )}
+                  WhatsApp AI
                 </Button>
               </div>
             )}

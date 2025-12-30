@@ -7,7 +7,7 @@ import ModalEvent from "../events/Modal";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import EventListPDF from "../events/EventListPDF";
 import { IconPrinter } from "@tabler/icons-react";
-import { BrainCircuit } from "lucide-react"; // AI Icon
+import { Sparkles } from "lucide-react"; // AI Icon
 import AIAnalysisModal from "./ai-analysis-modal";
 import { toast } from "sonner";
 
@@ -272,7 +272,7 @@ export default function SectionCards({
                     handleViewAnalysis(events, title, date);
                   }}
                 >
-                  <BrainCircuit className="h-6 w-6" />
+                  <Sparkles className="h-6 w-6" />
                 </button>
               )}
 
