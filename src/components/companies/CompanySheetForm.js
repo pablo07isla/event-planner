@@ -8,6 +8,8 @@ import React, { useState, useEffect } from "react";
 
 const initialForm = {
   companyName: "",
+  account_type: "Empresa", // Default
+  industry: "",
   identificationType: "NIT",
   identificationNumber: "",
   contactPerson: "",
@@ -59,40 +61,74 @@ export default function CompanySheetForm({
     if (!validate()) return;
     setLoading(true);
     try {
-      // No enviar id vacío
-      const { data, error } = await supabase
-        .from("CompanyGroups")
-        .insert([{ ...form }])
-        .select();
+      // 1. Insertar en CompanyGroups
+      const companyData = {
+        companyName: form.companyName,
+        identificationType: form.identificationType,
+        identificationNumber: form.identificationNumber,
+        account_type: form.account_type,
+        industry: form.account_type === "Empresa" ? form.industry : null,
+        address: form.address,
+        city: form.city,
+        // Legacy support (optional, keep populated if columns exist)
+        contactPerson: form.contactPerson,
+        phone: form.phone,
+        email: form.email,
+      };
 
-      if (error) {
-        // Detectar error de número de identificación duplicado
+      const { data: newCompany, error: companyError } = await supabase
+        .from("CompanyGroups")
+        .insert([companyData])
+        .select()
+        .single(); // Use single() to get the object directly
+
+      if (companyError) {
         if (
-          error.code === "23505" &&
-          error.message.includes("identification_number_key")
+          companyError.code === "23505" &&
+          companyError.message.includes("identification_number_key")
         ) {
           throw new Error(
             `Ya existe una empresa con el número de identificación ${form.identificationNumber}`
           );
         }
-        // Detectar otros errores de constraint único
-        if (error.code === "23505") {
+        if (companyError.code === "23505") {
           throw new Error(
-            "Ya existe una empresa con estos datos. Por favor verifica la información."
+            "Ya existe una empresa con estos datos. Verifica la información."
           );
         }
-        throw error;
+        throw companyError;
       }
 
-      setMessage("Empresa creada exitosamente");
+      // 2. Insertar Contacto Principal en CompanyContacts
+      if (newCompany && newCompany.id) {
+        const contactData = {
+          company_id: newCompany.id,
+          full_name: form.contactPerson,
+          phone: form.phone,
+          email: form.email,
+          is_primary: true,
+          job_title: "Contacto Principal", // Default
+        };
+
+        const { error: contactError } = await supabase
+          .from("CompanyContacts")
+          .insert([contactData]);
+
+        if (contactError) {
+          console.error("Error creando contacto inicial:", contactError);
+          // Non-blocking error, but good to know
+        }
+      }
+
+      setMessage("Entidad creada exitosamente");
       setForm(initialForm);
-      if (onSuccess) onSuccess(data[0]);
+      if (onSuccess) onSuccess(newCompany);
       setTimeout(() => {
         setMessage(null);
         onClose && onClose();
       }, 1200);
     } catch (err) {
-      console.error("Error al guardar empresa:", err);
+      console.error("Error al guardar:", err);
       setMessage(err.message || "Error al guardar");
     } finally {
       setLoading(false);
@@ -122,8 +158,26 @@ export default function CompanySheetForm({
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2">
+                <Label htmlFor="account_type" className="font-semibold">
+                  Tipo de Cuenta <span className="text-red-500">*</span>
+                </Label>
+                <select
+                  id="account_type"
+                  name="account_type"
+                  value={form.account_type}
+                  onChange={handleChange}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background mt-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 mb-4"
+                >
+                  <option value="Empresa">Empresa</option>
+                  <option value="Persona">Persona</option>
+                  <option value="Grupo Social">Grupo Social</option>
+                </select>
+              </div>
+
+              <div className="col-span-2">
                 <Label htmlFor="companyName" className="font-semibold">
-                  Nombre de la Empresa <span className="text-red-500">*</span>
+                  Nombre (Razón Social / Nombre Completo){" "}
+                  <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="companyName"
@@ -138,6 +192,22 @@ export default function CompanySheetForm({
                   </p>
                 )}
               </div>
+
+              {form.account_type === "Empresa" && (
+                <div className="col-span-2">
+                  <Label htmlFor="industry" className="font-semibold">
+                    Industria / Sector
+                  </Label>
+                  <Input
+                    id="industry"
+                    name="industry"
+                    placeholder="Ej: Tecnología, Salud, Educación..."
+                    value={form.industry || ""}
+                    onChange={handleChange}
+                    className="mt-1.5"
+                  />
+                </div>
+              )}
 
               <div>
                 <Label htmlFor="identificationType" className="font-semibold">

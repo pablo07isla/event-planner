@@ -44,12 +44,15 @@ const formSchema = z.object({
     z.string().length(0),
     z.coerce.number().min(1, "N° de personas es requerido"),
   ]),
+  contact_id: z.string().optional(),
   contactName: z.string().min(1, "Nombre Responsable es requerido"),
   contactPhone: z.string().min(1, "Teléfono es requerido"),
   email: z.string().email("Email inválido").min(1, "Email es requerido"),
   eventLocation: z.string().optional(),
   foodPackage: z.array(z.string()).optional(),
   eventDescription: z.string().optional(),
+  event_type: z.string().optional(), // New
+  lead_source: z.string().optional(), // New
   deposit: z.coerce.string().optional(),
   pendingAmount: z.coerce.string().optional(),
   eventStatus: z.string().min(1, "Estado es requerido"),
@@ -84,6 +87,8 @@ export default function EventForm({
       eventLocation: "",
       foodPackage: [],
       eventDescription: "",
+      event_type: "",
+      lead_source: "",
       deposit: "0",
       pendingAmount: "0",
       eventStatus: "",
@@ -91,6 +96,33 @@ export default function EventForm({
       attachments: [],
     },
   });
+
+  const [companyContacts, setCompanyContacts] = useState([]);
+  const [loadingContacts, setLoadingContacts] = useState(false);
+
+  // Fetch contacts whenever companyGroupId changes
+  const selectedGroupId = form.watch("companyGroupId");
+  useEffect(() => {
+    async function fetchContacts() {
+      if (!selectedGroupId) {
+        setCompanyContacts([]);
+        return;
+      }
+      setLoadingContacts(true);
+      const { data, error } = await supabase
+        .from("CompanyContacts")
+        .select("*")
+        .eq("company_id", selectedGroupId);
+
+      if (!error && data) {
+        setCompanyContacts(data);
+      } else {
+        console.error("Error fetching contacts:", error);
+      }
+      setLoadingContacts(false);
+    }
+    fetchContacts();
+  }, [selectedGroupId]);
 
   useEffect(() => {
     if (event) {
@@ -111,9 +143,14 @@ export default function EventForm({
         eventLocation: event.eventLocation || "",
         foodPackage: Array.isArray(event.foodPackage) ? event.foodPackage : [],
         eventDescription: event.eventDescription || "",
+        event_type: event.event_type || "",
+        lead_source: event.lead_source || "",
         deposit: event.deposit ? String(event.deposit) : "0",
         pendingAmount:
           event.pendingAmount !== null ? String(event.pendingAmount) : "0",
+        // Note: For existing events, we might have contactName but no contact_id yet if simpler migration was run.
+        // Ideally we prefer contact_id.
+        contact_id: event.contact_id || "",
         eventStatus: event.eventStatus || "",
         paymentHistory: Array.isArray(event.paymentHistory)
           ? event.paymentHistory
@@ -241,12 +278,59 @@ export default function EventForm({
     form.setValue("deposit", String(totalPaid));
   };
 
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     if (!data.companyGroupId && !data.companyName) {
       toast.error("Debe seleccionar una empresa válida");
       return;
     }
-    onSave(data);
+
+    setUploadingFiles(true); // Reusing this loading state or adding a new one
+    try {
+      let finalContactId = data.contact_id;
+
+      // Handle new contact creation
+      if (data.contact_id === "NEW" || (!data.contact_id && data.contactName)) {
+        if (!data.companyGroupId) {
+          // If it's a new company too, it will be handled by the backend or we should wait?
+          // Actually, Dashboard handleSaveEvent handles company identification.
+          // But we need the ID here.
+          // This case is tricky if both company and contact are new.
+          // Let's assume for now the company exists (since Autocomplete creates it if needed).
+          // Wait, CompanyAutocomplete doesn't create it in DB immediately, it just returns the name.
+          // If companyGroupId is null, Dashboard will create the company first.
+          // This makes creating a contact here difficult without the company ID.
+        } else {
+          const { data: newContact, error: contactError } = await supabase
+            .from("CompanyContacts")
+            .insert([
+              {
+                company_id: data.companyGroupId,
+                full_name: data.contactName,
+                phone: data.contactPhone,
+                email: data.email,
+                job_title: "Contacto", // Default
+              },
+            ])
+            .select()
+            .single();
+
+          if (contactError) throw contactError;
+          if (newContact) finalContactId = newContact.id;
+        }
+      }
+
+      const submissionData = {
+        ...data,
+        contact_id: finalContactId === "NEW" ? null : finalContactId,
+      };
+
+      onSave(submissionData);
+    } catch (err) {
+      console.error("Error creating contact:", err);
+      toast.error(`Error al procesar contacto: ${err.message}`);
+    } finally {
+      setUploadingFiles(false);
+    }
   };
 
   const handleDownloadAttachment = async (url, filename) => {
@@ -366,16 +450,137 @@ export default function EventForm({
               </FormItem>
             )}
           />
+
+          <div className="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-slate-50 rounded-lg border">
+            {/* Contact ID Selection - New Logic */}
+            {selectedGroupId ? (
+              <FormField
+                control={form.control}
+                name="contact_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Seleccionar Contacto</FormLabel>
+                    <FormControl>
+                      <select
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        value={field.value || ""}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          field.onChange(val);
+
+                          if (val === "NEW") {
+                            // Clear fields for manual entry
+                            form.setValue("contactName", "");
+                            form.setValue("contactPhone", "");
+                            form.setValue("email", "");
+                          } else {
+                            // Auto-fill other fields based on selection
+                            const selectedContact = companyContacts.find(
+                              (c) => c.id === val
+                            );
+                            if (selectedContact) {
+                              form.setValue(
+                                "contactName",
+                                selectedContact.full_name
+                              );
+                              form.setValue(
+                                "contactPhone",
+                                selectedContact.phone
+                              );
+                              form.setValue("email", selectedContact.email);
+                            }
+                          }
+                        }}
+                      >
+                        <option value="">-- Seleccionar Contacto --</option>
+                        {companyContacts.map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.full_name} ({c.job_title || "Contacto"})
+                          </option>
+                        ))}
+                        <option
+                          value="NEW"
+                          className="font-bold text-blue-600 italic"
+                        >
+                          ++ Crear Nuevo Contacto ++
+                        </option>
+                      </select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            ) : (
+              <div className="col-span-2 text-sm text-amber-600 mb-2">
+                Selecciona una empresa para ver sus contactos.
+              </div>
+            )}
+
+            <FormField
+              control={form.control}
+              name="contactName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Nombre Responsable <span className="text-red-500">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Input placeholder="Nombre Responsable" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="contactPhone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Teléfono <span className="text-red-500">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Input type="tel" placeholder="Teléfono" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Email <span className="text-red-500">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Input type="email" placeholder="Email" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
           <FormField
             control={form.control}
-            name="contactName"
+            name="event_type"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>
-                  Nombre Responsable <span className="text-red-500">*</span>
-                </FormLabel>
+                <FormLabel>Tipo de Evento</FormLabel>
                 <FormControl>
-                  <Input placeholder="Nombre Responsable" {...field} />
+                  <select
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    {...field}
+                  >
+                    <option value="">Seleccionar...</option>
+                    <option value="Boda">Boda</option>
+                    <option value="Corporativo">Corporativo</option>
+                    <option value="Cumpleaños">Cumpleaños</option>
+                    <option value="Grado">Grado</option>
+                    <option value="15 Años">15 Años</option>
+                    <option value="Otro">Otro</option>
+                  </select>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -383,29 +588,25 @@ export default function EventForm({
           />
           <FormField
             control={form.control}
-            name="contactPhone"
+            name="lead_source"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>
-                  Teléfono <span className="text-red-500">*</span>
-                </FormLabel>
+                <FormLabel>Fuente (Lead)</FormLabel>
                 <FormControl>
-                  <Input type="tel" placeholder="Teléfono" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>
-                  Email <span className="text-red-500">*</span>
-                </FormLabel>
-                <FormControl>
-                  <Input type="email" placeholder="Email" {...field} />
+                  <select
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    {...field}
+                  >
+                    <option value="">Seleccionar por dónde llegó...</option>
+                    <option value="Instagram">Instagram</option>
+                    <option value="Google Webs">Búsqueda Web</option>
+                    <option value="Referido">Referido</option>
+                    <option value="Cliente Recurrente">
+                      Cliente Recurrente
+                    </option>
+                    <option value="Feria">Feria</option>
+                    <option value="Otro">Otro</option>
+                  </select>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -439,7 +640,6 @@ export default function EventForm({
               </FormItem>
             )}
           />
-
           <div className="col-span-2">
             <FormField
               control={form.control}
