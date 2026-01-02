@@ -142,7 +142,7 @@ Debes generar un objeto JSON con la siguiente estructura:
         {
           "type": "bar" | "line" | "pie" | "table" | "heatmap" | "scatter",
           "title": string,
-          "data": object,         // datos específicos del gráfico
+          "data": object[],       // Array de objetos ej: [{"name": "Social", "value": 15}, {"name": "Business", "value": 20}]
           "config": {
             "xAxis": string,
             "yAxis": string,

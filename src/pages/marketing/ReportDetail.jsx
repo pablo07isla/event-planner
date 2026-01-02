@@ -17,6 +17,21 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
 
 import { AppSidebar } from "../../components/sidebar/app-sidebar";
 import { SiteHeader } from "../../components/sidebar/site-header";
@@ -38,6 +53,212 @@ import {
 } from "../../components/ui/tabs";
 import { Badge } from "../../components/ui/badge";
 import { Separator } from "../../components/ui/separator";
+
+const VisualRenderer = ({ viz }) => {
+  if (!viz || !viz.type) return null;
+
+  const { type, title, data, config } = viz;
+  const colors = config?.colors || [
+    "#4f46e5",
+    "#10b981",
+    "#f59e0b",
+    "#ef4444",
+    "#8b5cf6",
+    "#ec4899",
+  ];
+
+  // Helper to normalize data for Recharts
+  let chartData = [];
+  if (Array.isArray(data)) {
+    chartData = data;
+  } else if (typeof data === "object" && data !== null) {
+    const keys = Object.keys(data);
+
+    // Check for "Parallel Arrays" pattern (e.g. { labels: [], values: [] })
+    const arrayValues = keys.filter((k) => Array.isArray(data[k]));
+
+    if (arrayValues.length >= 2) {
+      // Assume the first array is the axis (labels) and the second is values
+      // Or prefer "labels", "categories", "x" as axis
+      const axisKey =
+        keys.find((k) =>
+          ["labels", "categories", "x", "axis"].includes(k.toLowerCase())
+        ) || arrayValues[0];
+      const valueKey =
+        keys.find((k) => k !== axisKey && Array.isArray(data[k])) ||
+        arrayValues[1];
+
+      if (data[axisKey] && data[valueKey]) {
+        chartData = data[axisKey].map((label, i) => ({
+          [config?.xAxis || "name"]: label,
+          [config?.yAxis || "value"]: data[valueKey][i] || 0,
+        }));
+      } else {
+        // Fallback to simple key-value if parallel array detection fails
+        chartData = Object.entries(data).map(([key, value]) => ({
+          [config?.xAxis || "name"]: key,
+          [config?.yAxis || "value"]: value,
+        }));
+      }
+    } else {
+      // Standard Key-Value (e.g. { "Social": 10, "Corporate": 20 })
+      chartData = Object.entries(data).map(([key, value]) => ({
+        [config?.xAxis || "name"]: key,
+        [config?.yAxis || "value"]: value,
+      }));
+    }
+  }
+
+  const renderChart = () => {
+    switch (type) {
+      case "bar":
+        return (
+          <BarChart data={chartData}>
+            <CartesianGrid
+              strokeDasharray="3 3"
+              vertical={false}
+              stroke="#e2e8f0"
+            />
+            <XAxis
+              dataKey={config?.xAxis || "name"}
+              axisLine={false}
+              tickLine={false}
+              tick={{ fontSize: 11, fill: "#64748b" }}
+            />
+            <YAxis
+              axisLine={false}
+              tickLine={false}
+              tick={{ fontSize: 11, fill: "#64748b" }}
+            />
+            <Tooltip
+              contentStyle={{
+                borderRadius: "8px",
+                border: "none",
+                boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                fontSize: "12px",
+              }}
+            />
+            {config?.legend !== false && (
+              <Legend
+                iconType="circle"
+                wrapperStyle={{ paddingTop: 20, fontSize: "11px" }}
+              />
+            )}
+            <Bar
+              dataKey={config?.yAxis || "value"}
+              fill={colors[0]}
+              radius={[4, 4, 0, 0]}
+              barSize={40}
+            >
+              {chartData.map((entry, index) => (
+                <Cell
+                  key={`cell-${index}`}
+                  fill={colors[index % colors.length]}
+                />
+              ))}
+            </Bar>
+          </BarChart>
+        );
+      case "line":
+        return (
+          <LineChart data={chartData}>
+            <CartesianGrid
+              strokeDasharray="3 3"
+              vertical={false}
+              stroke="#e2e8f0"
+            />
+            <XAxis
+              dataKey={config?.xAxis || "name"}
+              axisLine={false}
+              tickLine={false}
+              tick={{ fontSize: 11, fill: "#64748b" }}
+            />
+            <YAxis
+              axisLine={false}
+              tickLine={false}
+              tick={{ fontSize: 11, fill: "#64748b" }}
+            />
+            <Tooltip
+              contentStyle={{
+                borderRadius: "8px",
+                border: "none",
+                boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                fontSize: "12px",
+              }}
+            />
+            {config?.legend !== false && (
+              <Legend
+                iconType="circle"
+                wrapperStyle={{ paddingTop: 20, fontSize: "11px" }}
+              />
+            )}
+            <Line
+              type="monotone"
+              dataKey={config?.yAxis || "value"}
+              stroke={colors[0]}
+              strokeWidth={3}
+              dot={{ r: 4, fill: colors[0], strokeWidth: 2, stroke: "#fff" }}
+              activeDot={{ r: 6, strokeWidth: 0 }}
+            />
+          </LineChart>
+        );
+      case "pie":
+        return (
+          <PieChart>
+            <Pie
+              data={chartData}
+              innerRadius={60}
+              outerRadius={80}
+              paddingAngle={5}
+              dataKey={config?.yAxis || "value"}
+              nameKey={config?.xAxis || "name"}
+            >
+              {chartData.map((entry, index) => (
+                <Cell
+                  key={`cell-${index}`}
+                  fill={colors[index % colors.length]}
+                />
+              ))}
+            </Pie>
+            <Tooltip
+              contentStyle={{
+                borderRadius: "8px",
+                border: "none",
+                boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                fontSize: "12px",
+              }}
+            />
+            {config?.legend !== false && (
+              <Legend
+                iconType="circle"
+                wrapperStyle={{ paddingTop: 20, fontSize: "11px" }}
+              />
+            )}
+          </PieChart>
+        );
+      default:
+        return (
+          <div className="flex flex-col items-center justify-center h-full text-slate-400">
+            <Bot className="h-8 w-8 mb-2 opacity-20" />
+            <p className="text-xs uppercase tracking-widest leading-loose">
+              {type} chart not supported
+            </p>
+          </div>
+        );
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      <h5 className="text-sm font-semibold text-slate-700">{title}</h5>
+      <div className="h-[300px] w-full bg-white rounded-lg border border-slate-100 p-4 shadow-sm">
+        <ResponsiveContainer width="100%" height="100%">
+          {renderChart()}
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+};
 
 export default function ReportDetail() {
   const { id } = useParams();
@@ -421,21 +642,10 @@ export default function ReportDetail() {
                                       </div>
                                     ))}
 
-                                    {/* Visualizations Placeholder (Simulated for now) */}
+                                    {/* Visualizations Support */}
                                     {section.visualizations?.map(
                                       (viz, vIdx) => (
-                                        <div
-                                          key={vIdx}
-                                          className="p-8 bg-slate-50 rounded-lg border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 text-center"
-                                        >
-                                          <Bot className="h-8 w-8 mb-2 opacity-20" />
-                                          <p className="text-xs font-medium uppercase tracking-widest">
-                                            {viz.type} chart: {viz.title}
-                                          </p>
-                                          <p className="text-[10px] mt-1 italic">
-                                            Visualización generada por IA
-                                          </p>
-                                        </div>
+                                        <VisualRenderer key={vIdx} viz={viz} />
                                       )
                                     )}
                                   </div>

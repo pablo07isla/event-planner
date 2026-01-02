@@ -10,6 +10,7 @@ import SearchEvents from "./pages/SearchEvents";
 import CreateUserPage from "./pages/create-user";
 import ReportsDashboard from "./pages/marketing/ReportsDashboard";
 import ReportDetail from "./pages/marketing/ReportDetail";
+import FeedbackPage from "./pages/Feedback";
 // Asegúrate de que la ruta de importación sea correcta
 import React from "react";
 import {
@@ -91,6 +92,7 @@ const App = () => {
                   </ProtectedRoute>
                 }
               />
+              <Route path="/feedback/:id" element={<FeedbackPage />} />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </main>
