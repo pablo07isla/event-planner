@@ -17,6 +17,7 @@ import {
   Sparkles,
   Building2,
   Zap,
+  Bot,
 } from "lucide-react";
 import React from "react";
 
@@ -166,12 +167,24 @@ export function AppSidebar(props) {
             />
           </div>
 
-          {/* Enhanced projects section */}
+          {/* Enhanced AI & Automation section */}
           <div className="space-y-1 pt-4">
             <div className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider group-data-[collapsible=icon]:hidden">
               <div className="w-2 h-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 " />
-              Acciones
+              IA y Automatización
             </div>
+            <NavMain
+              items={[
+                {
+                  url: "/reports",
+                  icon: Bot,
+                  title: "Inteligencia Artificial",
+                  description: "Reportes de Marketing",
+                },
+              ]}
+              itemscollapsibles={[]}
+              user={user}
+            />
             <NavProjects
               projects={data.projects}
               onAddEvent={props.onAddEvent}

@@ -8,6 +8,8 @@ import Dashboard from "./pages/Dashboard";
 import EventCalendar from "./pages/EventCalendar";
 import SearchEvents from "./pages/SearchEvents";
 import CreateUserPage from "./pages/create-user";
+import ReportsDashboard from "./pages/marketing/ReportsDashboard";
+import ReportDetail from "./pages/marketing/ReportDetail";
 // Asegúrate de que la ruta de importación sea correcta
 import React from "react";
 import {
@@ -70,6 +72,22 @@ const App = () => {
                 element={
                   <ProtectedRoute>
                     <EventCalendar />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/reports"
+                element={
+                  <ProtectedRoute>
+                    <ReportsDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/reports/:id"
+                element={
+                  <ProtectedRoute>
+                    <ReportDetail />
                   </ProtectedRoute>
                 }
               />

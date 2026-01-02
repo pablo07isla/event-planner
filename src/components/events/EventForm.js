@@ -51,8 +51,9 @@ const formSchema = z.object({
   eventLocation: z.string().optional(),
   foodPackage: z.array(z.string()).optional(),
   eventDescription: z.string().optional(),
-  event_type: z.string().optional(), // New
-  lead_source: z.string().optional(), // New
+  event_category: z.string().min(1, "Categoría es requerida"), // New
+  event_type: z.string().min(1, "Tipo de evento es requerido"),
+  lead_source: z.string().optional(),
   deposit: z.coerce.string().optional(),
   pendingAmount: z.coerce.string().optional(),
   eventStatus: z.string().min(1, "Estado es requerido"),
@@ -62,6 +63,24 @@ const formSchema = z.object({
   lastModified: z.string().optional(),
   lastModifiedBy: z.string().optional(),
 });
+
+const EVENT_CATEGORIES = {
+  Empresarial: [
+    "Evento fin de Año (Comida, cena, Integracion)",
+    "Capacitacion",
+    "Conferencias/Convenciones",
+    "Integracion Trabajadores/Dia de la Familia",
+    "Otros",
+  ],
+  Social: [
+    "Integracion fin de año",
+    "Cumpleaños/Aniversario",
+    "Boda",
+    "Grado",
+    "Fiesta 15 Años",
+    "Otros",
+  ],
+};
 
 export default function EventForm({
   event,
@@ -87,6 +106,7 @@ export default function EventForm({
       eventLocation: "",
       foodPackage: [],
       eventDescription: "",
+      event_category: "", // New
       event_type: "",
       lead_source: "",
       deposit: "0",
@@ -98,6 +118,10 @@ export default function EventForm({
   });
 
   const [companyContacts, setCompanyContacts] = useState([]);
+
+  // Watch category to update specific types
+  const selectedCategory = form.watch("event_category");
+
   const [loadingContacts, setLoadingContacts] = useState(false);
 
   // Fetch contacts whenever companyGroupId changes
@@ -143,6 +167,7 @@ export default function EventForm({
         eventLocation: event.eventLocation || "",
         foodPackage: Array.isArray(event.foodPackage) ? event.foodPackage : [],
         eventDescription: event.eventDescription || "",
+        event_category: event.event_category || "",
         event_type: event.event_type || "",
         lead_source: event.lead_source || "",
         deposit: event.deposit ? String(event.deposit) : "0",
@@ -562,30 +587,65 @@ export default function EventForm({
               )}
             />
           </div>
-          <FormField
-            control={form.control}
-            name="event_type"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Tipo de Evento</FormLabel>
-                <FormControl>
-                  <select
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                    {...field}
-                  >
-                    <option value="">Seleccionar...</option>
-                    <option value="Boda">Boda</option>
-                    <option value="Corporativo">Corporativo</option>
-                    <option value="Cumpleaños">Cumpleaños</option>
-                    <option value="Grado">Grado</option>
-                    <option value="15 Años">15 Años</option>
-                    <option value="Otro">Otro</option>
-                  </select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <FormField
+              control={form.control}
+              name="event_category"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Categoría del Evento</FormLabel>
+                  <FormControl>
+                    <select
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      {...field}
+                      onChange={(e) => {
+                        field.onChange(e);
+                        form.setValue("event_type", ""); // Reset type on category change
+                      }}
+                    >
+                      <option value="">Seleccionar Categoría...</option>
+                      {Object.keys(EVENT_CATEGORIES).map((cat) => (
+                        <option key={cat} value={cat}>
+                          {cat}
+                        </option>
+                      ))}
+                    </select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="event_type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tipo de Evento</FormLabel>
+                  <FormControl>
+                    <select
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      {...field}
+                      disabled={!selectedCategory}
+                    >
+                      <option value="">
+                        {selectedCategory
+                          ? "Seleccionar Tipo..."
+                          : "Seleccione Categoría primero"}
+                      </option>
+                      {selectedCategory &&
+                        EVENT_CATEGORIES[selectedCategory]?.map((type) => (
+                          <option key={type} value={type}>
+                            {type}
+                          </option>
+                        ))}
+                    </select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
           <FormField
             control={form.control}
             name="lead_source"
@@ -598,13 +658,12 @@ export default function EventForm({
                     {...field}
                   >
                     <option value="">Seleccionar por dónde llegó...</option>
-                    <option value="Instagram">Instagram</option>
-                    <option value="Google Webs">Búsqueda Web</option>
-                    <option value="Referido">Referido</option>
-                    <option value="Cliente Recurrente">
-                      Cliente Recurrente
+                    <option value="Redes Sociales">
+                      Redes Sociales (Instagram, Facebook, Linkedin, etc.)
                     </option>
-                    <option value="Feria">Feria</option>
+                    <option value="Eventos Previos">Eventos Previos</option>
+                    <option value="Recomendación">Recomendación</option>
+                    <option value="Pagina Web">Pagina Web</option>
                     <option value="Otro">Otro</option>
                   </select>
                 </FormControl>
