@@ -24,7 +24,7 @@ const Login = () => {
   // Solo limpiar el error cuando el usuario modifica los campos de entrada
   useEffect(() => {
     if (error) setError("");
-  }, [email, password, error]);
+  }, [email, password]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -55,17 +55,21 @@ const Login = () => {
 
         // Mapear mensajes de error específicos
         if (authError.message.includes("Invalid login credentials")) {
-          setError("Correo electrónico o contraseña incorrecta");
+          setError(
+            "Correo electrónico o contraseña incorrecta. Verifique sus datos."
+          );
         } else if (authError.message.includes("Email not confirmed")) {
           setError(
-            "Por favor confirme su correo electrónico antes de iniciar sesión"
+            "Su correo electrónico no ha sido confirmado. Por favor revise su bandeja de entrada."
           );
         } else if (authError.message.includes("Invalid email")) {
-          setError("Formato de correo electrónico inválido");
+          setError("El formato del correo electrónico no es válido.");
         } else if (authError.message.includes("rate limit")) {
-          setError("Demasiados intentos. Por favor, inténtelo más tarde");
+          setError(
+            "Ha excedido el número de intentos. Por favor espere unos minutos."
+          );
         } else {
-          setError(authError.message || "Error de autenticación");
+          setError("No se pudo iniciar sesión. Verifique sus credenciales.");
         }
 
         setIsLoading(false);
@@ -124,15 +128,28 @@ const Login = () => {
 
       // Intentar proporcionar un mensaje de error útil
       if (err.status === 400) {
-        setError("Credenciales inválidas");
+        setError(
+          "Credenciales inválidas. Por favor verifique su correo y contraseña."
+        );
       } else if (err.status === 422) {
-        setError("Datos de inicio de sesión inválidos");
+        setError(
+          "Datos de inicio de sesión inválidos. Verifique el formato de su correo."
+        );
       } else if (err.status === 429) {
-        setError("Demasiados intentos. Por favor, inténtelo más tarde");
+        setError(
+          "Demasiados intentos. Por favor, espere unos minutos e inténtelo de nuevo."
+        );
       } else if (err.status === 500) {
-        setError("Error del servidor. Por favor, inténtelo más tarde");
+        setError(
+          "Error del servidor. Nuestro equipo ha sido notificado, por favor intente más tarde."
+        );
+      } else if (err.message && err.message.includes("network")) {
+        setError("Error de conexión. Verifique su conexión a internet.");
       } else {
-        setError(err.message || "Error desconocido al iniciar sesión");
+        setError(
+          err.message ||
+            "Ocurrió un error inesperado al iniciar sesión. Intente nuevamente."
+        );
       }
     } finally {
       setIsLoading(false);

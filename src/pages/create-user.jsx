@@ -14,25 +14,42 @@ export default function CreateUserPage() {
     setError("");
     setSuccess("");
     try {
-      // Insertar usuario en la tabla 'users' y crear auth en supabase
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: form.email,
-        password: form.password,
-      });
-      if (authError) throw authError;
-      const { error: userError } = await supabase.from("users").insert([
+      // Usar la Edge Function 'create-user' para crear el usuario sin cerrar la sesión actual
+      const { data, error: functionError } = await supabase.functions.invoke(
+        "create-user",
         {
-          id: authData.user.id,
-          username: form.username,
-          email: form.email,
-          role: form.role,
-        },
-      ]);
-      if (userError) throw userError;
+          body: {
+            email: form.email,
+            password: form.password,
+            username: form.username,
+            role: form.role,
+          },
+        }
+      );
+
+      if (functionError) throw functionError;
+
+      // La Edge Function puede devolver un error en formato JSON incluso con status 200 en algunos casos proxy,
+      // pero normalmente con invoke si falla tira error.
+      // Verificamos si la respuesta trae error explícito
+      if (data && data.error) {
+        throw new Error(data.error);
+      }
+
       setSuccess("Usuario creado exitosamente.");
       setTimeout(() => navigate("/dashboard"), 1500);
     } catch (err) {
-      setError(err.message || "Error al crear usuario");
+      console.error("Error creando usuario:", err);
+      // Mejorar mensajes de error basados en la respuesta
+      let message = err.message || "Error al crear usuario";
+      if (message.includes("FunctionsFetchError")) {
+        // Error de red o del edge function container
+        message = "Error de conexión con el servicio de creación de usuarios.";
+      } else if (message.includes("403")) {
+        message = "No tienes permisos para realizar esta acción.";
+      }
+
+      setError(message);
     } finally {
       setLoading(false);
     }

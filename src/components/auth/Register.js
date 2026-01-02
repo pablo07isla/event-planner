@@ -26,7 +26,7 @@ const Register = () => {
   // Clear any error when user modifies inputs
   useEffect(() => {
     if (error) setError("");
-  }, [email, password, username, confirmPassword, error]);
+  }, [email, password, username, confirmPassword]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -44,21 +44,18 @@ const Register = () => {
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            username: username, // Pasamos username en metadata para que el trigger lo use
+          },
+        },
       });
 
       if (authError) throw authError;
 
-      // Insertar información adicional en la tabla 'users'
-      const { error: userError } = await supabase.from("users").insert([
-        {
-          id: authData.user.id,
-          username,
-          email,
-          role: "user",
-        },
-      ]);
-
-      if (userError) throw userError;
+      // Nota: No insertamos manualmente en la tabla 'users' porque el trigger 'on_auth_user_created'
+      // ya se encarga de esto automáticamente al crear el usuario en auth.users.
+      // Esto evita condiciones de carrera y duplicidad.
 
       // Redirigir al usuario a la página de inicio de sesión
       navigate("/login");
