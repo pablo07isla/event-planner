@@ -18,6 +18,7 @@ import CompanyAutocomplete from "../companies/CompanyAutocomplete";
 import MultiSelectDropdown from "../MultiSelectDropdown";
 import PaymentHistory, { formatCurrency } from "./PaymentHistory";
 import AttachmentList from "./AttachmentList";
+import EventStatusStepper from "./EventStatusStepper";
 import { supabase } from "../../supabaseClient";
 import { toast } from "sonner";
 import { FaFilePdf } from "react-icons/fa";
@@ -442,6 +443,11 @@ export default function EventForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        {/* Visual Status Path */}
+        <div className="w-full px-1">
+          <EventStatusStepper currentStatus={form.watch("eventStatus")} />
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
             control={form.control}
