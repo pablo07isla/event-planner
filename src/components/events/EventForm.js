@@ -314,7 +314,38 @@ export default function EventForm({
     const total = parseFloat(watchedTotalCost) || 0;
     const paid = parseFloat(watchedDeposit) || 0;
     const pending = Math.max(0, total - paid);
+
+    // Update pending amount
     form.setValue("pendingAmount", String(pending));
+
+    // Auto-update Event Status
+    // Rules:
+    // 1. If "Cancelado", do not touch.
+    // 2. If Paid == 0 -> "Pendiente"
+    // 3. If Paid > 0 AND Pending > 0 -> "Con Abono"
+    // 4. If Paid > 0 AND Pending <= 0 -> "Pago Total"
+
+    const currentStatus = form.getValues("eventStatus");
+
+    if (currentStatus === "Cancelado") return;
+
+    let newStatus = "Pendiente"; // Default if paid is 0
+
+    if (paid > 0) {
+      if (pending > 0) {
+        newStatus = "Con Abono";
+      } else {
+        newStatus = "Pago Total";
+      }
+    }
+
+    // Only update if changed to avoid unnecessary re-renders
+    if (newStatus !== currentStatus) {
+      form.setValue("eventStatus", newStatus, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+    }
   }, [watchedTotalCost, watchedDeposit, form]);
 
   const onSubmit = async (data) => {
