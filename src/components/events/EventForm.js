@@ -307,9 +307,33 @@ export default function EventForm({
     form.setValue("deposit", String(totalPaid));
   };
 
-  // Auto-calculate pending amount when total_cost or deposit changes
+  const [statusPendingConfirmation, setStatusPendingConfirmation] =
+    useState(null);
+  const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
+
+  // Auto-calculate pending amount and status
   const watchedTotalCost = form.watch("total_cost");
   const watchedDeposit = form.watch("deposit");
+  // const watchedEndDate = form.watch("endDate"); // Removed date watcher for status
+
+  const handleStatusChangeRequest = (newStatus) => {
+    const currentStatus = form.getValues("eventStatus");
+    if (newStatus === currentStatus) return; // No change
+
+    setStatusPendingConfirmation(newStatus);
+    setIsStatusDialogOpen(true);
+  };
+
+  const confirmStatusChange = () => {
+    if (statusPendingConfirmation) {
+      form.setValue("eventStatus", statusPendingConfirmation, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+      setIsStatusDialogOpen(false);
+      setStatusPendingConfirmation(null);
+    }
+  };
 
   useEffect(() => {
     const total = parseFloat(watchedTotalCost) || 0;
@@ -319,17 +343,14 @@ export default function EventForm({
     // Update pending amount
     form.setValue("pendingAmount", String(pending));
 
-    // Auto-update Event Status
-    // Rules:
-    // 1. If "Cancelado", do not touch.
-    // 2. If Paid == 0 -> "Pendiente"
-    // 3. If Paid > 0 AND Pending > 0 -> "Con Abono"
-    // 4. If Paid > 0 AND Pending <= 0 -> "Pago Total"
-
+    // Auto-update Event Status (Financial Only)
     const currentStatus = form.getValues("eventStatus");
 
-    if (currentStatus === "Cancelado") return;
+    // 1. Protection: If "Cancelado" or "Completado", automation shouldn't touch it.
+    // "Completado" is now manual too.
+    if (currentStatus === "Cancelado" || currentStatus === "Completado") return;
 
+    // 2. Financial Logic
     let newStatus = "Pendiente"; // Default if paid is 0
 
     if (paid > 0) {
@@ -340,8 +361,8 @@ export default function EventForm({
       }
     }
 
-    // Only update if changed to avoid unnecessary re-renders
-    if (newStatus !== currentStatus) {
+    // Only update if changed and not already Completado (unless date changed back to future)
+    if (newStatus !== currentStatus && currentStatus !== "Completado") {
       form.setValue("eventStatus", newStatus, {
         shouldValidate: true,
         shouldDirty: true,
@@ -445,7 +466,10 @@ export default function EventForm({
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         {/* Visual Status Path */}
         <div className="w-full px-1">
-          <EventStatusStepper currentStatus={form.watch("eventStatus")} />
+          <EventStatusStepper
+            currentStatus={form.watch("eventStatus")}
+            onStatusSelect={handleStatusChangeRequest}
+          />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -833,6 +857,7 @@ export default function EventForm({
                   <option value="Pendiente">Pendiente</option>
                   <option value="Con Abono">Con Abono</option>
                   <option value="Pago Total">Pago Total</option>
+                  <option value="Completado">Completado</option>
                   <option value="Cancelado">Cancelado</option>
                 </select>
                 <FormMessage />
@@ -902,6 +927,33 @@ export default function EventForm({
               </AlertDialogContent>
             </AlertDialog>
           )}
+
+          {/* Status Change Confirmation Dialog */}
+          <AlertDialog
+            open={isStatusDialogOpen}
+            onOpenChange={setIsStatusDialogOpen}
+          >
+            <AlertDialogContent className="z-[10002]">
+              <AlertDialogHeader>
+                <AlertDialogTitle>¿Cambiar estado del evento?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  ¿Deseas cambiar manualmente el estado del evento a{" "}
+                  <strong>{statusPendingConfirmation}</strong>?
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter className="flex-row justify-end gap-2">
+                <AlertDialogCancel
+                  className="mt-0"
+                  onClick={() => setStatusPendingConfirmation(null)}
+                >
+                  Cancelar
+                </AlertDialogCancel>
+                <AlertDialogAction onClick={confirmStatusChange}>
+                  Confirmar
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
 
           <Button
             type="button"

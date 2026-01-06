@@ -6,9 +6,10 @@ const STEPS = [
   { label: "Pendiente", value: "Pendiente" },
   { label: "Con Abono", value: "Con Abono" },
   { label: "Pago Total", value: "Pago Total" },
+  { label: "Completado", value: "Completado" },
 ];
 
-const EventStatusStepper = ({ currentStatus }) => {
+const EventStatusStepper = ({ currentStatus, onStatusSelect }) => {
   // Manejo especial para eventos cancelados
   if (currentStatus === "Cancelado") {
     return (
@@ -44,7 +45,8 @@ const EventStatusStepper = ({ currentStatus }) => {
           return (
             <div
               key={step.value}
-              className="flex flex-col items-center justify-center bg-white px-2"
+              className="flex flex-col items-center justify-center bg-white px-2 cursor-pointer group"
+              onClick={() => onStatusSelect && onStatusSelect(step.value)}
             >
               <div
                 className={cn(
