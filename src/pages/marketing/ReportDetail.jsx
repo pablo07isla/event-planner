@@ -376,13 +376,22 @@ export default function ReportDetail() {
                     <div className="flex items-center gap-2 text-gray-500 mt-2">
                       <Calendar className="h-4 w-4" />
                       <span>
-                        {format(new Date(report.period_start), "d MMM yyyy", {
-                          locale: es,
-                        })}{" "}
-                        -{" "}
-                        {format(new Date(report.period_end), "d MMM yyyy", {
-                          locale: es,
-                        })}
+                        {(() => {
+                          const formatDate = (dateString) => {
+                            if (!dateString) return "";
+                            const date = new Date(dateString);
+                            const userTimezoneOffset =
+                              date.getTimezoneOffset() * 60000;
+                            return format(
+                              new Date(date.getTime() + userTimezoneOffset),
+                              "d MMM yyyy",
+                              { locale: es }
+                            );
+                          };
+                          return `${formatDate(
+                            report.period_start
+                          )} - ${formatDate(report.period_end)}`;
+                        })()}
                       </span>
                       <Separator orientation="vertical" className="h-4" />
                       <Badge variant="outline" className="text-sm">
