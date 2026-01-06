@@ -143,13 +143,28 @@ export default function EventForm({
 
       if (!error && data) {
         setCompanyContacts(data);
+
+        // Auto-link contact if name matches exactly and no ID is selected
+        const currentContactName = form.getValues("contactName");
+        const currentContactId = form.getValues("contact_id");
+
+        if (currentContactName && !currentContactId) {
+          const matchingContact = data.find(
+            (c) =>
+              c.full_name?.trim().toLowerCase() ===
+              currentContactName.trim().toLowerCase()
+          );
+          if (matchingContact) {
+            form.setValue("contact_id", matchingContact.id);
+          }
+        }
       } else {
         console.error("Error fetching contacts:", error);
       }
       setLoadingContacts(false);
     }
     fetchContacts();
-  }, [selectedGroupId]);
+  }, [selectedGroupId, form]);
 
   useEffect(() => {
     if (event) {
@@ -392,22 +407,35 @@ export default function EventForm({
           // If companyGroupId is null, Dashboard will create the company first.
           // This makes creating a contact here difficult without the company ID.
         } else {
-          const { data: newContact, error: contactError } = await supabase
+          // Check if contact already exists for this company
+          const { data: existingContacts } = await supabase
             .from("CompanyContacts")
-            .insert([
-              {
-                company_id: data.companyGroupId,
-                full_name: data.contactName,
-                phone: data.contactPhone,
-                email: data.email,
-                job_title: "Contacto", // Default
-              },
-            ])
-            .select()
-            .single();
+            .select("id")
+            .eq("company_id", data.companyGroupId)
+            .ilike("full_name", data.contactName)
+            .limit(1);
 
-          if (contactError) throw contactError;
-          if (newContact) finalContactId = newContact.id;
+          if (existingContacts && existingContacts.length > 0) {
+            finalContactId = existingContacts[0].id;
+          } else {
+            // Create new if not exists
+            const { data: newContact, error: contactError } = await supabase
+              .from("CompanyContacts")
+              .insert([
+                {
+                  company_id: data.companyGroupId,
+                  full_name: data.contactName,
+                  phone: data.contactPhone,
+                  email: data.email,
+                  job_title: "Contacto", // Default
+                },
+              ])
+              .select()
+              .single();
+
+            if (contactError) throw contactError;
+            if (newContact) finalContactId = newContact.id;
+          }
         }
       }
 

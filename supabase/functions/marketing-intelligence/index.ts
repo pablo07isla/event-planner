@@ -45,7 +45,7 @@ Deno.serve(async (req: Request) => {
         .select(
           `
           id, start, companyName, peopleCount, 
-          deposit, pendingAmount, event_category, event_type, lead_source, 
+          deposit, pendingAmount, total_cost, event_category, event_type, lead_source, 
           satisfaction_score, companyGroupId, catering_intelligence
         `
         )
@@ -81,7 +81,7 @@ Deno.serve(async (req: Request) => {
           type: e.event_type || "Unknown",
           source: e.lead_source || "Unknown",
           pax: e.peopleCount,
-          revenue: (e.deposit || 0) + (e.pendingAmount || 0),
+          revenue: e.total_cost || 0,
           industry: company?.industry || "N/A",
           account_type: company?.account_type || "N/A",
           satisfaction: e.satisfaction_score,
