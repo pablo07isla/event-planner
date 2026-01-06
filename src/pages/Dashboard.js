@@ -85,6 +85,7 @@ export default function Dashboard() {
         } else if (
           mappedKey === "peopleCount" ||
           mappedKey === "deposit" ||
+          mappedKey === "total_cost" ||
           mappedKey === "pendingAmount"
         ) {
           eventData[mappedKey] = value === "" ? 0 : Number(value);

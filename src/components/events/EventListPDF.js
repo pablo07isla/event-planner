@@ -361,6 +361,15 @@ const EventItem = ({ event, styles, ...props }) => (
           </View>
         </View>
 
+        {/* Costo Total */}
+        <View style={styles.infoItem}>
+          <View style={[styles.icon, styles.moneyIcon]} />
+          <Text style={styles.infoLabel}>Costo Total:</Text>
+          <Text style={[styles.infoValue, styles.moneyValue]}>
+            {formatCurrency(event.extendedProps?.total_cost)}
+          </Text>
+        </View>
+
         {/* Saldo Pendiente */}
         <View style={styles.infoItem}>
           <View style={[styles.icon, styles.debtIcon]} />

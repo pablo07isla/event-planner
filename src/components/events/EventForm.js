@@ -55,6 +55,7 @@ const formSchema = z.object({
   event_type: z.string().min(1, "Tipo de evento es requerido"),
   lead_source: z.string().optional(),
   deposit: z.coerce.string().optional(),
+  total_cost: z.coerce.string().optional(),
   pendingAmount: z.coerce.string().optional(),
   eventStatus: z.string().min(1, "Estado es requerido"),
   paymentHistory: z.array(z.any()).optional(),
@@ -110,6 +111,7 @@ export default function EventForm({
       event_type: "",
       lead_source: "",
       deposit: "0",
+      total_cost: "0",
       pendingAmount: "0",
       eventStatus: "",
       paymentHistory: [],
@@ -171,6 +173,7 @@ export default function EventForm({
         event_type: event.event_type || "",
         lead_source: event.lead_source || "",
         deposit: event.deposit ? String(event.deposit) : "0",
+        total_cost: event.total_cost ? String(event.total_cost) : "0",
         pendingAmount:
           event.pendingAmount !== null ? String(event.pendingAmount) : "0",
         // Note: For existing events, we might have contactName but no contact_id yet if simpler migration was run.
@@ -302,6 +305,17 @@ export default function EventForm({
     form.setValue("paymentHistory", updatedHistory);
     form.setValue("deposit", String(totalPaid));
   };
+
+  // Auto-calculate pending amount when total_cost or deposit changes
+  const watchedTotalCost = form.watch("total_cost");
+  const watchedDeposit = form.watch("deposit");
+
+  useEffect(() => {
+    const total = parseFloat(watchedTotalCost) || 0;
+    const paid = parseFloat(watchedDeposit) || 0;
+    const pending = Math.max(0, total - paid);
+    form.setValue("pendingAmount", String(pending));
+  }, [watchedTotalCost, watchedDeposit, form]);
 
   const onSubmit = async (data) => {
     if (!data.companyGroupId && !data.companyName) {
@@ -743,22 +757,13 @@ export default function EventForm({
           )}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="col-span-1 md:col-span-2">
-            <PaymentHistory
-              paymentHistory={form.watch("paymentHistory")}
-              deposit={form.watch("deposit")}
-              onAddPayment={handleAddPayment}
-              onDeletePayment={handleDeletePayment}
-            />
-          </div>
-
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
           <FormField
             control={form.control}
-            name="pendingAmount"
+            name="total_cost"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Saldo Pendiente</FormLabel>
+                <FormLabel>Costo Total del Evento</FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Input
@@ -796,6 +801,16 @@ export default function EventForm({
                 <FormMessage />
               </FormItem>
             )}
+          />
+        </div>
+
+        <div className="mt-6">
+          <PaymentHistory
+            paymentHistory={form.watch("paymentHistory")}
+            deposit={form.watch("deposit")}
+            pendingAmount={form.watch("pendingAmount")}
+            onAddPayment={handleAddPayment}
+            onDeletePayment={handleDeletePayment}
           />
         </div>
 

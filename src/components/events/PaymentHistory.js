@@ -27,6 +27,7 @@ export const formatCurrency = (value) => {
 export default function PaymentHistory({
   paymentHistory = [],
   deposit,
+  pendingAmount,
   onAddPayment,
   onDeletePayment,
 }) {
@@ -99,7 +100,12 @@ export default function PaymentHistory({
               <TableCell className="font-bold">
                 {formatCurrency(deposit)}
               </TableCell>
-              <TableCell colSpan={2} />
+              <TableCell className="font-bold text-indigo-700">
+                Saldo Pendiente:
+              </TableCell>
+              <TableCell className="font-bold text-indigo-700 text-right">
+                {formatCurrency(pendingAmount)}
+              </TableCell>
             </TableRow>
           </TableFooter>
         </Table>

@@ -119,6 +119,7 @@ const EventResultsTable = ({
               <TableHead>Fecha del Evento</TableHead>
               <TableHead>Correo electrónico</TableHead>
               <TableHead>Estado</TableHead>
+              <TableHead>Total</TableHead>
               <TableHead>Acciones</TableHead>
             </TableRow>
           </TableHeader>
@@ -147,6 +148,13 @@ const EventResultsTable = ({
                   >
                     {event.eventStatus}
                   </Badge>
+                </TableCell>
+                <TableCell className="font-semibold text-indigo-700">
+                  {new Intl.NumberFormat("es-CO", {
+                    style: "currency",
+                    currency: "COP",
+                    minimumFractionDigits: 0,
+                  }).format(event.total_cost || 0)}
                 </TableCell>
                 <TableCell>
                   <Button

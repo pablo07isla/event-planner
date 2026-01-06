@@ -289,6 +289,7 @@ export default function SectionCards({
                           contactName: event.contactName,
                           contactPhone: event.contactPhone,
                           eventLocation: event.eventLocation,
+                          total_cost: event.total_cost,
                           deposit: event.deposit,
                           pendingAmount: event.pendingAmount,
                           eventDescription: event.eventDescription,

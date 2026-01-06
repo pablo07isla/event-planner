@@ -132,6 +132,12 @@ const EventCard = ({ event }) => (
           />
           <DetailItem
             Icon={FaMoneyBillWave}
+            label="Costo Total"
+            value={formatCurrency(event.extendedProps?.total_cost)}
+            iconColor="text-blue-600"
+          />
+          <DetailItem
+            Icon={FaMoneyBillWave}
             label="Saldo Pendiente"
             value={formatCurrency(event.extendedProps?.pendingAmount)}
             iconColor="text-red-500"
@@ -526,6 +532,7 @@ EventList.propTypes = {
         contactName: PropTypes.string,
         contactPhone: PropTypes.string,
         eventLocation: PropTypes.string,
+        total_cost: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
         deposit: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
         pendingAmount: PropTypes.oneOfType([
           PropTypes.string,

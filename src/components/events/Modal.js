@@ -76,6 +76,7 @@ export default function ModalEvent({
       } else if (
         key === "pendingAmount" ||
         key === "deposit" ||
+        key === "total_cost" ||
         key === "peopleCount"
       ) {
         // Ensure string for FormData

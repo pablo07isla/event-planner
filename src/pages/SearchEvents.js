@@ -155,6 +155,10 @@ const SearchEvents = () => {
       eventDescription: "",
       deposit: "",
       pendingAmount: "",
+      total_cost: "0",
+      event_category: "",
+      event_type: "",
+      lead_source: "",
       attachments: null,
       eventStatus: "Pendiente",
     });
@@ -200,6 +204,10 @@ const SearchEvents = () => {
       lastModifiedBy: event.lastModifiedBy || "",
       companyGroupId: event.companyGroupId || null,
       paymentHistory: event.paymentHistory || [],
+      total_cost: event.total_cost || "0",
+      event_category: event.event_category || "",
+      event_type: event.event_type || "",
+      lead_source: event.lead_source || "",
     });
 
     setModalOpen(true);

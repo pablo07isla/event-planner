@@ -126,6 +126,10 @@ function EventCalendar({ initialEvents }) {
       lastModifiedBy: clickInfo.event.extendedProps.lastModifiedBy || "",
       companyGroupId: clickInfo.event.extendedProps.companyGroupId || null,
       paymentHistory: clickInfo.event.extendedProps.paymentHistory || [],
+      total_cost: clickInfo.event.extendedProps.total_cost || "0",
+      event_category: clickInfo.event.extendedProps.event_category || "",
+      event_type: clickInfo.event.extendedProps.event_type || "",
+      lead_source: clickInfo.event.extendedProps.lead_source || "",
     });
     setModalOpen(true);
   };
@@ -287,6 +291,10 @@ function EventCalendar({ initialEvents }) {
       // Manejar campos numéricos
       const deposit = formData.get("deposit");
       const pendingAmount = formData.get("pendingAmount");
+      const total_cost = formData.get("total_cost");
+      const event_category = formData.get("event_category");
+      const event_type = formData.get("event_type");
+      const lead_source = formData.get("lead_source");
       const peopleCount = formData.get("peopleCount");
 
       const eventData = {
@@ -301,9 +309,15 @@ function EventCalendar({ initialEvents }) {
         eventLocation: formData.get("eventLocation"),
         eventDescription: formData.get("eventDescription"),
         deposit: deposit ? parseFloat(deposit.replace(/[^\d.-]/g, "")) || 0 : 0,
+        total_cost: total_cost
+          ? parseFloat(total_cost.replace(/[^\d.-]/g, "")) || 0
+          : 0,
         pendingAmount: pendingAmount
           ? parseFloat(pendingAmount.replace(/[^\d.-]/g, "")) || 0
           : 0,
+        event_category: event_category,
+        event_type: event_type,
+        lead_source: lead_source,
         eventStatus: formData.get("eventStatus"),
         lastModified: new Date().toISOString(),
         lastModifiedBy: currentUser
@@ -638,6 +652,10 @@ function EventCalendar({ initialEvents }) {
       eventDescription: "",
       deposit: "",
       pendingAmount: "",
+      total_cost: "0",
+      event_category: "",
+      event_type: "",
+      lead_source: "",
       attachments: null,
       eventStatus: "Pendiente",
     });

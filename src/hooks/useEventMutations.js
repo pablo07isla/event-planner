@@ -46,6 +46,10 @@ export const useEventMutations = ({
 
       const deposit = formData.get("deposit");
       const pendingAmount = formData.get("pendingAmount");
+      const total_cost = formData.get("total_cost");
+      const event_category = formData.get("event_category");
+      const event_type = formData.get("event_type");
+      const lead_source = formData.get("lead_source");
       const peopleCount = formData.get("peopleCount");
 
       const eventData = {
@@ -60,9 +64,15 @@ export const useEventMutations = ({
         eventLocation: formData.get("eventLocation"),
         eventDescription: formData.get("eventDescription"),
         deposit: deposit ? parseFloat(deposit.replace(/[^\d.-]/g, "")) || 0 : 0,
+        total_cost: total_cost
+          ? parseFloat(total_cost.replace(/[^\d.-]/g, "")) || 0
+          : 0,
         pendingAmount: pendingAmount
           ? parseFloat(pendingAmount.replace(/[^\d.-]/g, "")) || 0
           : 0,
+        event_category: event_category,
+        event_type: event_type,
+        lead_source: lead_source,
         eventStatus: formData.get("eventStatus"),
         lastModified: new Date().toISOString(),
         lastModifiedBy: currentUser
