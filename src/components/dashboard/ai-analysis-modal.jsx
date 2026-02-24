@@ -16,12 +16,11 @@ import {
   Sparkles,
   Copy,
   Mail,
-  MessageCircle,
-  Check,
   Send,
 } from "lucide-react";
 import { toast } from "sonner";
-import { FaWhatsapp } from "react-icons/fa";
+import { FaSlack, FaFilePdf } from "react-icons/fa";
+import { generateCateringPDF } from "../../utils/pdfGenerator";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import {
   Table,
@@ -65,7 +64,7 @@ export default function AIAnalysisModal({
       Object.entries(results.mealGroups).forEach(([type, items]) => {
         lines.push(`*${type}*`);
         items.forEach((item) =>
-          lines.push(`  • ${item.quantity} x ${item.category}`)
+          lines.push(`  • ${item.quantity} x ${item.category}`),
         );
       });
     }
@@ -97,7 +96,11 @@ export default function AIAnalysisModal({
     window.open(`mailto:?subject=${subject}&body=${body}`, "_blank");
   };
 
-  const handleSendToWhatsApp = async () => {
+  const handleGeneratePDF = () => {
+    generateCateringPDF(results, dateLabel);
+  };
+
+  const handleSendToSlack = async () => {
     setIsSending(true);
     try {
       // Import supabase client
@@ -108,29 +111,29 @@ export default function AIAnalysisModal({
       const payload = {
         ...restOfResults,
         date: dateLabel,
-        channel: "whatsapp",
+        channel: "#eventos-los-arrayanes",
       };
 
       // Call Supabase Edge Function
-      const { data, error } = await supabase.functions.invoke("send-whatsapp", {
+      const { data, error } = await supabase.functions.invoke("send-slack", {
         body: payload,
       });
 
       if (error) {
         console.error("Supabase function error:", error);
-        toast.error("Error al enviar a WhatsApp");
+        toast.error("Error al enviar a Slack");
         return;
       }
 
       if (data?.success) {
-        toast.success("Análisis enviado a WhatsApp correctamente");
+        toast.success("Análisis enviado a Slack correctamente");
       } else {
-        toast.error("Error al enviar a WhatsApp");
-        console.error("WhatsApp error:", data?.error);
+        toast.error("Error al enviar a Slack");
+        console.error("Slack error:", data?.error);
       }
     } catch (error) {
-      console.error("Error sending to WhatsApp:", error);
-      toast.error("Error de conexión con WhatsApp");
+      console.error("Error sending to Slack:", error);
+      toast.error("Error de conexión con Slack");
     } finally {
       setIsSending(false);
     }
@@ -287,7 +290,7 @@ export default function AIAnalysisModal({
                           ))}
                         </div>
                       </div>
-                    )
+                    ),
                   )
                 ) : (
                   <div className="text-center py-6 text-muted-foreground">
@@ -306,7 +309,6 @@ export default function AIAnalysisModal({
                 <Button
                   type="button"
                   variant="outline"
-                  size="sm"
                   className="flex-1 sm:flex-none gap-2"
                   onClick={handleCopy}
                 >
@@ -320,16 +322,25 @@ export default function AIAnalysisModal({
 
                 <Button
                   type="button"
-                  className="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 text-white gap-2"
-                  onClick={handleSendToWhatsApp}
+                  className="flex-1 sm:flex-none gap-2 bg-[#E2231A] hover:bg-[#c91f16] text-white border-0"
+                  onClick={handleGeneratePDF}
+                >
+                  <FaFilePdf className="h-4 w-4" />
+                  <Trans>PDF</Trans>
+                </Button>
+
+                <Button
+                  type="button"
+                  className="flex-1 sm:flex-none bg-[#4A154B] hover:bg-[#3d113d] text-white gap-2"
+                  onClick={handleSendToSlack}
                   disabled={isSending}
                 >
                   {isSending ? (
                     <Loader2 className="h-4 w-4 animate-spin text-white" />
                   ) : (
-                    <FaWhatsapp className="h-4 w-4" />
+                    <FaSlack className="h-4 w-4" />
                   )}
-                  WhatsApp AI
+                  Slack
                 </Button>
               </div>
             )}
