@@ -3,7 +3,13 @@ import { Trans } from "@lingui/macro";
 import { Button } from "../ui/button";
 import { Mail, Lock, User, AlertCircle, UserCheck } from "lucide-react";
 
-export function CreateUserForm({ onSubmit, loading, error, success, initialValues }) {
+export function CreateUserForm({
+  onSubmit,
+  loading,
+  error,
+  success,
+  initialValues,
+}) {
   const [form, setForm] = useState({
     username: initialValues?.username || "",
     email: initialValues?.email || "",
@@ -21,14 +27,13 @@ export function CreateUserForm({ onSubmit, loading, error, success, initialValue
   };
 
   return (
-    <div className="flex min-h-screen h-screen w-screen bg-gradient-to-br from-indigo-50 via-blue-50 to-white items-center justify-center p-4">
-      <div className="w-full max-w-md mx-auto bg-white rounded-xl shadow-lg border border-gray-100 p-8 relative">
+    <div className="flex min-h-screen bg-gradient-to-br from-indigo-50 via-blue-50 to-white items-center justify-center p-4 sm:p-6 lg:p-8">
+      <div className="w-full max-w-md mx-auto bg-white rounded-xl shadow-lg border border-gray-100 p-6 sm:p-8 relative">
         <div className="absolute top-4 right-4 z-50">
           {/* Puedes agregar aquí un LanguageSwitcher si lo usas globalmente */}
         </div>
-        
+
         <div className="text-center mb-8">
-         
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
             <Trans>Crear usuario</Trans>
           </h2>
@@ -40,14 +45,17 @@ export function CreateUserForm({ onSubmit, loading, error, success, initialValue
         <form className="space-y-6" onSubmit={handleSubmit}>
           {/* Campo Username */}
           <div className="space-y-2">
-            <label htmlFor="username" className="block text-sm font-semibold text-gray-700">
+            <label
+              htmlFor="username"
+              className="block text-sm font-semibold text-gray-700"
+            >
               <Trans>Nombre de usuario</Trans>
             </label>
             <div className="relative">
-                           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                             <User className="h-5 w-5 text-gray-400" />
-                           </div>
-                           <input
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <User className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
                 id="username"
                 name="username"
                 value={form.username}
@@ -55,29 +63,32 @@ export function CreateUserForm({ onSubmit, loading, error, success, initialValue
                 required
                 autoComplete="username"
                 placeholder="Ingresa tu nombre de usuario"
-                 className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               />
             </div>
           </div>
 
           {/* Campo Email */}
           <div className="space-y-2">
-            <label htmlFor="email" className="block text-sm font-semibold text-gray-700">
+            <label
+              htmlFor="email"
+              className="block text-sm font-semibold text-gray-700"
+            >
               <Trans>Email</Trans>
             </label>
             <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                              <Mail className="h-5 w-5 text-gray-400" />
-                            </div>
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Mail className="h-5 w-5 text-gray-400" />
+              </div>
               <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  placeholder="Ingresa tu correo electrónico"
-                 value={form.email}
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                placeholder="Ingresa tu correo electrónico"
+                value={form.email}
                 onChange={handleChange}
               />
             </div>
@@ -85,14 +96,17 @@ export function CreateUserForm({ onSubmit, loading, error, success, initialValue
 
           {/* Campo Password */}
           <div className="space-y-2">
-            <label htmlFor="password" className="block text-sm font-semibold text-gray-700">
+            <label
+              htmlFor="password"
+              className="block text-sm font-semibold text-gray-700"
+            >
               <Trans>Contraseña</Trans>
             </label>
             <div className="relative">
-                           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                             <Lock className="h-5 w-5 text-gray-400" />
-                           </div>
-                           <input
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Lock className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
                 id="password"
                 name="password"
                 type="password"
@@ -108,7 +122,10 @@ export function CreateUserForm({ onSubmit, loading, error, success, initialValue
 
           {/* Campo Role */}
           <div className="space-y-2">
-            <label htmlFor="role" className="block text-sm font-semibold text-gray-700">
+            <label
+              htmlFor="role"
+              className="block text-sm font-semibold text-gray-700"
+            >
               <Trans>Rol</Trans>
             </label>
             <select
@@ -130,7 +147,7 @@ export function CreateUserForm({ onSubmit, loading, error, success, initialValue
               <span className="text-sm">{error}</span>
             </div>
           )}
-          
+
           {success && (
             <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-start space-x-2">
               <UserCheck className="h-5 w-5 mt-0.5 flex-shrink-0" />
@@ -140,12 +157,16 @@ export function CreateUserForm({ onSubmit, loading, error, success, initialValue
 
           {/* Botones */}
           <div className="flex flex-col sm:flex-row gap-3 pt-4">
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               className="flex-1 bg-gradient-to-r from-indigo-500 to-blue-600 hover:from-indigo-600 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={loading}
             >
-              {loading ? <Trans>Creando...</Trans> : <Trans>Crear usuario</Trans>}
+              {loading ? (
+                <Trans>Creando...</Trans>
+              ) : (
+                <Trans>Crear usuario</Trans>
+              )}
             </Button>
             <Button
               type="button"

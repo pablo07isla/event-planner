@@ -71,7 +71,7 @@ export default function ModalEvent({
       } else if (key === "foodPackage") {
         formDataToSubmit.append(
           key,
-          Array.isArray(data[key]) ? data[key].join(",") : data[key]
+          Array.isArray(data[key]) ? data[key].join(",") : data[key],
         );
       } else if (
         key === "pendingAmount" ||
@@ -159,10 +159,10 @@ export default function ModalEvent({
                 onClose={() => setShowPdfModal(false)}
               />
             )}
-            <div className="flex justify-end mt-4">
+            <div className="flex flex-col sm:flex-row justify-end mt-4">
               <button
                 onClick={() => setShowPdfModal(false)}
-                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 w-full sm:w-auto min-h-[44px]"
               >
                 Cerrar
               </button>

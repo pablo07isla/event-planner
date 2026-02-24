@@ -91,7 +91,7 @@ export default function CompanyEditSheet({
 
   return (
     <Sheet open={open} onOpenChange={onClose}>
-      <SheetContent className="w-[500px] sm:w-[600px] flex flex-col pt-10 px-8">
+      <SheetContent className="w-full sm:w-[600px] flex flex-col pt-10 px-4 sm:px-8">
         <SheetHeader className="mb-6">
           <SheetTitle className="text-2xl font-bold text-center text-primary">
             Ver / Editar Empresa
@@ -103,7 +103,7 @@ export default function CompanyEditSheet({
           onSubmit={handleSubmit}
         >
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="col-span-2">
                 <Label htmlFor="companyName" className="font-semibold">
                   Nombre de la Empresa <span className="text-red-500">*</span>
@@ -165,7 +165,7 @@ export default function CompanyEditSheet({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="col-span-2">
                 <Label htmlFor="contactPerson" className="font-semibold">
                   Persona de Contacto <span className="text-red-500">*</span>
@@ -218,7 +218,7 @@ export default function CompanyEditSheet({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="address" className="font-semibold">
                   Dirección
@@ -251,20 +251,20 @@ export default function CompanyEditSheet({
 
           <Separator className="my-4" />
 
-          <div className="flex justify-end gap-3 mt-6">
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 mt-6">
             <Button
               type="button"
               variant="outline"
               onClick={onClose}
               disabled={loading}
-              className="px-6"
+              className="w-full sm:w-auto px-6 min-h-[44px]"
             >
               Cancelar
             </Button>
             <Button
               type="submit"
               disabled={loading}
-              className="px-6 bg-indigo-600 hover:bg-indigo-700"
+              className="w-full sm:w-auto px-6 bg-indigo-600 hover:bg-indigo-700 min-h-[44px]"
             >
               {loading ? "Guardando..." : "Guardar Cambios"}
             </Button>

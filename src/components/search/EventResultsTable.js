@@ -104,14 +104,14 @@ const EventResultsTable = ({
           onClick={handleDownloadExcel}
           variant="outline"
           size="sm"
-          className="ml-auto"
+          className="ml-auto min-h-[44px]"
         >
           <Download className="mr-2 h-4 w-4" />
           Descargar Excel
         </Button>
       </CardHeader>
-      <CardContent className="p-0">
-        <Table>
+      <CardContent className="p-0 overflow-x-auto">
+        <Table className="min-w-[800px]">
           <TableHeader>
             <TableRow>
               <TableHead>Empresa</TableHead>
@@ -161,7 +161,7 @@ const EventResultsTable = ({
                     variant="ghost"
                     size="sm"
                     onClick={() => handleViewEvent(event)}
-                    className="flex items-center"
+                    className="flex items-center min-h-[44px] min-w-[44px]"
                   >
                     <Eye className="h-4 w-4 mr-1" />
                     Ver

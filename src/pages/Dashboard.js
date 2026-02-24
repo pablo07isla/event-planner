@@ -174,12 +174,12 @@ export default function Dashboard() {
         <SiteHeader />
         {/* Main Dashboard Content */}
         <main className="flex-1 overflow-auto bg-background">
-          <div className="w-full max-w-none">
+          <div className="w-full max-w-7xl mx-auto">
             {/* Content Grid Layout */}
             <div className="grid grid-cols-1 gap-6 p-4 sm:p-6 lg:gap-8 lg:p-8">
               {/* Section Cards - Top Section */}
               <section className="w-full">
-                <div className="mb-6 flex items-center justify-between">
+                <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div>
                     <h2 className="text-2xl font-semibold tracking-tight text-foreground mb-2">
                       <Trans>Proximos Eventos</Trans>
@@ -190,7 +190,7 @@ export default function Dashboard() {
                   </div>
                   <button
                     onClick={() => navigate("/pages/calendar")}
-                    className="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold shadow-md hover:from-blue-600 hover:to-indigo-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+                    className="inline-flex items-center justify-center gap-2 w-full sm:w-auto min-h-[48px] px-5 py-3 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold shadow-md hover:from-blue-600 hover:to-indigo-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"

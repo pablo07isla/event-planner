@@ -91,7 +91,7 @@ const Register = () => {
   }
 
   return (
-    <div className="flex min-h-screen h-screen w-screen bg-gradient-to-br from-indigo-50 to-white">
+    <div className="flex min-h-screen bg-gradient-to-br from-indigo-50 to-white">
       {/* Left Side - Illustration/Info Panel */}
       <div className="hidden lg:flex lg:w-1/2 bg-indigo-600 flex-col justify-center items-center p-12 text-white">
         <div className="max-w-md">
@@ -122,7 +122,7 @@ const Register = () => {
       </div>
 
       {/* Right Side - Register Form */}
-      <div className="w-full lg:w-1/2 flex flex-col justify-center px-8 sm:px-16 lg:px-24">
+      <div className="w-full lg:w-1/2 flex flex-col justify-center px-4 sm:px-12 md:px-16 lg:px-24 min-h-screen py-12">
         <div className="absolute top-4 right-4 z-50">
           <LanguageSwitcher />
         </div>

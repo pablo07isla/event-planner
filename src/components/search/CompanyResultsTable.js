@@ -55,8 +55,8 @@ const CompanyResultsTable = ({
 
   return (
     <Card className="mt-8">
-      <CardContent className="p-0">
-        <Table>
+      <CardContent className="p-0 overflow-x-auto">
+        <Table className="min-w-[600px]">
           <TableHeader>
             <TableRow>
               <TableHead>Empresa</TableHead>
@@ -92,7 +92,7 @@ const CompanyResultsTable = ({
                     variant="ghost"
                     size="sm"
                     onClick={() => handleViewCompany(company)}
-                    className="flex items-center"
+                    className="flex items-center min-h-[44px] min-w-[44px]"
                   >
                     <Eye className="h-4 w-4 mr-1" />
                     Ver/Editar

@@ -22,6 +22,7 @@ const CompanySearchFilters = ({
             value={companySearchTerm}
             onChange={(e) => setCompanySearchTerm(e.target.value)}
             placeholder="Buscar por nombre..."
+            className="min-h-[44px]"
           />
         </div>
 
@@ -30,7 +31,7 @@ const CompanySearchFilters = ({
           <select
             value={companyIdType}
             onChange={(e) => setCompanyIdType(e.target.value)}
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+            className="flex h-11 min-h-[44px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
           >
             <option value="">Todos</option>
             <option value="NIT">NIT</option>
@@ -47,12 +48,16 @@ const CompanySearchFilters = ({
             value={companyIdNumber}
             onChange={(e) => setCompanyIdNumber(e.target.value)}
             placeholder="Buscar por N°..."
+            className="min-h-[44px]"
           />
         </div>
       </div>
 
       <div className="flex justify-center">
-        <Button onClick={handleCompanySearch} className="w-full sm:w-auto">
+        <Button
+          onClick={handleCompanySearch}
+          className="w-full sm:w-auto min-h-[44px]"
+        >
           <Search className="h-5 w-5 mr-2" />
           Buscar Empresas
         </Button>

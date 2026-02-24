@@ -193,7 +193,7 @@ const EventList = ({ events, onClose }) => {
   const processEvents = useMemo(() => {
     // Sort all events by date
     const sortedEvents = [...events].sort(
-      (a, b) => new Date(a.start) - new Date(b.start)
+      (a, b) => new Date(a.start) - new Date(b.start),
     );
 
     // Create paginated array
@@ -240,7 +240,7 @@ const EventList = ({ events, onClose }) => {
   // Get sorted dates for current page
   const sortedDates = useMemo(() => {
     return Object.keys(currentGroupedEvents).sort(
-      (a, b) => new Date(a) - new Date(b)
+      (a, b) => new Date(a) - new Date(b),
     );
   }, [currentGroupedEvents]);
 
@@ -290,11 +290,11 @@ const EventList = ({ events, onClose }) => {
   return (
     <div className="w-full max-w-7xl mx-auto px-4 py-6">
       {/* Encabezado y Botón de PDF */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Lista de Eventos</h1>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
           <button
-            className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-300 disabled:opacity-50"
+            className="w-full sm:w-auto min-h-[44px] inline-flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-300 disabled:opacity-50"
             disabled={isSending}
             onClick={handleSendToWhatsApp}
           >
@@ -336,7 +336,7 @@ const EventList = ({ events, onClose }) => {
           >
             {({ loading, url }) => (
               <button
-                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-300 disabled:opacity-50"
+                className="w-full sm:w-auto min-h-[44px] inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-300 disabled:opacity-50"
                 disabled={loading || isSending}
                 onClick={handlePDFDownload}
               >
@@ -411,14 +411,14 @@ const EventList = ({ events, onClose }) => {
           <button
             onClick={() => setCurrentPage(1)}
             disabled={currentPage === 1}
-            className="px-3 py-2 bg-white text-gray-700 border rounded-lg disabled:opacity-50 hover:bg-gray-100 text-sm"
+            className="px-3 py-2 bg-white text-gray-700 border rounded-lg disabled:opacity-50 hover:bg-gray-100 text-sm min-h-[44px] min-w-[44px] inline-flex items-center justify-center"
           >
             Primera
           </button>
           <button
             onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
             disabled={currentPage === 1}
-            className="px-3 py-2 bg-white text-gray-700 border rounded-lg disabled:opacity-50 hover:bg-gray-100 text-sm"
+            className="px-3 py-2 bg-white text-gray-700 border rounded-lg disabled:opacity-50 hover:bg-gray-100 text-sm min-h-[44px] min-w-[44px] inline-flex items-center justify-center"
           >
             Anterior
           </button>
@@ -486,7 +486,7 @@ const EventList = ({ events, onClose }) => {
                 <button
                   key={page}
                   onClick={() => setCurrentPage(page)}
-                  className={`px-3 py-2 rounded-lg text-sm ${
+                  className={`px-3 py-2 rounded-lg text-sm min-h-[44px] min-w-[44px] inline-flex items-center justify-center ${
                     page === currentPage
                       ? "bg-blue-600 text-white"
                       : "bg-white text-gray-700 border hover:bg-gray-100"
@@ -503,14 +503,14 @@ const EventList = ({ events, onClose }) => {
               setCurrentPage((prev) => Math.min(prev + 1, totalPages))
             }
             disabled={currentPage === totalPages}
-            className="px-3 py-2 bg-white text-gray-700 border rounded-lg disabled:opacity-50 hover:bg-gray-100 text-sm"
+            className="px-3 py-2 bg-white text-gray-700 border rounded-lg disabled:opacity-50 hover:bg-gray-100 text-sm min-h-[44px] min-w-[44px] inline-flex items-center justify-center"
           >
             Siguiente
           </button>
           <button
             onClick={() => setCurrentPage(totalPages)}
             disabled={currentPage === totalPages}
-            className="px-3 py-2 bg-white text-gray-700 border rounded-lg disabled:opacity-50 hover:bg-gray-100 text-sm"
+            className="px-3 py-2 bg-white text-gray-700 border rounded-lg disabled:opacity-50 hover:bg-gray-100 text-sm min-h-[44px] min-w-[44px] inline-flex items-center justify-center"
           >
             Última
           </button>
@@ -542,7 +542,7 @@ EventList.propTypes = {
         foodPackage: PropTypes.arrayOf(PropTypes.string),
         companyName: PropTypes.string,
       }),
-    })
+    }),
   ).isRequired,
 };
 

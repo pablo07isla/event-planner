@@ -37,6 +37,13 @@ import { toast } from "sonner";
 function EventCalendar({ initialEvents }) {
   const [events, setEvents] = useState(initialEvents);
   const [modalOpen, setModalOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
   const [currentEvent, setCurrentEvent] = useState(null);
   const [alertDialogOpen, setAlertDialogOpen] = useState(false);
   const [eventToUpdate, setEventToUpdate] = useState(null);
@@ -211,7 +218,7 @@ function EventCalendar({ initialEvents }) {
         const updatedEvent = updatedData[0];
         console.log("Evento actualizado:", updatedEvent);
         setEvents((prevEvents) =>
-          prevEvents.map((e) => (e.id === updatedEvent.id ? updatedEvent : e))
+          prevEvents.map((e) => (e.id === updatedEvent.id ? updatedEvent : e)),
         );
 
         // Mostrar mensaje de éxito
@@ -219,7 +226,7 @@ function EventCalendar({ initialEvents }) {
       } catch (err) {
         console.error("Error detallado:", err);
         toast.error(
-          `Error al actualizar el evento: ${err.message}. Por favor, inténtelo de nuevo.`
+          `Error al actualizar el evento: ${err.message}. Por favor, inténtelo de nuevo.`,
         );
       }
     }
@@ -359,7 +366,7 @@ function EventCalendar({ initialEvents }) {
       setEvents((prevEvents) => {
         if (formData.get("id")) {
           return prevEvents.map((e) =>
-            e.id === formData.get("id") ? eventWithColor : e
+            e.id === formData.get("id") ? eventWithColor : e,
           );
         } else {
           return [...prevEvents, eventWithColor];
@@ -371,7 +378,7 @@ function EventCalendar({ initialEvents }) {
       if (attachments.length > 0) {
         const updatedAttachments = await updateAttachments(
           savedEvent.id,
-          attachments
+          attachments,
         );
         if (updatedAttachments.length > 0) {
           try {
@@ -384,11 +391,11 @@ function EventCalendar({ initialEvents }) {
             if (updateError) {
               console.error(
                 "Error updating event with new attachments:",
-                updateError
+                updateError,
               );
             } else if (updateData) {
               console.log(
-                "Evento actualizado correctamente con nuevos attachments"
+                "Evento actualizado correctamente con nuevos attachments",
               );
             }
           } catch (err) {
@@ -401,7 +408,7 @@ function EventCalendar({ initialEvents }) {
       toast.success(
         isEdit
           ? "Evento actualizado exitosamente"
-          : "Evento creado exitosamente"
+          : "Evento creado exitosamente",
       );
     } catch (err) {
       console.error("Error detallado al guardar el evento:", err);
@@ -445,7 +452,7 @@ function EventCalendar({ initialEvents }) {
             } catch (removeErr) {
               console.error(
                 "Error al intentar eliminar archivo original:",
-                removeErr
+                removeErr,
               );
             }
 
@@ -490,7 +497,7 @@ function EventCalendar({ initialEvents }) {
 
       if (!idToDelete) {
         console.error(
-          "[handleDeleteEvent] No se pudo identificar el evento a eliminar"
+          "[handleDeleteEvent] No se pudo identificar el evento a eliminar",
         );
         toast.error("No se pudo identificar el evento a eliminar");
         return;
@@ -523,7 +530,7 @@ function EventCalendar({ initialEvents }) {
 
       // Eliminar el evento
       console.log(
-        "[handleDeleteEvent] Ejecutando eliminación en base de datos..."
+        "[handleDeleteEvent] Ejecutando eliminación en base de datos...",
       );
       const { error: deleteError } = await supabase
         .from("events")
@@ -536,7 +543,7 @@ function EventCalendar({ initialEvents }) {
       }
 
       console.log(
-        "[handleDeleteEvent] Evento eliminado de la base de datos exitosamente"
+        "[handleDeleteEvent] Evento eliminado de la base de datos exitosamente",
       );
 
       setEvents((prevEvents) => prevEvents.filter((e) => e.id !== idToDelete));
@@ -549,7 +556,7 @@ function EventCalendar({ initialEvents }) {
     } catch (err) {
       console.error("[handleDeleteEvent] Error:", err);
       toast.error(
-        "Error al eliminar el evento. Por favor, inténtelo de nuevo."
+        "Error al eliminar el evento. Por favor, inténtelo de nuevo.",
       );
       console.error(err);
     }
@@ -577,7 +584,7 @@ function EventCalendar({ initialEvents }) {
     } catch (error) {
       console.error("Error fetching events:", error);
       toast.error(
-        "Error al cargar los eventos. Por favor, inténtelo de nuevo."
+        "Error al cargar los eventos. Por favor, inténtelo de nuevo.",
       );
     } finally {
       setCargando(false);
@@ -596,7 +603,7 @@ function EventCalendar({ initialEvents }) {
 
       if (!isValidDate(end)) {
         console.warn(
-          `Invalid end date for event: ${preparedEvent.id}. Using start date + 1 day.`
+          `Invalid end date for event: ${preparedEvent.id}. Using start date + 1 day.`,
         );
         end = new Date(start);
         end.setDate(end.getDate() + 1);
@@ -604,7 +611,7 @@ function EventCalendar({ initialEvents }) {
 
       if (!isValidDate(start)) {
         console.warn(
-          `Invalid start date for event: ${preparedEvent.id}. Using current date.`
+          `Invalid start date for event: ${preparedEvent.id}. Using current date.`,
         );
         start = new Date();
         end = new Date(start);
@@ -777,9 +784,11 @@ function EventCalendar({ initialEvents }) {
                 headerToolbar={{
                   left: "prev,next today",
                   center: "title",
-                  right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
+                  right: isMobile
+                    ? "dayGridMonth,listWeek"
+                    : "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
                 }}
-                initialView="dayGridMonth"
+                initialView={isMobile ? "listWeek" : "dayGridMonth"}
                 editable={true}
                 selectable={true}
                 selectMirror={true}
@@ -933,7 +942,7 @@ EventCalendar.propTypes = {
       attachments: PropTypes.arrayOf(PropTypes.object),
       eventStatus: PropTypes.string, // New prop type for event status
       companyGroupId: PropTypes.string, // New prop type for company group ID
-    })
+    }),
   ),
 };
 

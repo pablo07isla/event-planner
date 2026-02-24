@@ -14,6 +14,7 @@ import {
   DollarSign,
   AlertTriangle,
   Users,
+  TrendingUp,
 } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -809,16 +810,56 @@ export default function ReportDetail() {
                         // Render Structured JSON Strategy
                         return (
                           <div className="space-y-8">
-                            {/* Vision Block */}
+                            {/* Executive Summary Block */}
                             <div className="bg-slate-900 text-white p-6 rounded-lg shadow-lg">
-                              <h3 className="text-lg font-bold text-indigo-300 mb-2 flex items-center gap-2">
-                                <Rocket className="h-5 w-5" />
-                                {strategyData.vision?.title}
+                              <h3 className="text-xl font-bold text-indigo-300 mb-2 flex items-center gap-2">
+                                <Rocket className="h-6 w-6" />
+                                {strategyData.executiveSummary?.headline ||
+                                  strategyData.vision?.title}
                               </h3>
                               <p className="text-slate-300 leading-relaxed text-lg">
-                                {strategyData.vision?.description}
+                                {strategyData.executiveSummary?.content ||
+                                  strategyData.vision?.description}
                               </p>
                             </div>
+
+                            {/* Key Findings (New) */}
+                            {strategyData.keyFindings && (
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {strategyData.keyFindings.map((finding, i) => (
+                                  <Card
+                                    key={i}
+                                    className="bg-slate-50 border-slate-200"
+                                  >
+                                    <CardHeader className="pb-2">
+                                      <CardTitle className="text-sm font-medium text-slate-500 uppercase flex justify-between">
+                                        Hallazgo Clave
+                                        <Badge
+                                          variant={
+                                            finding.trend === "positive"
+                                              ? "default"
+                                              : "destructive"
+                                          }
+                                        >
+                                          {finding.trend}
+                                        </Badge>
+                                      </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                      <p className="font-bold text-slate-800 mb-1">
+                                        {finding.finding}
+                                      </p>
+                                      <p className="text-sm text-slate-500">
+                                        Impacto:{" "}
+                                        <span className="font-medium text-slate-700">
+                                          {finding.impact}
+                                        </span>
+                                      </p>
+                                    </CardContent>
+                                  </Card>
+                                ))}
+                              </div>
+                            )}
 
                             {/* Campaigns Grid */}
                             <div>
@@ -830,7 +871,7 @@ export default function ReportDetail() {
                                 {strategyData.campaigns?.map((camp, i) => (
                                   <div
                                     key={i}
-                                    className="bg-white border rounded-lg p-5 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden"
+                                    className="bg-white border rounded-lg p-5 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden flex flex-col h-full"
                                   >
                                     <div
                                       className={`absolute top-0 left-0 w-1 h-full ${
@@ -842,17 +883,18 @@ export default function ReportDetail() {
                                       }`}
                                     />
                                     <div className="flex justify-between items-start mb-3">
-                                      <h4 className="font-bold text-slate-900 line-clamp-2">
+                                      <h4 className="font-bold text-slate-900 line-clamp-2 pr-2">
                                         {camp.title}
                                       </h4>
                                       <Badge
                                         variant="secondary"
-                                        className="text-[10px]"
+                                        className="text-[10px] shrink-0"
                                       >
                                         {camp.priority}
                                       </Badge>
                                     </div>
-                                    <div className="space-y-3 text-sm">
+
+                                    <div className="space-y-3 text-sm flex-1">
                                       <div>
                                         <p className="text-[10px] uppercase text-slate-400 font-bold">
                                           Objetivo
@@ -861,18 +903,43 @@ export default function ReportDetail() {
                                           {camp.objective}
                                         </p>
                                       </div>
-                                      <div>
-                                        <p className="text-[10px] uppercase text-slate-400 font-bold">
-                                          Audiencia
-                                        </p>
-                                        <p className="text-slate-700">
-                                          {camp.audience}
-                                        </p>
+
+                                      <div className="grid grid-cols-2 gap-2">
+                                        <div>
+                                          <p className="text-[10px] uppercase text-slate-400 font-bold">
+                                            Audiencia
+                                          </p>
+                                          <p className="text-slate-700 text-xs">
+                                            {camp.audience}
+                                          </p>
+                                        </div>
+                                        <div>
+                                          <p className="text-[10px] uppercase text-slate-400 font-bold">
+                                            Canal
+                                          </p>
+                                          <p className="text-slate-700 text-xs truncate">
+                                            {camp.channel}
+                                          </p>
+                                        </div>
                                       </div>
-                                      <div className="pt-2 border-t mt-2">
-                                        <p className="text-indigo-600 font-semibold italic text-xs">
-                                          "{camp.hook}"
-                                        </p>
+
+                                      <div className="pt-2 border-t mt-2 flex justify-between items-center">
+                                        <div>
+                                          <p className="text-[10px] uppercase text-slate-400 font-bold">
+                                            KPI
+                                          </p>
+                                          <p className="text-indigo-600 font-semibold text-xs">
+                                            {camp.kpi}
+                                          </p>
+                                        </div>
+                                        <div className="text-right">
+                                          <p className="text-[10px] uppercase text-slate-400 font-bold">
+                                            Presupuesto
+                                          </p>
+                                          <p className="text-emerald-600 font-semibold text-xs">
+                                            {camp.budget_level}
+                                          </p>
+                                        </div>
                                       </div>
                                     </div>
                                   </div>
@@ -881,47 +948,13 @@ export default function ReportDetail() {
                             </div>
 
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                              {/* Budget Allocation */}
-                              <div className="bg-slate-50 p-6 rounded-lg border border-slate-200">
-                                <h3 className="text-lg font-semibold mb-4 text-slate-800 flex items-center gap-2">
-                                  <DollarSign className="h-5 w-5 text-emerald-600" />
-                                  Distribución de Presupuesto
-                                </h3>
-                                <div className="space-y-4">
-                                  {strategyData.budgetAllocation?.map(
-                                    (item, i) => (
-                                      <div key={i}>
-                                        <div className="flex justify-between text-sm mb-1">
-                                          <span className="font-medium text-slate-700">
-                                            {item.category}
-                                          </span>
-                                          <span className="font-bold text-slate-900">
-                                            {item.percentage}%
-                                          </span>
-                                        </div>
-                                        <div className="w-full bg-slate-200 rounded-full h-2.5">
-                                          <div
-                                            className="bg-emerald-500 h-2.5 rounded-full"
-                                            style={{
-                                              width: `${item.percentage}%`,
-                                            }}
-                                          ></div>
-                                        </div>
-                                        <p className="text-xs text-slate-500 mt-1">
-                                          {item.justification}
-                                        </p>
-                                      </div>
-                                    )
-                                  )}
-                                </div>
-                              </div>
-
                               {/* Retention & Risks */}
                               <div className="space-y-6">
-                                <div className="bg-indigo-50 p-6 rounded-lg border border-indigo-100">
+                                <div className="bg-indigo-50 p-6 rounded-lg border border-indigo-100 h-full">
                                   <h3 className="text-lg font-semibold mb-3 text-indigo-900 flex items-center gap-2">
                                     <Users className="h-5 w-5" />
-                                    {strategyData.retentionStrategy?.title}
+                                    {strategyData.retentionStrategy?.title ||
+                                      "Fidelización"}
                                   </h3>
                                   <ul className="space-y-2">
                                     {strategyData.retentionStrategy?.actions?.map(
@@ -930,26 +963,17 @@ export default function ReportDetail() {
                                           key={i}
                                           className="flex items-start gap-2 text-sm text-indigo-800"
                                         >
-                                          <span className="mt-1 block w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                                          <span className="mt-1 block w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0" />
                                           {act}
                                         </li>
                                       )
                                     )}
                                   </ul>
-                                  <div className="mt-4 pt-4 border-t border-indigo-200">
-                                    <p className="text-xs font-bold text-indigo-600 uppercase">
-                                      Impacto Esperado
-                                    </p>
-                                    <p className="text-indigo-900 font-medium">
-                                      {
-                                        strategyData.retentionStrategy
-                                          ?.expectedUplift
-                                      }
-                                    </p>
-                                  </div>
                                 </div>
+                              </div>
 
-                                <div className="bg-rose-50 p-6 rounded-lg border border-rose-100">
+                              <div className="space-y-6">
+                                <div className="bg-rose-50 p-6 rounded-lg border border-rose-100 h-full">
                                   <h3 className="text-lg font-semibold mb-3 text-rose-900 flex items-center gap-2">
                                     <AlertTriangle className="h-5 w-5" />
                                     Riesgos Potenciales
@@ -960,7 +984,9 @@ export default function ReportDetail() {
                                         key={i}
                                         className="text-sm text-rose-800 flex items-center gap-2"
                                       >
-                                        <span className="text-rose-500">•</span>
+                                        <span className="text-rose-500 shrink-0">
+                                          •
+                                        </span>
                                         {risk}
                                       </li>
                                     ))}
@@ -968,6 +994,48 @@ export default function ReportDetail() {
                                 </div>
                               </div>
                             </div>
+
+                            {/* Management Recommendations (New) */}
+                            {strategyData.managementRecommendations && (
+                              <div className="bg-emerald-50 border border-emerald-100 rounded-lg p-6">
+                                <h3 className="text-lg font-semibold mb-4 text-emerald-900 flex items-center gap-2">
+                                  <TrendingUp className="h-5 w-5" />
+                                  Recomendaciones a Gerencia
+                                </h3>
+                                <div className="space-y-4">
+                                  {strategyData.managementRecommendations.map(
+                                    (rec, i) => (
+                                      <div
+                                        key={i}
+                                        className="flex gap-4 items-start bg-white p-4 rounded border border-emerald-100 shadow-sm"
+                                      >
+                                        <div
+                                          className={`mt-1 h-3 w-3 rounded-full shrink-0 ${
+                                            rec.priority === "High"
+                                              ? "bg-emerald-600"
+                                              : "bg-emerald-400"
+                                          }`}
+                                        />
+                                        <div>
+                                          <h4 className="font-bold text-emerald-950">
+                                            {rec.action}
+                                          </h4>
+                                          <p className="text-sm text-emerald-700 mt-1">
+                                            {rec.rationale}
+                                          </p>
+                                        </div>
+                                        <Badge
+                                          variant="outline"
+                                          className="ml-auto border-emerald-200 text-emerald-700"
+                                        >
+                                          {rec.priority}
+                                        </Badge>
+                                      </div>
+                                    )
+                                  )}
+                                </div>
+                              </div>
+                            )}
                           </div>
                         );
                       })()}

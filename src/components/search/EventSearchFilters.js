@@ -40,7 +40,7 @@ const EventSearchFilters = ({
             setSearchMode("company");
             setSearchTerm("");
           }}
-          className="flex items-center"
+          className="flex items-center min-h-[44px]"
         >
           <Building className="h-4 w-4 mr-2" />
           Por Empresa
@@ -52,7 +52,7 @@ const EventSearchFilters = ({
             setStartDate(null);
             setEndDate(null);
           }}
-          className="flex items-center"
+          className="flex items-center min-h-[44px]"
         >
           <Calendar className="h-4 w-4 mr-2" />
           Fecha Específica
@@ -63,7 +63,7 @@ const EventSearchFilters = ({
             setSearchMode("dateRange");
             setSingleDate(null);
           }}
-          className="flex items-center"
+          className="flex items-center min-h-[44px]"
         >
           <Calendar className="h-4 w-4 mr-2" />
           Rango de Fechas
@@ -80,7 +80,7 @@ const EventSearchFilters = ({
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Buscar por nombre..."
-                className="pl-10"
+                className="pl-10 min-h-[44px]"
               />
             </div>
           </div>
@@ -95,7 +95,7 @@ const EventSearchFilters = ({
                 value={companyId}
                 onChange={(e) => setCompanyId(e.target.value)}
                 placeholder="Buscar por N° identificación..."
-                className="pl-10"
+                className="pl-10 min-h-[44px]"
               />
             </div>
           </div>
@@ -114,8 +114,8 @@ const EventSearchFilters = ({
                 <Button
                   variant="outline"
                   className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !singleDate && "text-muted-foreground"
+                    "w-full justify-start text-left font-normal min-h-[44px]",
+                    !singleDate && "text-muted-foreground",
                   )}
                 >
                   <Calendar className="mr-2 h-4 w-4" />
@@ -154,8 +154,8 @@ const EventSearchFilters = ({
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !startDate && "text-muted-foreground"
+                      "w-full justify-start text-left font-normal min-h-[44px]",
+                      !startDate && "text-muted-foreground",
                     )}
                   >
                     <Calendar className="mr-2 h-4 w-4" />
@@ -190,8 +190,8 @@ const EventSearchFilters = ({
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !endDate && "text-muted-foreground"
+                      "w-full justify-start text-left font-normal min-h-[44px]",
+                      !endDate && "text-muted-foreground",
                     )}
                   >
                     <Calendar className="mr-2 h-4 w-4" />
@@ -218,7 +218,10 @@ const EventSearchFilters = ({
       )}
 
       <div className="flex justify-center mt-6">
-        <Button onClick={handleSearch} className="w-full sm:w-auto">
+        <Button
+          onClick={handleSearch}
+          className="w-full sm:w-auto min-h-[44px]"
+        >
           <Search className="h-5 w-5 mr-2" />
           Buscar
         </Button>

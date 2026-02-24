@@ -39,8 +39,8 @@ const CompanyAutocomplete = ({ value, onChange, placeholder }) => {
         setOptions(data || []);
         setCreateOption(
           !data?.some(
-            (c) => c.companyName.toLowerCase() === query.toLowerCase()
-          )
+            (c) => c.companyName.toLowerCase() === query.toLowerCase(),
+          ),
         );
       })
       .finally(() => setLoading(false));
@@ -95,7 +95,7 @@ const CompanyAutocomplete = ({ value, onChange, placeholder }) => {
         }}
         onFocus={() => setShowDropdown(true)}
         placeholder={placeholder}
-        className="pr-10 bg-gray-50"
+        className="pr-10 bg-gray-50 min-h-[44px]"
         autoComplete="off"
       />
       {/* Ícono de búsqueda */}
@@ -123,7 +123,7 @@ const CompanyAutocomplete = ({ value, onChange, placeholder }) => {
                 key={company.id}
                 type="button"
                 variant="ghost"
-                className="w-full justify-start rounded-none"
+                className="w-full justify-start rounded-none min-h-[44px]"
                 onClick={() => handleSelect(company)}
               >
                 {company.companyName}
@@ -135,7 +135,7 @@ const CompanyAutocomplete = ({ value, onChange, placeholder }) => {
                 <Button
                   type="button"
                   variant="ghost"
-                  className="w-full justify-start text-blue-600"
+                  className="w-full justify-start text-blue-600 min-h-[44px]"
                   onClick={handleCreate}
                 >
                   Crear nueva empresa: <b className="ml-1">{query}</b>
@@ -146,29 +146,25 @@ const CompanyAutocomplete = ({ value, onChange, placeholder }) => {
         </Card>
       )}
       {/* Sheet para crear empresa */}
-      <Sheet open={showSheet} onOpenChange={setShowSheet}>
-        <SheetContent side="right" className="w-1/2 max-w-2xl">
-          <CompanySheetForm
-            open={showSheet}
-            onClose={() => setShowSheet(false)}
-            initialName={query}
-            onSuccess={(empresa) => {
-              setShowSheet(false);
-              setShowDropdown(false);
-              if (empresa && empresa.companyName) {
-                onChange({
-                  companyName: empresa.companyName,
-                  companyGroupId: empresa.id,
-                  contactPerson: empresa.contactPerson,
-                  phone: empresa.phone,
-                  email: empresa.email,
-                });
-                setQuery(empresa.companyName);
-              }
-            }}
-          />
-        </SheetContent>
-      </Sheet>
+      <CompanySheetForm
+        open={showSheet}
+        onClose={() => setShowSheet(false)}
+        initialName={query}
+        onSuccess={(empresa) => {
+          setShowSheet(false);
+          setShowDropdown(false);
+          if (empresa && empresa.companyName) {
+            onChange({
+              companyName: empresa.companyName,
+              companyGroupId: empresa.id,
+              contactPerson: empresa.contactPerson,
+              phone: empresa.phone,
+              email: empresa.email,
+            });
+            setQuery(empresa.companyName);
+          }
+        }}
+      />
     </div>
   );
 };

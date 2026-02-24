@@ -45,7 +45,7 @@ const EventStatusStepper = ({ currentStatus, onStatusSelect }) => {
           return (
             <div
               key={step.value}
-              className="flex flex-col items-center justify-center bg-white px-2 cursor-pointer group"
+              className="flex flex-col items-center justify-center bg-white px-2 cursor-pointer group min-w-[44px] min-h-[44px]"
               onClick={() => onStatusSelect && onStatusSelect(step.value)}
             >
               <div
@@ -54,8 +54,8 @@ const EventStatusStepper = ({ currentStatus, onStatusSelect }) => {
                   isCompleted
                     ? "bg-green-500 border-green-500 text-white"
                     : isCurrent
-                    ? "bg-blue-600 border-blue-600 text-white shadow-lg scale-110"
-                    : "bg-white border-gray-300 text-gray-400"
+                      ? "bg-blue-600 border-blue-600 text-white shadow-lg scale-110"
+                      : "bg-white border-gray-300 text-gray-400",
                 )}
               >
                 {isCompleted ? (
@@ -69,7 +69,7 @@ const EventStatusStepper = ({ currentStatus, onStatusSelect }) => {
               <span
                 className={cn(
                   "text-xs font-medium mt-2 absolute -bottom-6 transition-colors duration-300 w-max",
-                  isCurrent ? "text-blue-700 font-bold" : "text-gray-500"
+                  isCurrent ? "text-blue-700 font-bold" : "text-gray-500",
                 )}
               >
                 {step.label}

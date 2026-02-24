@@ -50,6 +50,7 @@ export default function AttachmentList({
                     onClick={() => onDownload(attachment.url, attachment.name)}
                     title="Descargar archivo"
                     type="button"
+                    className="min-h-[44px] min-w-[44px]"
                   >
                     <FaFileDownload className="h-4 w-4 text-blue-500" />
                   </Button>
@@ -59,6 +60,7 @@ export default function AttachmentList({
                     onClick={() => onRemove(index)}
                     title="Eliminar archivo"
                     type="button"
+                    className="min-h-[44px] min-w-[44px]"
                   >
                     <FaTrash className="h-4 w-4 text-red-500" />
                   </Button>
@@ -72,7 +74,7 @@ export default function AttachmentList({
       <div className="mt-2">
         <label
           htmlFor="file-upload"
-          className={`cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2 border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 ${
+          className={`cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 min-h-[44px] px-4 py-2 border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 ${
             uploadingFiles ? "opacity-50 cursor-not-allowed" : ""
           }`}
         >

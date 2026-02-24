@@ -48,7 +48,7 @@ const ModalCompany = ({ isOpen, onClose, onSave, companyData, useSheet }) => {
       address: "",
       city: "",
     }),
-    []
+    [],
   );
 
   const [formData, setFormData] = useState(initialFormState);
@@ -68,7 +68,7 @@ const ModalCompany = ({ isOpen, onClose, onSave, companyData, useSheet }) => {
         zodErrors[fieldName] || (touched[fieldName] && !formData[fieldName])
       );
     },
-    [zodErrors, touched, formData]
+    [zodErrors, touched, formData],
   );
 
   // Función para obtener el mensaje de error de un campo
@@ -91,7 +91,7 @@ const ModalCompany = ({ isOpen, onClose, onSave, companyData, useSheet }) => {
       }
       return null;
     },
-    [zodErrors, touched, formData]
+    [zodErrors, touched, formData],
   );
   // Declarar resetForm primero
   const resetForm = useCallback(() => {
@@ -142,7 +142,7 @@ const ModalCompany = ({ isOpen, onClose, onSave, companyData, useSheet }) => {
         });
       }
     },
-    [zodErrors]
+    [zodErrors],
   );
 
   const handleSelectChange = useCallback(
@@ -159,7 +159,7 @@ const ModalCompany = ({ isOpen, onClose, onSave, companyData, useSheet }) => {
         });
       }
     },
-    [zodErrors]
+    [zodErrors],
   );
 
   const handleBlur = useCallback((e) => {
@@ -263,7 +263,7 @@ const ModalCompany = ({ isOpen, onClose, onSave, companyData, useSheet }) => {
         setIsLoading(false);
       }
     },
-    [formData, onSave, handleClose]
+    [formData, onSave, handleClose],
   );
 
   if (!isOpen) return null;
@@ -280,8 +280,8 @@ const ModalCompany = ({ isOpen, onClose, onSave, companyData, useSheet }) => {
             notification.type === "error"
               ? "destructive"
               : notification.type === "info"
-              ? "default"
-              : "success"
+                ? "default"
+                : "success"
           }
         >
           <AlertTitle>
@@ -475,11 +475,21 @@ const ModalCompany = ({ isOpen, onClose, onSave, companyData, useSheet }) => {
 
         <Separator className="my-4" />
 
-        <div className="flex justify-end gap-2 mt-4">
-          <Button type="button" onClick={handleClose} variant="outline">
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 mt-6">
+          <Button
+            type="button"
+            onClick={handleClose}
+            variant="outline"
+            className="w-full sm:w-auto min-h-[44px]"
+          >
             <Trans>Cancelar</Trans>
           </Button>
-          <Button type="submit" disabled={isLoading} variant="default">
+          <Button
+            type="submit"
+            disabled={isLoading}
+            variant="default"
+            className="w-full sm:w-auto min-h-[44px]"
+          >
             {isLoading && (
               <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent" />
             )}
@@ -493,7 +503,7 @@ const ModalCompany = ({ isOpen, onClose, onSave, companyData, useSheet }) => {
   // Si se usa en Sheet, no mostrar Dialog, solo el contenido del formulario
   if (useSheet) {
     return (
-      <div className="p-4">
+      <div className="p-4 sm:p-6">
         <h2 className="text-2xl font-bold mb-6 text-gray-900">
           Crear Empresa / Grupo / Persona
         </h2>

@@ -46,7 +46,7 @@ const Login = () => {
         {
           email,
           password,
-        }
+        },
       );
 
       // Manejar errores de autenticación
@@ -56,17 +56,17 @@ const Login = () => {
         // Mapear mensajes de error específicos
         if (authError.message.includes("Invalid login credentials")) {
           setError(
-            "Correo electrónico o contraseña incorrecta. Verifique sus datos."
+            "Correo electrónico o contraseña incorrecta. Verifique sus datos.",
           );
         } else if (authError.message.includes("Email not confirmed")) {
           setError(
-            "Su correo electrónico no ha sido confirmado. Por favor revise su bandeja de entrada."
+            "Su correo electrónico no ha sido confirmado. Por favor revise su bandeja de entrada.",
           );
         } else if (authError.message.includes("Invalid email")) {
           setError("El formato del correo electrónico no es válido.");
         } else if (authError.message.includes("rate limit")) {
           setError(
-            "Ha excedido el número de intentos. Por favor espere unos minutos."
+            "Ha excedido el número de intentos. Por favor espere unos minutos.",
           );
         } else {
           setError("No se pudo iniciar sesión. Verifique sus credenciales.");
@@ -79,7 +79,7 @@ const Login = () => {
       // Verificar que tenemos datos de usuario
       if (!data || !data.user) {
         console.error(
-          "No se recibieron datos de usuario después de la autenticación"
+          "No se recibieron datos de usuario después de la autenticación",
         );
         setError("Error al iniciar sesión. Por favor, inténtelo de nuevo.");
         setIsLoading(false);
@@ -116,7 +116,7 @@ const Login = () => {
           id: data.user.id,
           username: userData.username,
           role: userData.role,
-        })
+        }),
       );
 
       console.log("Inicio de sesión exitoso, redirigiendo...");
@@ -129,26 +129,26 @@ const Login = () => {
       // Intentar proporcionar un mensaje de error útil
       if (err.status === 400) {
         setError(
-          "Credenciales inválidas. Por favor verifique su correo y contraseña."
+          "Credenciales inválidas. Por favor verifique su correo y contraseña.",
         );
       } else if (err.status === 422) {
         setError(
-          "Datos de inicio de sesión inválidos. Verifique el formato de su correo."
+          "Datos de inicio de sesión inválidos. Verifique el formato de su correo.",
         );
       } else if (err.status === 429) {
         setError(
-          "Demasiados intentos. Por favor, espere unos minutos e inténtelo de nuevo."
+          "Demasiados intentos. Por favor, espere unos minutos e inténtelo de nuevo.",
         );
       } else if (err.status === 500) {
         setError(
-          "Error del servidor. Nuestro equipo ha sido notificado, por favor intente más tarde."
+          "Error del servidor. Nuestro equipo ha sido notificado, por favor intente más tarde.",
         );
       } else if (err.message && err.message.includes("network")) {
         setError("Error de conexión. Verifique su conexión a internet.");
       } else {
         setError(
           err.message ||
-            "Ocurrió un error inesperado al iniciar sesión. Intente nuevamente."
+            "Ocurrió un error inesperado al iniciar sesión. Intente nuevamente.",
         );
       }
     } finally {
@@ -160,7 +160,7 @@ const Login = () => {
   const user = JSON.parse(localStorage.getItem("user") || "null");
 
   return (
-    <div className="flex min-h-screen h-screen w-screen bg-gradient-to-br from-indigo-50 to-white">
+    <div className="flex min-h-screen bg-gradient-to-br from-indigo-50 to-white">
       {/* Left Side - Illustration/Info Panel */}
       <div className="hidden lg:flex lg:w-1/2 bg-indigo-600 flex-col justify-center items-center p-12 text-white h-full min-h-screen">
         <div className="max-w-md">
@@ -201,7 +201,7 @@ const Login = () => {
       </div>
 
       {/* Right Side - Login Form */}
-      <div className="w-full lg:w-1/2 flex flex-col justify-center px-8 sm:px-16 lg:px-24 h-full min-h-screen">
+      <div className="w-full lg:w-1/2 flex flex-col justify-center px-4 sm:px-12 md:px-16 lg:px-24 min-h-screen py-12">
         <div className="absolute top-4 right-4 z-50">
           <LanguageSwitcher />
         </div>

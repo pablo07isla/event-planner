@@ -54,30 +54,30 @@ export default function SectionCards({
   const eventsToday = events.filter(
     (e) =>
       isSameDay(parseToLocalDate(e.start), today) &&
-      e.eventStatus !== "Cancelado"
+      e.eventStatus !== "Cancelado",
   );
   const eventsTomorrow = events.filter(
     (e) =>
       isSameDay(parseToLocalDate(e.start), tomorrow) &&
-      e.eventStatus !== "Cancelado"
+      e.eventStatus !== "Cancelado",
   );
   const eventsAfterTomorrow = events.filter(
     (e) =>
       isSameDay(parseToLocalDate(e.start), afterTomorrow) &&
-      e.eventStatus !== "Cancelado"
+      e.eventStatus !== "Cancelado",
   );
 
   const totalPeopleToday = eventsToday.reduce(
     (acc, e) => acc + (parseInt(e.peopleCount) || 0),
-    0
+    0,
   );
   const totalPeopleTomorrow = eventsTomorrow.reduce(
     (acc, e) => acc + (parseInt(e.peopleCount) || 0),
-    0
+    0,
   );
   const totalPeopleAfterTomorrow = eventsAfterTomorrow.reduce(
     (acc, e) => acc + (parseInt(e.peopleCount) || 0),
-    0
+    0,
   );
 
   const afterTomorrowDayName = afterTomorrow.toLocaleDateString("es-ES", {
@@ -118,7 +118,7 @@ export default function SectionCards({
 
       // Check if no food detected but event has people
       const hasMeals = Object.values(mealGroups).some(
-        (items) => items && items.length > 0
+        (items) => items && items.length > 0,
       );
 
       if (!hasMeals && event.peopleCount > 0) {
@@ -130,7 +130,7 @@ export default function SectionCards({
           allWarnings.push(
             `Evento "${event.companyName || event.title}" (${
               event.peopleCount
-            } pax) no tiene comida detectada.`
+            } pax) no tiene comida detectada.`,
           );
         }
       }
@@ -198,7 +198,7 @@ export default function SectionCards({
     // Calculate totals
     const totalPaxInEvents = dayEvents.reduce(
       (sum, e) => sum + (e.peopleCount || 0),
-      0
+      0,
     );
     const totalFoodQuantity = Object.values(sortedMealGroups)
       .flat()
@@ -207,7 +207,7 @@ export default function SectionCards({
     // Simple warning for big mismatch
     if (totalFoodQuantity < totalPaxInEvents * 0.5 && totalPaxInEvents > 0) {
       allWarnings.push(
-        "⚠️ Alerta: Cantidad total de comida parece baja respecto al número de personas."
+        "⚠️ Alerta: Cantidad total de comida parece baja respecto al número de personas.",
       );
     }
 
@@ -265,14 +265,14 @@ export default function SectionCards({
               {/* AI Button */}
               {!loading && events.length > 0 && (
                 <button
-                  className="p-2 rounded hover:bg-purple-100 transition ml-2 text-purple-600 border border-purple-200 bg-white"
+                  className="p-2 rounded hover:bg-purple-100 transition ml-2 text-purple-600 border border-purple-200 bg-white min-h-[44px] min-w-[44px] flex items-center justify-center"
                   title="Ver Análisis de Catering (IA)"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleViewAnalysis(events, title, date);
                   }}
                 >
-                  <Sparkles className="h-6 w-6" />
+                  <Sparkles className="h-5 w-5" />
                 </button>
               )}
 
@@ -308,11 +308,11 @@ export default function SectionCards({
                 >
                   {({ loading: pdfLoading }) => (
                     <button
-                      className="p-2 rounded hover:bg-gray-200 transition"
+                      className="p-2 rounded hover:bg-gray-200 transition min-h-[44px] min-w-[44px] flex items-center justify-center"
                       title="Descargar PDF"
                       disabled={pdfLoading}
                     >
-                      <IconPrinter className="h-6 w-6 text-gray-700" />
+                      <IconPrinter className="h-5 w-5 text-gray-700" />
                     </button>
                   )}
                 </PDFDownloadLink>

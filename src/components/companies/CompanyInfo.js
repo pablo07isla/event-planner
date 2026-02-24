@@ -18,7 +18,7 @@ const CompanyInfo = ({ company, onAdd }) => {
           onClick={() => onAdd(company)}
           variant="ghost"
           size="icon"
-          className="text-blue-600 hover:text-blue-800 hover:bg-blue-100"
+          className="text-blue-600 hover:text-blue-800 hover:bg-blue-100 min-h-[44px] min-w-[44px]"
           title="Agregar esta empresa al formulario"
           aria-label="Agregar empresa"
         >

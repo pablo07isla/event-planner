@@ -220,7 +220,7 @@ const SearchEvents = () => {
 
   const handleCompanySuccess = (updatedCompany) => {
     setCompanySearchResults((prev) =>
-      prev.map((c) => (c.id === updatedCompany.id ? updatedCompany : c))
+      prev.map((c) => (c.id === updatedCompany.id ? updatedCompany : c)),
     );
     setCompanySheetOpen(false);
   };
@@ -270,7 +270,7 @@ const SearchEvents = () => {
     XLSX.utils.book_append_sheet(wb, ws, "Eventos");
     const fileName = `listado_eventos_${format(
       new Date(),
-      "yyyy-MM-dd_HH-mm"
+      "yyyy-MM-dd_HH-mm",
     )}.xlsx`;
     XLSX.writeFile(wb, fileName);
   };
@@ -286,111 +286,106 @@ const SearchEvents = () => {
       />
       <SidebarInset>
         <SiteHeader />
-        <div className="flex-1 flex flex-col min-h-0 min-w-0 overflow-hidden">
-          <div className="flex-1 min-h-0 min-w-0 overflow-auto p-4 lg:p-6">
-            <div className="flex-1 p-8 overflow-auto">
-              <h1 className="text-4xl font-bold tracking-tight mb-2">
-                Búsqueda
-              </h1>
-              <p className="text-muted-foreground mb-8">
-                Encuentra y gestiona eventos y empresas
-              </p>
+        <main className="flex-1 overflow-auto bg-background p-4 sm:p-6 lg:p-8">
+          <div className="max-w-7xl mx-auto w-full">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight mb-2">
+              Búsqueda
+            </h1>
+            <p className="text-muted-foreground mb-6 sm:mb-8 text-sm sm:text-base">
+              Encuentra y gestiona eventos y empresas
+            </p>
 
-              <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="grid w-full grid-cols-2 mb-6">
-                  <TabsTrigger
-                    value="events"
-                    className="flex items-center gap-2"
-                  >
-                    <Calendar className="h-4 w-4" />
-                    Eventos
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="companies"
-                    className="flex items-center gap-2"
-                  >
-                    <Building className="h-4 w-4" />
-                    Empresas
-                  </TabsTrigger>
-                </TabsList>
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="grid w-full grid-cols-2 mb-4 sm:mb-6">
+                <TabsTrigger value="events" className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  Eventos
+                </TabsTrigger>
+                <TabsTrigger
+                  value="companies"
+                  className="flex items-center gap-2"
+                >
+                  <Building className="h-4 w-4" />
+                  Empresas
+                </TabsTrigger>
+              </TabsList>
 
-                <TabsContent value="events">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Filtros de Búsqueda</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <EventSearchFilters
-                        searchMode={searchMode}
-                        setSearchMode={setSearchMode}
-                        searchTerm={searchTerm}
-                        setSearchTerm={setSearchTerm}
-                        companyId={companyId}
-                        setCompanyId={setCompanyId}
-                        singleDate={singleDate}
-                        setSingleDate={setSingleDate}
-                        startDate={startDate}
-                        setStartDate={setStartDate}
-                        endDate={endDate}
-                        setEndDate={setEndDate}
-                        handleSearch={handleSearch}
-                      />
-                    </CardContent>
-                  </Card>
+              <TabsContent value="events">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Filtros de Búsqueda</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <EventSearchFilters
+                      searchMode={searchMode}
+                      setSearchMode={setSearchMode}
+                      searchTerm={searchTerm}
+                      setSearchTerm={setSearchTerm}
+                      companyId={companyId}
+                      setCompanyId={setCompanyId}
+                      singleDate={singleDate}
+                      setSingleDate={setSingleDate}
+                      startDate={startDate}
+                      setStartDate={setStartDate}
+                      endDate={endDate}
+                      setEndDate={setEndDate}
+                      handleSearch={handleSearch}
+                    />
+                  </CardContent>
+                </Card>
 
-                  <EventResultsTable
-                    searchResults={searchResults}
-                    loading={eventLoading}
-                    error={eventError}
-                    handleViewEvent={handleViewEvent}
-                    handleDownloadExcel={handleDownloadExcel}
-                  />
-                </TabsContent>
+                <EventResultsTable
+                  searchResults={searchResults}
+                  loading={eventLoading}
+                  error={eventError}
+                  handleViewEvent={handleViewEvent}
+                  handleDownloadExcel={handleDownloadExcel}
+                />
+              </TabsContent>
 
-                <TabsContent value="companies">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Filtros de Búsqueda de Empresas</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <CompanySearchFilters
-                        companySearchTerm={companySearchTerm}
-                        setCompanySearchTerm={setCompanySearchTerm}
-                        companyIdType={companyIdType}
-                        setCompanyIdType={setCompanyIdType}
-                        companyIdNumber={companyIdNumber}
-                        setCompanyIdNumber={setCompanyIdNumber}
-                        handleCompanySearch={handleCompanySearch}
-                      />
-                    </CardContent>
-                  </Card>
+              <TabsContent value="companies">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Filtros de Búsqueda de Empresas</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <CompanySearchFilters
+                      companySearchTerm={companySearchTerm}
+                      setCompanySearchTerm={setCompanySearchTerm}
+                      companyIdType={companyIdType}
+                      setCompanyIdType={setCompanyIdType}
+                      companyIdNumber={companyIdNumber}
+                      setCompanyIdNumber={setCompanyIdNumber}
+                      handleCompanySearch={handleCompanySearch}
+                    />
+                  </CardContent>
+                </Card>
 
-                  <CompanyResultsTable
-                    companySearchResults={companySearchResults}
-                    loading={companyLoading}
-                    error={companyError}
-                    handleViewCompany={handleViewCompany}
-                  />
-                </TabsContent>
-              </Tabs>
+                <CompanyResultsTable
+                  companySearchResults={companySearchResults}
+                  loading={companyLoading}
+                  error={companyError}
+                  handleViewCompany={handleViewCompany}
+                />
+              </TabsContent>
+            </Tabs>
 
-              <ModalEvent
-                isOpen={modalOpen}
-                onClose={() => setModalOpen(false)}
-                onSave={handleSaveEvent}
-                onDelete={handleDeleteEvent}
-                event={currentEvent}
-              />
+            <ModalEvent
+              isOpen={modalOpen}
+              onClose={() => setModalOpen(false)}
+              onSave={handleSaveEvent}
+              onDelete={handleDeleteEvent}
+              event={currentEvent}
+            />
 
-              <CompanyEditSheet
-                open={companySheetOpen}
-                onClose={() => setCompanySheetOpen(false)}
-                company={currentCompany}
-                onSuccess={handleCompanySuccess}
-              />
-            </div>
+            <CompanyEditSheet
+              open={companySheetOpen}
+              onClose={() => setCompanySheetOpen(false)}
+              company={currentCompany}
+              onSuccess={handleCompanySuccess}
+            />
           </div>
-        </div>
+        </main>
       </SidebarInset>
     </div>
   );

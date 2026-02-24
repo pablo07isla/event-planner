@@ -152,7 +152,7 @@ export default function EventForm({
           const matchingContact = data.find(
             (c) =>
               c.full_name?.trim().toLowerCase() ===
-              currentContactName.trim().toLowerCase()
+              currentContactName.trim().toLowerCase(),
           );
           if (matchingContact) {
             form.setValue("contact_id", matchingContact.id);
@@ -302,7 +302,7 @@ export default function EventForm({
 
     const totalPaid = updatedHistory.reduce(
       (sum, p) => sum + (parseFloat(p.amount) || 0),
-      0
+      0,
     );
 
     form.setValue("paymentHistory", updatedHistory);
@@ -315,7 +315,7 @@ export default function EventForm({
 
     const totalPaid = updatedHistory.reduce(
       (sum, p) => sum + (parseFloat(p.amount) || 0),
-      0
+      0,
     );
 
     form.setValue("paymentHistory", updatedHistory);
@@ -604,16 +604,16 @@ export default function EventForm({
                           } else {
                             // Auto-fill other fields based on selection
                             const selectedContact = companyContacts.find(
-                              (c) => c.id === val
+                              (c) => c.id === val,
                             );
                             if (selectedContact) {
                               form.setValue(
                                 "contactName",
-                                selectedContact.full_name
+                                selectedContact.full_name,
                               );
                               form.setValue(
                                 "contactPhone",
-                                selectedContact.phone
+                                selectedContact.phone,
                               );
                               form.setValue("email", selectedContact.email);
                             }
@@ -912,11 +912,11 @@ export default function EventForm({
           onDownload={handleDownloadAttachment}
         />
 
-        <div className="flex justify-end space-x-2 pt-4 border-t">
+        <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t mt-8">
           {event && event.id && (
             <Button
               type="button"
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              className="bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto min-h-[44px] order-3 sm:order-none"
               onClick={onGeneratePdf}
             >
               <FaFilePdf className="mr-2" />
@@ -924,14 +924,21 @@ export default function EventForm({
             </Button>
           )}
 
-          <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700">
+          <Button
+            type="submit"
+            className="bg-indigo-600 hover:bg-indigo-700 w-full sm:w-auto min-h-[44px] order-1 sm:order-none"
+          >
             Guardar
           </Button>
 
           {event && event.id && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button type="button" variant="destructive">
+                <Button
+                  type="button"
+                  variant="destructive"
+                  className="w-full sm:w-auto min-h-[44px] order-4 sm:order-none"
+                >
                   Eliminar
                 </Button>
               </AlertDialogTrigger>
@@ -943,11 +950,13 @@ export default function EventForm({
                     acción no se puede deshacer.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogFooter className="flex-col-reverse sm:flex-row gap-2 sm:space-x-2">
+                  <AlertDialogCancel className="w-full sm:w-auto min-h-[44px] mt-0">
+                    Cancelar
+                  </AlertDialogCancel>
                   <AlertDialogAction
                     onClick={() => onDelete(event.id)}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90 w-full sm:w-auto min-h-[44px]"
                   >
                     Eliminar
                   </AlertDialogAction>
@@ -969,14 +978,17 @@ export default function EventForm({
                   <strong>{statusPendingConfirmation}</strong>?
                 </AlertDialogDescription>
               </AlertDialogHeader>
-              <AlertDialogFooter className="flex-row justify-end gap-2">
+              <AlertDialogFooter className="flex-col-reverse sm:flex-row justify-end gap-2 sm:space-x-2">
                 <AlertDialogCancel
-                  className="mt-0"
+                  className="w-full sm:w-auto min-h-[44px] mt-0"
                   onClick={() => setStatusPendingConfirmation(null)}
                 >
                   Cancelar
                 </AlertDialogCancel>
-                <AlertDialogAction onClick={confirmStatusChange}>
+                <AlertDialogAction
+                  className="w-full sm:w-auto min-h-[44px]"
+                  onClick={confirmStatusChange}
+                >
                   Confirmar
                 </AlertDialogAction>
               </AlertDialogFooter>
@@ -986,7 +998,7 @@ export default function EventForm({
           <Button
             type="button"
             variant="outline"
-            className="border-gray-300 text-gray-700 hover:bg-gray-200"
+            className="border-gray-300 text-gray-700 hover:bg-gray-200 w-full sm:w-auto min-h-[44px] order-2 sm:order-none"
             onClick={onClose}
           >
             Cancelar

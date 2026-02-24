@@ -74,7 +74,7 @@ export default function PaymentHistory({
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="text-destructive hover:text-destructive/90"
+                      className="text-destructive hover:text-destructive/90 min-h-[44px] min-w-[44px]"
                       onClick={() => onDeletePayment(index)}
                       type="button"
                     >
@@ -119,6 +119,7 @@ export default function PaymentHistory({
           <Input
             type="date"
             value={newPayment.date}
+            className="min-h-[44px]"
             onChange={(e) =>
               setNewPayment({ ...newPayment, date: e.target.value })
             }
@@ -131,6 +132,7 @@ export default function PaymentHistory({
           <Input
             type="number"
             value={newPayment.amount}
+            className="min-h-[44px]"
             onChange={(e) =>
               setNewPayment({ ...newPayment, amount: e.target.value })
             }
@@ -144,6 +146,7 @@ export default function PaymentHistory({
           <Input
             type="text"
             value={newPayment.description}
+            className="min-h-[44px]"
             onChange={(e) =>
               setNewPayment({
                 ...newPayment,
@@ -156,7 +159,7 @@ export default function PaymentHistory({
         <div>
           <Button
             onClick={handleAdd}
-            className="w-full bg-indigo-600 hover:bg-indigo-700"
+            className="w-full bg-indigo-600 hover:bg-indigo-700 min-h-[44px]"
             type="button"
           >
             <FaPlus className="mr-2 h-4 w-4" /> Agregar

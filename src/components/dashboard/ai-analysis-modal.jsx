@@ -305,11 +305,11 @@ export default function AIAnalysisModal({
         <DialogFooter className="sm:justify-between gap-4 sm:gap-0">
           <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             {results && !loading && (
-              <div className="flex gap-2 w-full sm:w-auto">
+              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                 <Button
                   type="button"
                   variant="outline"
-                  className="flex-1 sm:flex-none gap-2"
+                  className="flex-1 sm:flex-none gap-2 min-h-[44px]"
                   onClick={handleCopy}
                 >
                   {copied ? (
@@ -322,7 +322,7 @@ export default function AIAnalysisModal({
 
                 <Button
                   type="button"
-                  className="flex-1 sm:flex-none gap-2 bg-[#E2231A] hover:bg-[#c91f16] text-white border-0"
+                  className="flex-1 sm:flex-none gap-2 bg-[#E2231A] hover:bg-[#c91f16] text-white border-0 min-h-[44px]"
                   onClick={handleGeneratePDF}
                 >
                   <FaFilePdf className="h-4 w-4" />
@@ -331,7 +331,7 @@ export default function AIAnalysisModal({
 
                 <Button
                   type="button"
-                  className="flex-1 sm:flex-none bg-[#4A154B] hover:bg-[#3d113d] text-white gap-2"
+                  className="flex-1 sm:flex-none bg-[#4A154B] hover:bg-[#3d113d] text-white gap-2 min-h-[44px]"
                   onClick={handleSendToSlack}
                   disabled={isSending}
                 >
@@ -350,7 +350,12 @@ export default function AIAnalysisModal({
             <div className="text-xs text-muted-foreground hidden sm:block">
               <Trans>Powered by Google Gemini</Trans>
             </div>
-            <Button type="button" variant="secondary" onClick={onClose}>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={onClose}
+              className="w-full sm:w-auto min-h-[44px]"
+            >
               <Trans>Cerrar</Trans>
             </Button>
           </div>
