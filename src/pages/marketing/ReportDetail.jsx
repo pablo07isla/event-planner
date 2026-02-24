@@ -68,10 +68,42 @@ const VisualRenderer = ({ viz }) => {
     "#ec4899",
   ];
 
+  // ──────────────────────────────────────────────────────────
+  // SMART KEY DETECTION: Automatically detect x/y keys from
+  // the actual data objects instead of blindly trusting config.
+  // ──────────────────────────────────────────────────────────
+  const detectKeys = (firstItem) => {
+    if (!firstItem || typeof firstItem !== "object")
+      return { xKey: "name", yKey: "value" };
+    const keys = Object.keys(firstItem);
+    // The string key is the xAxis, the numeric key is the yAxis
+    const stringKeys = keys.filter((k) => typeof firstItem[k] === "string");
+    const numericKeys = keys.filter((k) => typeof firstItem[k] === "number");
+
+    // Prefer config values if they actually exist in the data
+    let xKey =
+      config?.xAxis && keys.includes(config.xAxis)
+        ? config.xAxis
+        : stringKeys[0] || keys[0] || "name";
+    let yKey =
+      config?.yAxis && keys.includes(config.yAxis)
+        ? config.yAxis
+        : numericKeys[0] || keys[1] || "value";
+
+    return { xKey, yKey };
+  };
+
   // Helper to normalize data for Recharts
   let chartData = [];
-  if (Array.isArray(data)) {
+  let resolvedXKey = config?.xAxis || "name";
+  let resolvedYKey = config?.yAxis || "value";
+
+  if (Array.isArray(data) && data.length > 0) {
     chartData = data;
+    // Auto-detect keys from the first element
+    const detected = detectKeys(data[0]);
+    resolvedXKey = detected.xKey;
+    resolvedYKey = detected.yKey;
   } else if (typeof data === "object" && data !== null) {
     const keys = Object.keys(data);
 
@@ -79,36 +111,52 @@ const VisualRenderer = ({ viz }) => {
     const arrayValues = keys.filter((k) => Array.isArray(data[k]));
 
     if (arrayValues.length >= 2) {
-      // Assume the first array is the axis (labels) and the second is values
-      // Or prefer "labels", "categories", "x" as axis
       const axisKey =
         keys.find((k) =>
-          ["labels", "categories", "x", "axis"].includes(k.toLowerCase())
+          ["labels", "categories", "x", "axis"].includes(k.toLowerCase()),
         ) || arrayValues[0];
       const valueKey =
         keys.find((k) => k !== axisKey && Array.isArray(data[k])) ||
         arrayValues[1];
 
       if (data[axisKey] && data[valueKey]) {
+        resolvedXKey = "name";
+        resolvedYKey = "value";
         chartData = data[axisKey].map((label, i) => ({
-          [config?.xAxis || "name"]: label,
-          [config?.yAxis || "value"]: data[valueKey][i] || 0,
+          name: label,
+          value:
+            typeof data[valueKey][i] === "number"
+              ? data[valueKey][i]
+              : parseFloat(data[valueKey][i]) || 0,
         }));
       } else {
-        // Fallback to simple key-value if parallel array detection fails
+        resolvedXKey = "name";
+        resolvedYKey = "value";
         chartData = Object.entries(data).map(([key, value]) => ({
-          [config?.xAxis || "name"]: key,
-          [config?.yAxis || "value"]: value,
+          name: key,
+          value: typeof value === "number" ? value : parseFloat(value) || 0,
         }));
       }
     } else {
       // Standard Key-Value (e.g. { "Social": 10, "Corporate": 20 })
+      resolvedXKey = "name";
+      resolvedYKey = "value";
       chartData = Object.entries(data).map(([key, value]) => ({
-        [config?.xAxis || "name"]: key,
-        [config?.yAxis || "value"]: value,
+        name: key,
+        value: typeof value === "number" ? value : parseFloat(value) || 0,
       }));
     }
   }
+
+  // Safety: coerce string numbers to actual numbers in chartData
+  chartData = chartData.map((item) => {
+    const newItem = { ...item };
+    if (typeof newItem[resolvedYKey] === "string") {
+      newItem[resolvedYKey] =
+        parseFloat(newItem[resolvedYKey].replace(/[^0-9.-]/g, "")) || 0;
+    }
+    return newItem;
+  });
 
   const renderChart = () => {
     switch (type) {
@@ -121,7 +169,7 @@ const VisualRenderer = ({ viz }) => {
               stroke="#e2e8f0"
             />
             <XAxis
-              dataKey={config?.xAxis || "name"}
+              dataKey={resolvedXKey}
               axisLine={false}
               tickLine={false}
               tick={{ fontSize: 11, fill: "#64748b" }}
@@ -132,11 +180,33 @@ const VisualRenderer = ({ viz }) => {
               tick={{ fontSize: 11, fill: "#64748b" }}
             />
             <Tooltip
+              formatter={(value, name) => {
+                // Formatting heuristics: check if key name hints at currency
+                const yKeyLower = (resolvedYKey || "").toLowerCase();
+                const isCurrency =
+                  yKeyLower.includes("ingreso") ||
+                  yKeyLower.includes("revenue") ||
+                  yKeyLower.includes("costo") ||
+                  yKeyLower.includes("presupuesto") ||
+                  yKeyLower.includes("total") ||
+                  yKeyLower.includes("ticket");
+                const formattedValue = isCurrency
+                  ? new Intl.NumberFormat("es-CO", {
+                      style: "currency",
+                      currency: "COP",
+                      minimumFractionDigits: 0,
+                    }).format(value)
+                  : typeof value === "number"
+                    ? value.toLocaleString("es-CO")
+                    : value;
+                return [formattedValue, name];
+              }}
               contentStyle={{
                 borderRadius: "8px",
-                border: "none",
-                boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                border: "1px solid #e2e8f0",
+                boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)",
                 fontSize: "12px",
+                fontFamily: "inherit",
               }}
             />
             {config?.legend !== false && (
@@ -146,7 +216,7 @@ const VisualRenderer = ({ viz }) => {
               />
             )}
             <Bar
-              dataKey={config?.yAxis || "value"}
+              dataKey={resolvedYKey}
               fill={colors[0]}
               radius={[4, 4, 0, 0]}
               barSize={40}
@@ -169,7 +239,7 @@ const VisualRenderer = ({ viz }) => {
               stroke="#e2e8f0"
             />
             <XAxis
-              dataKey={config?.xAxis || "name"}
+              dataKey={resolvedXKey}
               axisLine={false}
               tickLine={false}
               tick={{ fontSize: 11, fill: "#64748b" }}
@@ -180,11 +250,32 @@ const VisualRenderer = ({ viz }) => {
               tick={{ fontSize: 11, fill: "#64748b" }}
             />
             <Tooltip
+              formatter={(value, name) => {
+                const yKeyLower = (resolvedYKey || "").toLowerCase();
+                const isCurrency =
+                  yKeyLower.includes("ingreso") ||
+                  yKeyLower.includes("revenue") ||
+                  yKeyLower.includes("costo") ||
+                  yKeyLower.includes("presupuesto") ||
+                  yKeyLower.includes("total") ||
+                  yKeyLower.includes("ticket");
+                const formattedValue = isCurrency
+                  ? new Intl.NumberFormat("es-CO", {
+                      style: "currency",
+                      currency: "COP",
+                      minimumFractionDigits: 0,
+                    }).format(value)
+                  : typeof value === "number"
+                    ? value.toLocaleString("es-CO")
+                    : value;
+                return [formattedValue, name];
+              }}
               contentStyle={{
                 borderRadius: "8px",
-                border: "none",
-                boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                border: "1px solid #e2e8f0",
+                boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)",
                 fontSize: "12px",
+                fontFamily: "inherit",
               }}
             />
             {config?.legend !== false && (
@@ -195,7 +286,7 @@ const VisualRenderer = ({ viz }) => {
             )}
             <Line
               type="monotone"
-              dataKey={config?.yAxis || "value"}
+              dataKey={resolvedYKey}
               stroke={colors[0]}
               strokeWidth={3}
               dot={{ r: 4, fill: colors[0], strokeWidth: 2, stroke: "#fff" }}
@@ -211,8 +302,8 @@ const VisualRenderer = ({ viz }) => {
               innerRadius={60}
               outerRadius={80}
               paddingAngle={5}
-              dataKey={config?.yAxis || "value"}
-              nameKey={config?.xAxis || "name"}
+              dataKey={resolvedYKey}
+              nameKey={resolvedXKey}
             >
               {chartData.map((entry, index) => (
                 <Cell
@@ -222,11 +313,32 @@ const VisualRenderer = ({ viz }) => {
               ))}
             </Pie>
             <Tooltip
+              formatter={(value, name) => {
+                const yKeyLower = (resolvedYKey || "").toLowerCase();
+                const isCurrency =
+                  yKeyLower.includes("ingreso") ||
+                  yKeyLower.includes("revenue") ||
+                  yKeyLower.includes("costo") ||
+                  yKeyLower.includes("presupuesto") ||
+                  yKeyLower.includes("total") ||
+                  yKeyLower.includes("ticket");
+                const formattedValue = isCurrency
+                  ? new Intl.NumberFormat("es-CO", {
+                      style: "currency",
+                      currency: "COP",
+                      minimumFractionDigits: 0,
+                    }).format(value)
+                  : typeof value === "number"
+                    ? value.toLocaleString("es-CO")
+                    : value;
+                return [formattedValue, name];
+              }}
               contentStyle={{
                 borderRadius: "8px",
-                border: "none",
-                boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                border: "1px solid #e2e8f0",
+                boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)",
                 fontSize: "12px",
+                fontFamily: "inherit",
               }}
             />
             {config?.legend !== false && (
@@ -239,10 +351,10 @@ const VisualRenderer = ({ viz }) => {
         );
       default:
         return (
-          <div className="flex flex-col items-center justify-center h-full text-slate-400">
-            <Bot className="h-8 w-8 mb-2 opacity-20" />
-            <p className="text-xs uppercase tracking-widest leading-loose">
-              {type} chart not supported
+          <div className="flex flex-col items-center justify-center h-full text-slate-300">
+            <Bot className="h-8 w-8 mb-2 opacity-30" />
+            <p className="text-xs font-medium uppercase tracking-widest leading-loose">
+              Gráfico no disponible o datos insuficientes
             </p>
           </div>
         );
@@ -319,7 +431,7 @@ export default function ReportDetail() {
             action: "generate_strategy",
             report_id: id,
           },
-        }
+        },
       );
 
       if (error) throw error;
@@ -386,11 +498,11 @@ export default function ReportDetail() {
                             return format(
                               new Date(date.getTime() + userTimezoneOffset),
                               "d MMM yyyy",
-                              { locale: es }
+                              { locale: es },
                             );
                           };
                           return `${formatDate(
-                            report.period_start
+                            report.period_start,
                           )} - ${formatDate(report.period_end)}`;
                         })()}
                       </span>
@@ -430,10 +542,11 @@ export default function ReportDetail() {
                       return (
                         <Card>
                           <CardHeader>
-                            <CardTitle>Analista de Datos (IA)</CardTitle>
+                            <CardTitle>Análisis de Mercado (IA)</CardTitle>
                             <CardDescription>
-                              Informe basado en datos crudos de eventos y
-                              empresas.
+                              Diagnóstico de tendencias y rendimiento financiero
+                              de la operación basándose en el historial de
+                              eventos.
                             </CardDescription>
                           </CardHeader>
                           <CardContent>
@@ -465,7 +578,7 @@ export default function ReportDetail() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                               <div className="space-y-2">
                                 <h4 className="font-semibold text-sm uppercase tracking-wider text-slate-500">
-                                  Hallazgos Clave
+                                  Principales Hallazgos
                                 </h4>
                                 <ul className="space-y-1">
                                   {data.executiveSummary?.keyFindings?.map(
@@ -479,13 +592,13 @@ export default function ReportDetail() {
                                         </span>
                                         {f}
                                       </li>
-                                    )
+                                    ),
                                   )}
                                 </ul>
                               </div>
                               <div className="space-y-2">
                                 <h4 className="font-semibold text-sm uppercase tracking-wider text-slate-500">
-                                  Insights Críticos
+                                  Oportunidades Críticas
                                 </h4>
                                 <ul className="space-y-1">
                                   {data.executiveSummary?.criticalInsights?.map(
@@ -499,7 +612,7 @@ export default function ReportDetail() {
                                         </span>
                                         {f}
                                       </li>
-                                    )
+                                    ),
                                   )}
                                 </ul>
                               </div>
@@ -529,8 +642,8 @@ export default function ReportDetail() {
                                       kpi.status === "good"
                                         ? "bg-emerald-50 text-emerald-600"
                                         : kpi.status === "warning"
-                                        ? "bg-amber-50 text-amber-600"
-                                        : "bg-rose-50 text-rose-600"
+                                          ? "bg-amber-50 text-amber-600"
+                                          : "bg-rose-50 text-rose-600"
                                     }`}
                                   >
                                     <span className="text-xl">
@@ -547,16 +660,16 @@ export default function ReportDetail() {
                                         kpi.trend.direction === "up"
                                           ? "text-emerald-600 bg-emerald-50 border-emerald-100"
                                           : kpi.trend.direction === "down"
-                                          ? "text-rose-600 bg-rose-50 border-rose-100"
-                                          : "text-slate-600"
+                                            ? "text-rose-600 bg-rose-50 border-rose-100"
+                                            : "text-slate-600"
                                       }
                                     `}
                                     >
                                       {kpi.trend.direction === "up"
                                         ? "↑"
                                         : kpi.trend.direction === "down"
-                                        ? "↓"
-                                        : "→"}{" "}
+                                          ? "↓"
+                                          : "→"}{" "}
                                       {kpi.trend.value}%
                                     </Badge>
                                     <span className="text-xs text-slate-400">
@@ -656,7 +769,7 @@ export default function ReportDetail() {
                                     {section.visualizations?.map(
                                       (viz, vIdx) => (
                                         <VisualRenderer key={vIdx} viz={viz} />
-                                      )
+                                      ),
                                     )}
                                   </div>
                                 </div>
@@ -669,16 +782,16 @@ export default function ReportDetail() {
                                       alert.type === "warning"
                                         ? "bg-rose-50 text-rose-700 border border-rose-100"
                                         : alert.type === "success"
-                                        ? "bg-emerald-50 text-emerald-700 border border-emerald-100"
-                                        : "bg-blue-50 text-blue-700 border border-blue-100"
+                                          ? "bg-emerald-50 text-emerald-700 border border-emerald-100"
+                                          : "bg-blue-50 text-blue-700 border border-blue-100"
                                     }`}
                                   >
                                     <span className="text-lg">
                                       {alert.type === "warning"
                                         ? "⚠️"
                                         : alert.type === "success"
-                                        ? "✅"
-                                        : "ℹ️"}
+                                          ? "✅"
+                                          : "ℹ️"}
                                     </span>
                                     {alert.message}
                                   </div>
@@ -696,8 +809,8 @@ export default function ReportDetail() {
                                 rec.priority === "high"
                                   ? "border-l-rose-500"
                                   : rec.priority === "medium"
-                                  ? "border-l-amber-500"
-                                  : "border-l-blue-500"
+                                    ? "border-l-amber-500"
+                                    : "border-l-blue-500"
                               }`}
                             >
                               <CardHeader className="pb-2">
@@ -713,8 +826,8 @@ export default function ReportDetail() {
                                       rec.priority === "high"
                                         ? "bg-rose-100 text-rose-700 hover:bg-rose-100"
                                         : rec.priority === "medium"
-                                        ? "bg-amber-100 text-amber-700 hover:bg-amber-100"
-                                        : "bg-blue-100 text-blue-700 hover:bg-blue-100"
+                                          ? "bg-amber-100 text-amber-700 hover:bg-amber-100"
+                                          : "bg-blue-100 text-blue-700 hover:bg-blue-100"
                                     }
                                   >
                                     {rec.priority.toUpperCase()}
@@ -745,9 +858,10 @@ export default function ReportDetail() {
                 <TabsContent value="strategy" className="mt-6">
                   <Card>
                     <CardHeader>
-                      <CardTitle>Estratega de Marketing (IA)</CardTitle>
+                      <CardTitle>Planes de Acción (IA)</CardTitle>
                       <CardDescription>
-                        Propuestas accionables basadas en el análisis de datos.
+                        Recomendaciones estratégicas listas para que el equipo
+                        comercial las ejecute hoy mismo.
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -832,16 +946,19 @@ export default function ReportDetail() {
                                     className="bg-slate-50 border-slate-200"
                                   >
                                     <CardHeader className="pb-2">
-                                      <CardTitle className="text-sm font-medium text-slate-500 uppercase flex justify-between">
-                                        Hallazgo Clave
+                                      <CardTitle className="text-sm font-medium text-slate-500 uppercase flex justify-between items-center gap-2">
+                                        Hallazgo Importante
                                         <Badge
-                                          variant={
+                                          variant="outline"
+                                          className={
                                             finding.trend === "positive"
-                                              ? "default"
-                                              : "destructive"
+                                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                              : "bg-rose-50 text-rose-700 border-rose-200"
                                           }
                                         >
-                                          {finding.trend}
+                                          {finding.trend === "positive"
+                                            ? "Tendencia Positiva"
+                                            : "Precaución"}
                                         </Badge>
                                       </CardTitle>
                                     </CardHeader>
@@ -874,12 +991,14 @@ export default function ReportDetail() {
                                     className="bg-white border rounded-lg p-5 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden flex flex-col h-full"
                                   >
                                     <div
-                                      className={`absolute top-0 left-0 w-1 h-full ${
-                                        camp.priority === "High"
+                                      className={`absolute top-0 left-0 w-1.5 h-full ${
+                                        camp.priority === "High" ||
+                                        camp.priority === "Alta"
                                           ? "bg-rose-500"
-                                          : camp.priority === "Medium"
-                                          ? "bg-amber-500"
-                                          : "bg-blue-500"
+                                          : camp.priority === "Medium" ||
+                                              camp.priority === "Media"
+                                            ? "bg-amber-500"
+                                            : "bg-blue-500"
                                       }`}
                                     />
                                     <div className="flex justify-between items-start mb-3">
@@ -887,10 +1006,24 @@ export default function ReportDetail() {
                                         {camp.title}
                                       </h4>
                                       <Badge
+                                        className={`text-[10px] shrink-0 ${
+                                          camp.priority === "High" ||
+                                          camp.priority === "Alta"
+                                            ? "bg-rose-100 text-rose-800 hover:bg-rose-200"
+                                            : camp.priority === "Medium" ||
+                                                camp.priority === "Media"
+                                              ? "bg-amber-100 text-amber-800 hover:bg-amber-200"
+                                              : "bg-blue-100 text-blue-800 hover:bg-blue-200"
+                                        }`}
                                         variant="secondary"
-                                        className="text-[10px] shrink-0"
                                       >
-                                        {camp.priority}
+                                        {camp.priority === "High"
+                                          ? "Prioridad Alta"
+                                          : camp.priority === "Medium"
+                                            ? "Prioridad Media"
+                                            : camp.priority === "Low"
+                                              ? "Baja"
+                                              : camp.priority}
                                       </Badge>
                                     </div>
 
@@ -926,7 +1059,7 @@ export default function ReportDetail() {
                                       <div className="pt-2 border-t mt-2 flex justify-between items-center">
                                         <div>
                                           <p className="text-[10px] uppercase text-slate-400 font-bold">
-                                            KPI
+                                            Métrica de Éxito
                                           </p>
                                           <p className="text-indigo-600 font-semibold text-xs">
                                             {camp.kpi}
@@ -934,12 +1067,23 @@ export default function ReportDetail() {
                                         </div>
                                         <div className="text-right">
                                           <p className="text-[10px] uppercase text-slate-400 font-bold">
-                                            Presupuesto
+                                            Esfuerzo/Presupuesto
                                           </p>
                                           <p className="text-emerald-600 font-semibold text-xs">
                                             {camp.budget_level}
                                           </p>
                                         </div>
+                                      </div>
+
+                                      <div className="mt-4 pt-2 border-t border-dashed flex justify-center">
+                                        <Button
+                                          variant="ghost"
+                                          className="w-full text-xs text-slate-400 hover:text-indigo-600 hover:bg-indigo-50"
+                                          size="sm"
+                                        >
+                                          <Target className="mr-2 h-3 w-3" />
+                                          Activar Campaña
+                                        </Button>
                                       </div>
                                     </div>
                                   </div>
@@ -966,7 +1110,7 @@ export default function ReportDetail() {
                                           <span className="mt-1 block w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0" />
                                           {act}
                                         </li>
-                                      )
+                                      ),
                                     )}
                                   </ul>
                                 </div>
@@ -1026,12 +1170,16 @@ export default function ReportDetail() {
                                         </div>
                                         <Badge
                                           variant="outline"
-                                          className="ml-auto border-emerald-200 text-emerald-700"
+                                          className="ml-auto border-emerald-200 text-emerald-700 whitespace-nowrap"
                                         >
-                                          {rec.priority}
+                                          {rec.priority === "High"
+                                            ? "Urgente"
+                                            : rec.priority === "Medium"
+                                              ? "Recomendado"
+                                              : rec.priority}
                                         </Badge>
                                       </div>
-                                    )
+                                    ),
                                   )}
                                 </div>
                               </div>

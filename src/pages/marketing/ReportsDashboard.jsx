@@ -9,6 +9,7 @@ import {
   Loader2,
   Plus,
   ArrowRight,
+  Trash2,
 } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -37,6 +38,16 @@ import {
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import { Badge } from "../../components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../../components/ui/alert-dialog";
 
 export default function ReportsDashboard() {
   const [reports, setReports] = useState([]);
@@ -45,6 +56,9 @@ export default function ReportsDashboard() {
   const [showModal, setShowModal] = useState(false);
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
+
+  const [deleteReportId, setDeleteReportId] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -105,7 +119,7 @@ export default function ReportsDashboard() {
             period_start: formData.period_start,
             period_end: formData.period_end,
           },
-        }
+        },
       );
 
       if (error) throw error;
@@ -133,16 +147,38 @@ export default function ReportsDashboard() {
       processing: "bg-yellow-100 text-yellow-800 border-yellow-200",
     };
     const labels = {
-      analyzed: "Análisis Listo",
-      completed: "Estrategia Completa",
-      failed: "Fallido",
-      processing: "Procesando",
+      analyzed: "Análisis de Datos Listo",
+      completed: "Estrategia Activa",
+      failed: "Análisis con Errores",
+      processing: "Consultando Datos...",
     };
     return (
       <Badge variant="outline" className={styles[status] || styles.processing}>
         {labels[status] || status}
       </Badge>
     );
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteReportId) return;
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase
+        .from("marketing_reports")
+        .delete()
+        .eq("id", deleteReportId);
+
+      if (error) throw error;
+
+      toast.success("Reporte eliminado correctamente");
+      setReports(reports.filter((r) => r.id !== deleteReportId));
+      setDeleteReportId(null);
+    } catch (err) {
+      console.error("Error deleting report:", err);
+      toast.error("Hubo un error al eliminar el reporte");
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -165,8 +201,8 @@ export default function ReportsDashboard() {
                     Inteligencia de Mercado
                   </h1>
                   <p className="text-gray-500 mt-2">
-                    Genera reportes impulsados por IA para analizar tus eventos
-                    y crear estrategias de marketing.
+                    Nuestra Inteligencia Artificial analiza el historial de tus
+                    eventos y crea Planes de Acción listos para ejecutar.
                   </p>
                 </div>
                 <Button
@@ -207,9 +243,20 @@ export default function ReportsDashboard() {
                     >
                       <CardHeader className="pb-3">
                         <div className="flex justify-between items-start">
-                          <CardTitle className="text-lg font-semibold line-clamp-1">
+                          <CardTitle className="text-lg font-semibold line-clamp-1 pr-2">
                             {report.title}
                           </CardTitle>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-slate-400 hover:text-red-500 hover:bg-red-50 -mt-1 -mr-2 flex-shrink-0"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeleteReportId(report.id);
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
                         <CardDescription className="flex items-center gap-2 mt-1">
                           <Calendar className="h-3 w-3" />
@@ -257,16 +304,16 @@ export default function ReportsDashboard() {
           <DialogHeader>
             <DialogTitle>Generar Análisis de Mercado</DialogTitle>
             <DialogDescription>
-              El Agente Analista revisará los datos de tus eventos y empresas
-              para encontrar tendencias.
+              La IA revisará todos tus eventos registrados en estas fechas e
+              identificará automáticamente las tendencias de consumo.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="title">Título del Reporte</Label>
+              <Label htmlFor="title">Nombre del Análisis</Label>
               <Input
                 id="title"
-                placeholder="Ej: Análisis Q4 2025"
+                placeholder="Ej: Análisis Corporativos Q4"
                 value={formData.title}
                 onChange={(e) =>
                   setFormData({ ...formData, title: e.target.value })
@@ -326,6 +373,44 @@ export default function ReportsDashboard() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* DELETE ALERT DIALOG */}
+      <AlertDialog
+        open={!!deleteReportId}
+        onOpenChange={(open) => !open && setDeleteReportId(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar reporte?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. Esto eliminará permanentemente
+              el análisis y la estrategia de inteligencia de mercado guardados.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                confirmDelete();
+              }}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Eliminando...
+                </>
+              ) : (
+                "Eliminar Reporte"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -20,7 +20,7 @@ Deno.serve(async (req: Request) => {
   try {
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
 
     const payload = await req.json();
@@ -46,11 +46,12 @@ Deno.serve(async (req: Request) => {
           `
           id, start, companyName, peopleCount, 
           deposit, pendingAmount, total_cost, event_category, event_type, lead_source, 
-          satisfaction_score, companyGroupId, catering_intelligence
-        `
+          satisfaction_score, companyGroupId, catering_intelligence,
+          eventStatus, feedback, actual_budget
+        `,
         )
         .gte("start", period_start)
-        .lte("end", period_end);
+        .lte("start", period_end);
 
       if (eventsError) throw eventsError;
 
@@ -59,7 +60,7 @@ Deno.serve(async (req: Request) => {
         ...new Set(
           events
             .map((e) => e.companyGroupId)
-            .filter((id) => id && id !== "undefined")
+            .filter((id) => id && id !== "undefined"),
         ),
       ];
 
@@ -67,7 +68,9 @@ Deno.serve(async (req: Request) => {
       if (companyIds.length > 0) {
         const { data: companiesData } = await supabaseClient
           .from("CompanyGroups")
-          .select("id, account_type, industry, company_size")
+          .select(
+            "id, account_type, industry, company_size, customer_lifetime_value, churn_risk",
+          )
           .in("id", companyIds);
         companies = companiesData || [];
       }
@@ -80,10 +83,15 @@ Deno.serve(async (req: Request) => {
           category: e.event_category || "N/A",
           type: e.event_type || "Unknown",
           source: e.lead_source || "Unknown",
+          status: e.eventStatus || "Unknown",
+          feedback: e.feedback || "",
+          budget: e.actual_budget || 0,
           pax: e.peopleCount,
           revenue: e.total_cost || 0,
           industry: company?.industry || "N/A",
           account_type: company?.account_type || "N/A",
+          clv: company?.customer_lifetime_value || 0,
+          churn_risk: company?.churn_risk || false,
           satisfaction: e.satisfaction_score,
           catering: e.catering_intelligence,
         };
@@ -307,6 +315,7 @@ Debes generar un objeto JSON con la siguiente estructura:
   - Ejes etiquetados en español
   - Colores consistentes (usar paleta profesional)
   - Datos ordenados lógicamente (de mayor a menor, cronológico, etc.)
+- **¡CRÍTICO!** Los valores ("value", "y", etc.) en los objetos data de las visualizaciones **DEBEN SER NÚMEROS PUROS** (15000, 78.3), **NUNCA** strings formateados ("$15,000", "78%"). La librería de gráficos fallará si envías texto en el eje Y.
 
 ### Tablas
 - **Máximo 10 filas** (mostrar Top 5-10, no todo)
@@ -315,15 +324,21 @@ Debes generar un objeto JSON con la siguiente estructura:
 - Ordenar por la métrica más importante
 
 ### Lenguaje
-- **Todo en español profesional**
+- **Todo en español profesional y NO técnico (lenguaje cotidiano de negocios)**
+- EVITA el uso de términos anglosajones ("KPIs", "Revenue", "Leads"). Usa en su lugar:
+  - "Ingreso total" en lugar de "Revenue"
+  - "Canal de venta" en lugar de "Lead Source"
+  - "Métricas clave" en lugar de "KPIs"
+  - "Valor del cliente" en lugar de "Customer Lifetime Value (CLV)"
+  - "Riesgo de abandono" en lugar de "Churn risk"
 - Usar **emojis estratégicamente** (uno por sección, en el título)
-- **Sin jerga técnica innecesaria**
-- **Números formateados**: $788,935 (no 788935), 78.3% (no 0.783)
+- **Números en textos y tablas**: $788,935 (no 788935), 78.3% (no 0.783).
+- *(Excepción: En los arrays de visualizations.data, usa números puros siempre).*
 
 ### Manejo de Datos Faltantes
 - Si un campo tiene >20% de "Unknown": **incluir alerta en dataQuality**
 - Si faltan datos para una visualización: **omitir la visualización, no inventar datos**
-- En insights: usar "Información insuficiente para [análisis específico]"
+- En insights: usar "Hay poca información registrada para [analizar esto]"
 
 ## Consideraciones Especiales
 
@@ -352,7 +367,7 @@ Antes de generar el JSON, verificar:
 - **Genera ÚNICAMENTE el objeto JSON**. 
 - No incluyas explicaciones antes ni después del JSON.
 - No uses bloques de código markdown (\`\`\`json ... \`\`\`).
-- Asegúrate de que todas las métricas sean números o strings formateados según se pide.
+- Asegúrate de que las métricas en textos sean formateadas, pero en los "data" de gráficos sean números puros.
 `;
 
       const userPrompt = `
@@ -371,10 +386,27 @@ Data: ${JSON.stringify(analysisData)}
               parts: [{ text: SYSTEM_PROMPT + "\n\n" + userPrompt }],
             },
           ],
+          generationConfig: {
+            responseMimeType: "application/json",
+          },
         }),
       });
 
       const geminiData = await response.json();
+
+      console.log("GEMINI ANALYSIS HTTP STATUS:", response.status);
+      console.log("GEMINI ANALYSIS RAW RESPONSE:", JSON.stringify(geminiData));
+
+      if (!response.ok) {
+        console.error(
+          "Gemini API returned an error status:",
+          JSON.stringify(geminiData),
+        );
+        throw new Error(
+          `Gemini API Error: ${geminiData.error?.message || "Unknown error"}`,
+        );
+      }
+
       const analystReport =
         geminiData?.candidates?.[0]?.content?.parts?.[0]?.text ||
         "Error generating analysis.";
@@ -393,7 +425,7 @@ Data: ${JSON.stringify(analysisData)}
             total_events: events.length,
             total_revenue: analysisData.reduce(
               (acc, cur) => acc + cur.revenue,
-              0
+              0,
             ),
           },
         ])
@@ -483,21 +515,22 @@ Incluye **alertas operativas** si el marketing puede afectar negativamente la ex
 ---
 
 ### 3️⃣ Diseño de Campañas de Marketing
-Propón campañas **accionables**, no genéricas.
+Propón campañas **prácticas y ejecutables inmediatamente** por el equipo comercial de recepción en WhatsApp o redes sociales.
 
 Para cada campaña incluye:
 
 - 🎯 Objetivo claro y medible
-- 👥 Público objetivo
-- 📣 Mensaje principal
-- 📍 Canal principal
+- 👥 Público objetivo (ej. Empresas con alto Valor del Cliente y Riesgo de abandono)
+- 📣 Mensaje principal (directo y sencillo)
+- 📍 Canal principal (WhatsApp, Teléfono, Instagram)
 - 📆 Horizonte temporal
-- 📈 KPI principal
+- 📈 Métrica de éxito (no uses la palabra "KPI")
 - ⚠️ Riesgo operativo (si aplica)
 
 Prioriza campañas que:
+- Re-activen clientes antiguos o de alto valor en riesgo
 - Aumenten el **ingreso promedio por evento**
-- Fomenten **repetición y recomendación**
+- Fomenten **repetición y recomendación** (usando el feedback positivo recibido)
 - No sobrecarguen la operación
 
 ---
@@ -543,12 +576,12 @@ Estructura requerida:
   "campaigns": [
     {
       "title": "Nombre de campaña",
-      "objective": "Objetivo SMART",
-      "audience": "Segmento específico",
-      "channel": "Canal principal",
-      "kpi": "Métrica de éxito",
-      "budget_level": "Low" | "Medium" | "High",
-      "priority": "High" | "Medium" | "Low"
+      "objective": "Objetivo detallado",
+      "audience": "Segmento específico (sin términos técnicos)",
+      "channel": "Canal sugerido (ej. WhatsApp)",
+      "kpi": "Métrica de éxito a medir",
+      "budget_level": "Bajo" | "Medio" | "Alto",
+      "priority": "Alta" | "Media" | "Baja"
     }
   ],
   "retentionStrategy": {
@@ -568,10 +601,11 @@ Estructura requerida:
   ]
 }
 
-## 🚫 Restricciones
+## 🚫 Restricciones y Tono
 - Genera SOLO el JSON. Nada de texto antes ni después.
 - Asegúrate de que sea JSON parseable.
-- Todo el contenido en ESPAÑOL.
+- Todo el contenido en ESPAÑOL y lenguaje NO TÉCNICO absoluto.
+- Sustituye términos anglosajones y muy técnicos por lenguaje cotidiano ("Ingreso total", "Métricas", "Canal").
 
 `;
 
@@ -591,10 +625,27 @@ ${report.analyst_report}
               parts: [{ text: SYSTEM_PROMPT + "\n\n" + userPrompt }],
             },
           ],
+          generationConfig: {
+            responseMimeType: "application/json",
+          },
         }),
       });
 
       const geminiData = await response.json();
+
+      console.log("GEMINI STRATEGY HTTP STATUS:", response.status);
+      console.log("GEMINI STRATEGY RAW RESPONSE:", JSON.stringify(geminiData));
+
+      if (!response.ok) {
+        console.error(
+          "Gemini Strategy API returned an error status:",
+          JSON.stringify(geminiData),
+        );
+        throw new Error(
+          `Gemini Strategy API Error: ${geminiData.error?.message || "Unknown error"}`,
+        );
+      }
+
       const strategyReport =
         geminiData?.candidates?.[0]?.content?.parts?.[0]?.text ||
         "Error generating strategy.";
