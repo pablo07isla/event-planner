@@ -111,7 +111,7 @@ export default function AIAnalysisModal({
       const payload = {
         ...restOfResults,
         date: dateLabel,
-        channel: "#eventos-los-arrayanes",
+        channel: "C0A5C5V9D41",
       };
 
       // Call Supabase Edge Function

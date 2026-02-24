@@ -10,7 +10,7 @@ import {
   FaUtensils,
   FaFilePdf,
   FaCalendarAlt,
-  FaWhatsapp,
+  FaSlack,
 } from "react-icons/fa";
 import { pdf } from "@react-pdf/renderer";
 import { toast } from "sonner";
@@ -254,7 +254,7 @@ const EventList = ({ events, onClose }) => {
     }, 1000);
   };
 
-  const handleSendToWhatsApp = async () => {
+  const handleSendToSlack = async () => {
     setIsSending(true);
     try {
       const { supabase } = await import("../../supabaseClient");
@@ -265,23 +265,23 @@ const EventList = ({ events, onClose }) => {
       // Preparar FormData para enviar el archivo
       const formData = new FormData();
       formData.append("file", blob, "reporte_eventos.pdf");
-      formData.append("channel", "whatsapp");
+      formData.append("channel", "C0A5C5V9D41");
 
       // Llamar a la Edge Function de Supabase
-      const { data, error } = await supabase.functions.invoke("send-whatsapp", {
+      const { data, error } = await supabase.functions.invoke("send-slack", {
         body: formData,
       });
 
       if (error) throw error;
 
       if (data?.success) {
-        toast.success("PDF enviado a WhatsApp correctamente");
+        toast.success("PDF enviado a Slack correctamente");
       } else {
         throw new Error("La función no devolvió éxito");
       }
     } catch (error) {
-      console.error("Error al enviar PDF a WhatsApp:", error);
-      toast.error("Error al enviar el PDF a WhatsApp");
+      console.error("Error al enviar PDF a Slack:", error);
+      toast.error("Error al enviar el PDF a Slack");
     } finally {
       setIsSending(false);
     }
@@ -294,9 +294,9 @@ const EventList = ({ events, onClose }) => {
         <h1 className="text-2xl font-bold text-gray-800">Lista de Eventos</h1>
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
           <button
-            className="w-full sm:w-auto min-h-[44px] inline-flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-300 disabled:opacity-50"
+            className="w-full sm:w-auto min-h-[44px] inline-flex items-center justify-center px-4 py-2 bg-[#4A154B] text-white rounded-lg shadow-md hover:bg-[#3d113d] focus:outline-none focus:ring-2 focus:ring-purple-700 focus:ring-offset-2 transition-colors duration-300 disabled:opacity-50"
             disabled={isSending}
-            onClick={handleSendToWhatsApp}
+            onClick={handleSendToSlack}
           >
             {isSending ? (
               <>
@@ -324,8 +324,8 @@ const EventList = ({ events, onClose }) => {
               </>
             ) : (
               <>
-                <FaWhatsapp className="mr-2" />
-                WhatsApp PDF
+                <FaSlack className="mr-2" />
+                Slack PDF
               </>
             )}
           </button>
