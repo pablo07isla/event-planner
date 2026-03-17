@@ -260,6 +260,8 @@ export default function AIAnalysisModal({
                           <h3 className="font-semibold text-lg capitalize">
                             {mealType === "ALMUERZO" && "🍽️ Almuerzos"}
                             {mealType === "REFRIGERIO" && "🥪 Refrigerios"}
+                            {mealType === "REFRIGERIO AM" && "🥪 Refrigerio AM"}
+                            {mealType === "REFRIGERIO PM" && "🥪 Refrigerio PM"}
                             {mealType === "DESAYUNO" && "☕ Desayunos"}
                             {mealType === "MENU INFANTIL" && "👶 Menú Infantil"}
                             {mealType === "VEGETARIANO" && "🥗 Vegetariano"}
@@ -267,6 +269,8 @@ export default function AIAnalysisModal({
                             {![
                               "ALMUERZO",
                               "REFRIGERIO",
+                              "REFRIGERIO AM",
+                              "REFRIGERIO PM",
                               "DESAYUNO",
                               "MENU INFANTIL",
                               "VEGETARIANO",

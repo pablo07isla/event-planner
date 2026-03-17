@@ -16,7 +16,7 @@ Deno.serve(async (req: Request) => {
   try {
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
 
     const payload = await req.json();
@@ -27,13 +27,14 @@ Deno.serve(async (req: Request) => {
     // Webhook payload: { record: { ... } }
     let eventId;
     let eventDescription;
+    let peopleCount = 0;
 
     if (payload.eventId) {
       // Direct call - fetch event data first
       eventId = payload.eventId;
       const { data: eventData, error: eventError } = await supabaseClient
         .from("events")
-        .select("eventDescription")
+        .select("eventDescription, peopleCount")
         .eq("id", eventId)
         .single();
 
@@ -41,24 +42,27 @@ Deno.serve(async (req: Request) => {
         throw new Error(`Event not found: ${eventError?.message}`);
       }
       eventDescription = eventData.eventDescription;
+      peopleCount = eventData.peopleCount || 0;
     } else if (payload.record) {
       // Webhook call
       eventId = payload.record.id;
       eventDescription = payload.record.eventDescription;
+      peopleCount = payload.record.peopleCount || 0;
     } else if (payload.testDescription) {
       // Test call - direct text analysis
       eventId = "test-execution";
       eventDescription = payload.testDescription;
+      peopleCount = payload.testPeopleCount || 0;
     } else {
       throw new Error(
-        "Invalid payload: missing eventId, record, or testDescription"
+        "Invalid payload: missing eventId, record, or testDescription",
       );
     }
 
     if (!eventDescription) {
       return new Response(
         JSON.stringify({ message: "No description to analyze", result: [] }),
-        { headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
+        { headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
       );
     }
 
@@ -70,6 +74,8 @@ Deno.serve(async (req: Request) => {
 
     const prompt = `
 You are a Catering Normalizer AI. Your job is to convert free-text catering descriptions into standard categories and extract quantities.
+
+NÚMERO DE PERSONAS DEL EVENTO: ${peopleCount}
 
 STANDARD CATEGORIES (use EXACTLY these names, grouped by meal type):
 
@@ -91,9 +97,23 @@ STANDARD CATEGORIES (use EXACTLY these names, grouped by meal type):
 ### VEGETARIANO:
 - Vegetariano (opción vegetariana)
 
-### REFRIGERIO (snacks AM/PM):
+### REFRIGERIO AM (snacks de la mañana):
 - Dedo de Queso
-- Empanadas
+- Empanadas (cada refrigerio de empanada = 2 empanadas, así que multiplica la cantidad por 2)
+- Aborrajado
+- Papa Rellena
+- Salchipapa
+- Tostadas con carne
+- Salpicon de frutas
+- Vaso de Helado
+- Café
+- Café con Leche
+- Chocolate
+- Gaseosa
+
+### REFRIGERIO PM (snacks de la tarde):
+- Dedo de Queso
+- Empanadas (cada refrigerio de empanada = 2 empanadas, así que multiplica la cantidad por 2)
 - Aborrajado
 - Papa Rellena
 - Salchipapa
@@ -135,7 +155,8 @@ OUTPUT FORMAT (JSON object, no markdown):
         "notes": "con ensalada"
       }
     ],
-    "REFRIGERIO": [],
+    "REFRIGERIO AM": [],
+    "REFRIGERIO PM": [],
     "DESAYUNO": [],
     "MENU INFANTIL": [],
     "VEGETARIANO": [],
@@ -144,31 +165,50 @@ OUTPUT FORMAT (JSON object, no markdown):
 }
 
 RULES:
-1. Group items by mealType: ALMUERZO, REFRIGERIO, DESAYUNO, MENU INFANTIL, VEGETARIANO, OTRO.
+1. Group items by mealType: ALMUERZO, REFRIGERIO AM, REFRIGERIO PM, DESAYUNO, MENU INFANTIL, VEGETARIANO, OTRO.
 2. Extract the quantity from the text (default to 1 if not specified).
-3. Use "notes" for any special instructions (e.g., "sin cebolla", "con ensalada").
-4. If no food is detected, return: {"mealGroups": {}}
+3. CRITICAL — "POR PERSONA" RULE: When text says "X por persona", "X x persona", "X pp", or similar per-person expressions, multiply X by the NÚMERO DE PERSONAS DEL EVENTO (${peopleCount}). Example: "Cervezas 2 x persona" with 150 personas = quantity 300.
+4. Use "notes" for any special instructions (e.g., "sin cebolla", "con ensalada").
+5. REFRIGERIO AM vs PM: If the description specifies "Refrigerio AM" or "refrigerio am", place items in "REFRIGERIO AM". If it specifies "Refrigerio PM" or "refrigerio pm", place items in "REFRIGERIO PM". If no AM/PM is specified, default to "REFRIGERIO AM".
+6. EMPANADAS RULE: Each "refrigerio de empanada" includes 2 empanadas per person. So if 150 refrigerios de empanada are ordered, the quantity of empanadas is 300 (150 × 2).
+7. If no food is detected, return: {"mealGroups": {}}
     `;
 
-    const geminiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${geminiApiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-        }),
-      }
-    );
+    // Try primary model, fallback to secondary on 503/429 errors
+    const models = ["gemini-2.5-flash-lite", "gemini-2.5-flash"];
+    let geminiData;
 
-    if (!geminiResponse.ok) {
-      const errorText = await geminiResponse.text();
-      throw new Error(
-        `Gemini API Error: ${geminiResponse.status} - ${errorText}`
+    for (const model of models) {
+      const geminiResponse = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+          }),
+        },
       );
-    }
 
-    const geminiData = await geminiResponse.json();
+      if (geminiResponse.ok) {
+        geminiData = await geminiResponse.json();
+        console.log(`Success with model: ${model}`);
+        break;
+      }
+
+      const errorText = await geminiResponse.text();
+      console.warn(`Model ${model} failed (${geminiResponse.status}): ${errorText}`);
+
+      // Only retry on 503 (unavailable) or 429 (rate limit)
+      if (geminiResponse.status !== 503 && geminiResponse.status !== 429) {
+        throw new Error(`Gemini API Error: ${geminiResponse.status} - ${errorText}`);
+      }
+
+      // If last model also failed, throw
+      if (model === models[models.length - 1]) {
+        throw new Error(`All Gemini models unavailable. Last error: ${geminiResponse.status} - ${errorText}`);
+      }
+    }
     let rawText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || "[]";
 
     // Cleanup markdown if Gemini adds it despite instruction
@@ -204,7 +244,7 @@ RULES:
         message: "Analysis complete",
         data: cateringResult,
       }),
-      { headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
+      { headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
     );
   } catch (error: any) {
     console.error("Function error:", error);
@@ -223,7 +263,7 @@ RULES:
       {
         status: 200,
         headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
-      }
+      },
     );
   }
 });

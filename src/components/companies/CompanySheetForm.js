@@ -9,7 +9,6 @@ import React, { useState, useEffect } from "react";
 const initialForm = {
   companyName: "",
   account_type: "Empresa", // Default
-  industry: "",
   identificationType: "NIT",
   identificationNumber: "",
   contactPerson: "",
@@ -67,7 +66,6 @@ export default function CompanySheetForm({
         identificationType: form.identificationType,
         identificationNumber: form.identificationNumber,
         account_type: form.account_type,
-        industry: form.account_type === "Empresa" ? form.industry : null,
         address: form.address,
         city: form.city,
         // Legacy support (optional, keep populated if columns exist)
@@ -192,22 +190,6 @@ export default function CompanySheetForm({
                   </p>
                 )}
               </div>
-
-              {form.account_type === "Empresa" && (
-                <div className="col-span-2">
-                  <Label htmlFor="industry" className="font-semibold">
-                    Industria / Sector
-                  </Label>
-                  <Input
-                    id="industry"
-                    name="industry"
-                    placeholder="Ej: Tecnología, Salud, Educación..."
-                    value={form.industry || ""}
-                    onChange={handleChange}
-                    className="mt-1.5"
-                  />
-                </div>
-              )}
 
               <div>
                 <Label htmlFor="identificationType" className="font-semibold">

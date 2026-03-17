@@ -10,6 +10,7 @@ import { IconPrinter } from "@tabler/icons-react";
 import { Sparkles } from "lucide-react"; // AI Icon
 import AIAnalysisModal from "./ai-analysis-modal";
 import { toast } from "sonner";
+import { supabase } from "../../supabaseClient";
 
 function parseToLocalDate(dateString) {
   // Si viene como 'YYYY-MM-DD', fuerza a local
@@ -84,7 +85,7 @@ export default function SectionCards({
     weekday: "long",
   });
 
-  const handleViewAnalysis = (dayEvents, title, dateObj) => {
+  const handleViewAnalysis = async (dayEvents, title, dateObj) => {
     if (dayEvents.length === 0) {
       toast.info("No hay eventos para ver.");
       return;
@@ -105,13 +106,24 @@ export default function SectionCards({
     }
 
     setAiDateLabel(dateStr);
+    setAiLoading(true);
+    setAiModalOpen(true);
+
+    // Fetch fresh data from DB to avoid stale catering_intelligence
+    const eventIds = dayEvents.map((e) => e.id);
+    const { data: freshEvents } = await supabase
+      .from("events")
+      .select("id, companyName, title, peopleCount, catering_intelligence")
+      .in("id", eventIds);
+
+    const eventsToAnalyze = freshEvents || dayEvents;
 
     const aggregatedItems = {}; // { key: { mealType, category, quantity, notes: Set() } }
     const allWarnings = [];
 
     let eventsWithData = 0;
 
-    dayEvents.forEach((event) => {
+    eventsToAnalyze.forEach((event) => {
       // Data is now pre-calculated in DB by Webhook
       const storedAnalysis = event.catering_intelligence;
       const mealGroups = storedAnalysis?.mealGroups || {};
@@ -122,10 +134,8 @@ export default function SectionCards({
       );
 
       if (!hasMeals && event.peopleCount > 0) {
-        // Silently ignore or maybe add a visual indicator?
-        // For now let's just log it to warnings if entirely missing to hint user might need to wait
         if (!storedAnalysis) {
-          // allWarnings.push(`[${event.companyName}] Análisis pendiente o no disponible.`);
+          // Analysis pending
         } else {
           allWarnings.push(
             `Evento "${event.companyName || event.title}" (${
@@ -176,6 +186,8 @@ export default function SectionCards({
     // Sort meal types in preferred order
     const mealTypeOrder = [
       "ALMUERZO",
+      "REFRIGERIO AM",
+      "REFRIGERIO PM",
       "REFRIGERIO",
       "DESAYUNO",
       "MENU INFANTIL",
@@ -196,7 +208,7 @@ export default function SectionCards({
     });
 
     // Calculate totals
-    const totalPaxInEvents = dayEvents.reduce(
+    const totalPaxInEvents = eventsToAnalyze.reduce(
       (sum, e) => sum + (e.peopleCount || 0),
       0,
     );
@@ -211,20 +223,15 @@ export default function SectionCards({
       );
     }
 
-    if (eventsWithData < dayEvents.length && dayEvents.length > 0) {
-      // Optional: warn that some events are not yet analyzed
-      // allWarnings.push("ℹ️ Algunos eventos aún no han sido procesados por la IA.");
-    }
-
     setAiResults({
       mealGroups: sortedMealGroups,
       warnings: allWarnings,
       totalPax: totalPaxInEvents,
       totalFood: totalFoodQuantity,
-      eventsAnalyzed: dayEvents.length,
+      eventsAnalyzed: eventsToAnalyze.length,
     });
 
-    setAiModalOpen(true);
+    setAiLoading(false);
   };
 
   const EventCard = ({

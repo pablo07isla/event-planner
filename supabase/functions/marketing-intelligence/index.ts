@@ -69,7 +69,7 @@ Deno.serve(async (req: Request) => {
         const { data: companiesData } = await supabaseClient
           .from("CompanyGroups")
           .select(
-            "id, account_type, industry, company_size, customer_lifetime_value, churn_risk",
+            "id, account_type, company_size, customer_lifetime_value, churn_risk",
           )
           .in("id", companyIds);
         companies = companiesData || [];
@@ -88,7 +88,6 @@ Deno.serve(async (req: Request) => {
           budget: e.actual_budget || 0,
           pax: e.peopleCount,
           revenue: e.total_cost || 0,
-          industry: company?.industry || "N/A",
           account_type: company?.account_type || "N/A",
           clv: company?.customer_lifetime_value || 0,
           churn_risk: company?.churn_risk || false,
@@ -236,17 +235,16 @@ Debes generar un objeto JSON con la siguiente estructura:
   - Identificar trade-offs entre eventos masivos y eventos de alto ticket
   - Tendencias notables
 
-### 2. 🏢 Segmentación por Industria (priority: 2)
+### 2. 🏢 Segmentación por Tipo de Cliente (priority: 2)
+- **Nota**: El campo "industry" NO está siendo capturado actualmente. NO lo uses para segmentar. En su lugar, segmenta por account_type (Empresa, Persona, Grupo Social) y event_category.
 - **Visualizaciones**:
-  - Gráfico de barras horizontales: Top 5 industrias por ingreso
-  - Tabla: Industria | Ingresos | # Eventos | Ticket Promedio | Satisfacción
+  - Gráfico de barras horizontales: Top segmentos por ingreso (usando account_type y event_category)
+  - Tabla: Tipo de Cliente | Ingresos | # Eventos | Ticket Promedio | Satisfacción
 - **Insights**:
-  - Industrias con mayor valor económico agregado
-  - Industrias con mejor rendimiento por evento
-  - Relación entre industria, volumen de asistentes y satisfacción
+  - Segmentos con mayor valor económico agregado
+  - Segmentos con mejor rendimiento por evento
+  - Relación entre tipo de cliente, volumen de asistentes y satisfacción
   - Oportunidades de crecimiento alineadas con el modelo recreacional
-
-  Nota: La industria debe interpretarse como segmento de cliente, no exclusivamente como B2B tradicional.
 
 ### 3. 🍱 Inteligencia de Catering (priority: 3)
 - **Análisis del campo catering_intelligence**:
