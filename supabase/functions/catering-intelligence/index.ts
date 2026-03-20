@@ -44,7 +44,20 @@ Deno.serve(async (req: Request) => {
       eventDescription = eventData.eventDescription;
       peopleCount = eventData.peopleCount || 0;
     } else if (payload.record) {
-      // Webhook call
+      // Webhook call — guard against infinite loop
+      // The function updates catering_intelligence on this same table,
+      // which fires the webhook again. Only re-process if the fields
+      // that actually feed the AI prompt have changed.
+      if (payload.old_record) {
+        const descChanged = payload.record.eventDescription !== payload.old_record.eventDescription;
+        const countChanged = payload.record.peopleCount !== payload.old_record.peopleCount;
+        if (!descChanged && !countChanged) {
+          return new Response(
+            JSON.stringify({ message: "No relevant changes, skipping to avoid loop" }),
+            { headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
+          );
+        }
+      }
       eventId = payload.record.id;
       eventDescription = payload.record.eventDescription;
       peopleCount = payload.record.peopleCount || 0;
