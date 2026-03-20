@@ -1,313 +1,1129 @@
 {
   "j9z2AT": {
-    "translation": "Acceso denegado",
-    "message": "Acceso denegado",
+    "message": " Acceso denegado",
     "placeholders": {},
     "comments": [],
-    "origin": []
+    "origin": [
+      [
+        "src/components/auth/Register.js",
+        83
+      ]
+    ],
+    "translation": " Acceso denegado"
   },
   "welcome.whyChoose": {
     "message": "¿Por qué elegirnos?",
     "placeholders": {},
     "comments": [],
-    "origin": [],
+    "origin": [
+      [
+        "src/components/auth/Login.js",
+        177
+      ]
+    ],
     "translation": "¿Por qué elegirnos?"
   },
   "login.subtitle": {
     "message": "Accede a tu cuenta para continuar",
     "placeholders": {},
     "comments": [],
-    "origin": [],
+    "origin": [
+      [
+        "src/components/auth/Login.js",
+        215
+      ]
+    ],
     "translation": "Accede a tu cuenta para continuar"
   },
   "AeXO77": {
     "message": "Account",
     "placeholders": {},
     "comments": [],
-    "origin": [],
+    "origin": [
+      [
+        "src/components/sidebar/ShadSidebar.js",
+        184
+      ]
+    ],
     "translation": "Account"
   },
   "3igsBN": {
     "message": "Add Event",
     "placeholders": {},
     "comments": [],
-    "origin": [],
+    "origin": [
+      [
+        "src/components/sidebar/Sidebar.js",
+        112
+      ],
+      [
+        "src/components/sidebar/ShadSidebar.js",
+        117
+      ],
+      [
+        "src/components/sidebar/nav-projects.jsx",
+        33
+      ]
+    ],
     "translation": "Agregar Evento"
   },
   "Faptqt": {
     "message": "Administrator",
     "placeholders": {},
     "comments": [],
-    "origin": [],
+    "origin": [
+      [
+        "src/components/sidebar/Sidebar.js",
+        137
+      ],
+      [
+        "src/components/sidebar/ShadSidebar.js",
+        150
+      ],
+      [
+        "src/components/sidebar/ShadSidebar.js",
+        176
+      ]
+    ],
     "translation": "Administrador"
+  },
+  "SMLi2O": {
+    "translation": "Análisis Inteligente de Catering",
+    "message": "Análisis Inteligente de Catering",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/dashboard/ai-analysis-modal.jsx",
+        147
+      ]
+    ]
+  },
+  "OwaHHs": {
+    "translation": "Analizados hoy",
+    "message": "Analizados hoy",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/dashboard/ai-analysis-modal.jsx",
+        220
+      ]
+    ]
+  },
+  "9d4MWK": {
+    "translation": "Analizando eventos...",
+    "message": "Analizando eventos...",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/dashboard/ai-analysis-modal.jsx",
+        166
+      ]
+    ]
   },
   "ZlwDi6": {
     "message": "Analytics",
     "placeholders": {},
     "comments": [],
-    "origin": [],
+    "origin": [
+      [
+        "src/pages/Dashboard.js",
+        224
+      ]
+    ],
     "translation": "Analítica"
   },
   "FqmmRa": {
     "message": "Año actual vs Año anterior",
     "placeholders": {},
     "comments": [],
-    "origin": [],
+    "origin": [
+      [
+        "src/components/dashboard/chart-area-interactive.jsx",
+        106
+      ],
+      [
+        "src/components/dashboard/chart-area-interactive.jsx",
+        109
+      ]
+    ],
     "translation": "Año actual vs Año anterior"
+  },
+  "qSJeHd": {
+    "translation": "Atención requerida",
+    "message": "Atención requerida",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/dashboard/ai-analysis-modal.jsx",
+        238
+      ]
+    ]
   },
   "welcome.title": {
     "message": "Bienvenido a nuestra plataforma",
     "placeholders": {},
     "comments": [],
-    "origin": [],
+    "origin": [
+      [
+        "src/components/auth/Login.js",
+        168
+      ]
+    ],
     "translation": "Bienvenido a nuestra plataforma"
   },
   "AjVXBS": {
     "message": "Calendar",
     "placeholders": {},
     "comments": [],
-    "origin": [],
+    "origin": [
+      [
+        "src/components/sidebar/Sidebar.js",
+        38
+      ],
+      [
+        "src/components/sidebar/ShadSidebar.js",
+        42
+      ],
+      [
+        "src/components/sidebar/app-sidebar.js",
+        63
+      ]
+    ],
     "translation": "Calendario"
   },
   "ytcDq7": {
     "message": "Cancelar",
     "placeholders": {},
     "comments": [],
-    "origin": [],
+    "origin": [
+      [
+        "src/components/user/create-user-form.jsx",
+        178
+      ],
+      [
+        "src/components/companies/ModalCompany.js",
+        485
+      ]
+    ],
     "translation": "Cancelar"
   },
   "i9V1KH": {
     "message": "Cargando datos...",
     "placeholders": {},
     "comments": [],
-    "origin": [],
+    "origin": [
+      [
+        "src/components/dashboard/chart-area-interactive.jsx",
+        84
+      ]
+    ],
     "translation": "Cargando datos..."
   },
   "/Hlpv8": {
     "message": "Cargando...",
     "placeholders": {},
     "comments": [],
-    "origin": [],
+    "origin": [
+      [
+        "src/components/dashboard/section-cards.jsx",
+        334
+      ]
+    ],
     "translation": "Cargando..."
+  },
+  "Y+cRv6": {
+    "translation": "Cerrar",
+    "message": "Cerrar",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/dashboard/ai-analysis-modal.jsx",
+        363
+      ]
+    ]
   },
   "vLrl4w": {
     "message": "Ciudad*",
     "placeholders": {},
     "comments": [],
-    "origin": [],
+    "origin": [
+      [
+        "src/components/companies/ModalCompany.js",
+        457
+      ]
+    ],
     "translation": "Ciudad*"
   },
   "IS5ZAJ": {
-    "translation": "Completa el formulario para crear un nuevo usuario.",
     "message": "Completa el formulario para crear un nuevo usuario.",
     "placeholders": {},
     "comments": [],
-    "origin": []
+    "origin": [
+      [
+        "src/components/user/create-user-form.jsx",
+        41
+      ]
+    ],
+    "translation": "Completa el formulario para crear un nuevo usuario."
   },
   "vFjwV6": {
-    "translation": "Contraseña",
     "message": "Contraseña",
     "placeholders": {},
     "comments": [],
-    "origin": []
+    "origin": [
+      [
+        "src/components/user/create-user-form.jsx",
+        103
+      ]
+    ],
+    "translation": "Contraseña"
   },
   "common.password": {
     "message": "Contraseña",
     "placeholders": {},
     "comments": [],
-    "origin": [],
+    "origin": [
+      [
+        "src/components/auth/Login.js",
+        260
+      ]
+    ],
     "translation": "Contraseña"
+  },
+  "3HYTvM": {
+    "translation": "Copiar",
+    "message": "Copiar",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/dashboard/ai-analysis-modal.jsx",
+        324
+      ]
+    ]
   },
   "common.email": {
     "message": "Correo electrónico",
     "placeholders": {},
     "comments": [],
-    "origin": [],
+    "origin": [
+      [
+        "src/components/auth/Login.js",
+        235
+      ]
+    ],
     "translation": "Correo electrónico"
   },
   "eTSjYE": {
-    "translation": "Creando...",
     "message": "Creando...",
     "placeholders": {},
     "comments": [],
-    "origin": []
-  },
-  "wHOI0G": {
-    "translation": "Crear usuario",
-    "message": "Crear usuario",
-    "placeholders": {},
-    "comments": [],
-    "origin": []
+    "origin": [
+      [
+        "src/components/user/create-user-form.jsx",
+        166
+      ]
+    ],
+    "translation": "Creando..."
   },
   "GmRK4s": {
     "message": "Crear",
     "placeholders": {},
     "comments": [],
-    "origin": [],
+    "origin": [
+      [
+        "src/components/companies/ModalCompany.js",
+        496
+      ]
+    ],
     "translation": "Crear"
+  },
+  "wHOI0G": {
+    "message": "Crear usuario",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/user/create-user-form.jsx",
+        38
+      ],
+      [
+        "src/components/user/create-user-form.jsx",
+        168
+      ]
+    ],
+    "translation": "Crear usuario"
   },
   "7p5kLi": {
     "message": "Dashboard",
     "placeholders": {},
     "comments": [],
-    "origin": [],
+    "origin": [
+      [
+        "src/components/sidebar/app-sidebar.js",
+        56
+      ]
+    ],
     "translation": "Dashboard"
   },
   "wx6Mw/": {
     "message": "Dirección*",
     "placeholders": {},
     "comments": [],
-    "origin": [],
+    "origin": [
+      [
+        "src/components/companies/ModalCompany.js",
+        437
+      ]
+    ],
     "translation": "Dirección*"
   },
   "96Mosj": {
     "message": "Editar Compañía",
     "placeholders": {},
     "comments": [],
-    "origin": [],
+    "origin": [
+      [
+        "src/components/companies/ModalCompany.js",
+        521
+      ]
+    ],
     "translation": "Editar Compañía"
   },
   "O3oNi5": {
+    "message": "Email",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/user/create-user-form.jsx",
+        77
+      ]
+    ],
     "translation": "Email"
   },
   "Clnkaz": {
     "message": "Email*",
     "placeholders": {},
     "comments": [],
-    "origin": [],
+    "origin": [
+      [
+        "src/components/companies/ModalCompany.js",
+        417
+      ]
+    ],
     "translation": "Email*"
   },
   "YXi8ky": {
     "message": "EP",
     "placeholders": {},
     "comments": [],
-    "origin": [],
+    "origin": [
+      [
+        "src/components/sidebar/Sidebar.js",
+        57
+      ]
+    ],
     "translation": "EP"
   },
   "SlfejT": {
     "message": "Error",
     "placeholders": {},
     "comments": [],
+    "origin": [
+      [
+        "src/components/companies/ModalCompany.js",
+        288
+      ]
+    ],
     "translation": "Error"
   },
   "R1pp4J": {
+    "message": "Event Planner",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/sidebar/Sidebar.js",
+        57
+      ],
+      [
+        "src/components/sidebar/ShadSidebar.js",
+        64
+      ]
+    ],
     "translation": "Event Planner"
   },
+  "5v5ex2": {
+    "translation": "Eventos",
+    "message": "Eventos",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/dashboard/ai-analysis-modal.jsx",
+        211
+      ]
+    ]
+  },
   "dNDaCa": {
+    "message": "Éxito",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/companies/ModalCompany.js",
+        290
+      ]
+    ],
     "translation": "Éxito"
   },
   "welcome.features.management": {
+    "message": "Gestión eficiente",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/auth/Login.js",
+        182
+      ]
+    ],
     "translation": "Gestión eficiente"
   },
   "v4QLmE": {
+    "message": "Guardar",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/companies/ModalCompany.js",
+        496
+      ]
+    ],
     "translation": "Guardar"
   },
   "welcome.features.tools": {
+    "message": "Herramientas poderosas",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/auth/Login.js",
+        188
+      ]
+    ],
     "translation": "Herramientas poderosas"
   },
   "5Fwy7R": {
+    "message": "Hoy",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/dashboard/section-cards.jsx",
+        383
+      ]
+    ],
     "translation": "Hoy"
   },
   "pzMnvc": {
+    "message": "Información",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/companies/ModalCompany.js",
+        289
+      ]
+    ],
     "translation": "Información"
   },
   "login.signingIn": {
+    "message": "Iniciando sesión...",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/auth/Login.js",
+        315
+      ]
+    ],
     "translation": "Iniciando sesión..."
   },
   "login.title": {
+    "message": "Iniciar sesión",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/auth/Login.js",
+        212
+      ]
+    ],
     "translation": "Iniciar sesión"
   },
   "common.signIn": {
+    "message": "Iniciar sesión",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/auth/Login.js",
+        317
+      ]
+    ],
     "translation": "Iniciar sesión"
   },
   "Efy4mJ": {
+    "message": "Interactive data visualization and trends",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/pages/Dashboard.js",
+        227
+      ]
+    ],
     "translation": "Visualización de datos interactiva y tendencias"
   },
   "vYD1/h": {
+    "message": "Ir a calendario",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/pages/Dashboard.js",
+        209
+      ]
+    ],
     "translation": "Ir a calendario"
   },
   "welcome.subtitle": {
+    "message": "La mejor manera de gestionar tu negocio",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/auth/Login.js",
+        171
+      ]
+    ],
     "translation": "La mejor manera de gestionar tu negocio"
   },
   "CnKBZR": {
+    "message": "Last 3 months",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/dashboard/chart-area-interactive.jsx",
+        120
+      ],
+      [
+        "src/components/dashboard/chart-area-interactive.jsx",
+        130
+      ],
+      [
+        "src/components/dashboard/chart-area-interactive.jsx",
+        134
+      ]
+    ],
     "translation": "Últimos 3 meses"
   },
   "uq2BmQ": {
+    "message": "Last 30 days",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/dashboard/chart-area-interactive.jsx",
+        121
+      ],
+      [
+        "src/components/dashboard/chart-area-interactive.jsx",
+        137
+      ]
+    ],
     "translation": "Últimos 30 días"
   },
   "ct2SYD": {
+    "message": "Last 7 days",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/dashboard/chart-area-interactive.jsx",
+        122
+      ],
+      [
+        "src/components/dashboard/chart-area-interactive.jsx",
+        140
+      ]
+    ],
     "translation": "Últimos 7 días"
   },
   "GCdPZM": {
+    "message": "Mañana",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/dashboard/section-cards.jsx",
+        395
+      ]
+    ],
     "translation": "Mañana"
   },
   "vo2a+a": {
+    "message": "Marketing",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/sidebar/Sidebar.js",
+        40
+      ],
+      [
+        "src/components/sidebar/ShadSidebar.js",
+        44
+      ]
+    ],
     "translation": "Marketing"
   },
   "WjfTyA": {
+    "message": "No hay datos para mostrar en este rango.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/dashboard/chart-area-interactive.jsx",
+        94
+      ]
+    ],
     "translation": "No hay datos para mostrar en este rango."
   },
   "mum6Le": {
+    "message": "No hay eventos para hoy",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/dashboard/section-cards.jsx",
+        390
+      ]
+    ],
     "translation": "No hay eventos para hoy"
   },
   "OrdjEy": {
+    "message": "No hay eventos para mañana",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/dashboard/section-cards.jsx",
+        402
+      ]
+    ],
     "translation": "No hay eventos para mañana"
   },
   "ulGDE0": {
+    "message": "No hay eventos para pasado mañana",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/dashboard/section-cards.jsx",
+        414
+      ]
+    ],
     "translation": "No hay eventos para pasado mañana"
   },
+  "rtr5T3": {
+    "translation": "No se encontraron requerimientos de comida.",
+    "message": "No se encontraron requerimientos de comida.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/dashboard/ai-analysis-modal.jsx",
+        301
+      ]
+    ]
+  },
   "4jJvKu": {
+    "message": "Nombre de la Compañía*",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/companies/ModalCompany.js",
+        300
+      ]
+    ],
     "translation": "Nombre de la Compañía*"
   },
+  "PkYri9": {
+    "translation": "Nombre de usuario",
+    "message": "Nombre de usuario",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/user/create-user-form.jsx",
+        52
+      ]
+    ]
+  },
   "iDNBZe": {
+    "message": "Notifications",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/sidebar/Sidebar.js",
+        41
+      ],
+      [
+        "src/components/sidebar/ShadSidebar.js",
+        45
+      ]
+    ],
     "translation": "Notificaciones"
   },
   "aOyzki": {
+    "message": "Nueva Compañía",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/companies/ModalCompany.js",
+        523
+      ]
+    ],
     "translation": "Nueva Compañía"
   },
   "xzwL1X": {
+    "message": "Número de Identificación*",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/companies/ModalCompany.js",
+        355
+      ]
+    ],
     "translation": "Número de Identificación*"
   },
   "ct3XAd": {
+    "message": "pax",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/dashboard/section-cards.jsx",
+        268
+      ]
+    ],
     "translation": "pax"
   },
+  "CcK+Ft": {
+    "translation": "PDF",
+    "message": "PDF",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/dashboard/ai-analysis-modal.jsx",
+        333
+      ]
+    ]
+  },
   "qNVDKY": {
+    "message": "Persona de Contacto*",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/companies/ModalCompany.js",
+        377
+      ]
+    ],
     "translation": "Persona de Contacto*"
   },
+  "h0IAGg": {
+    "translation": "Personas esperadas",
+    "message": "Personas esperadas",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/dashboard/ai-analysis-modal.jsx",
+        204
+      ]
+    ]
+  },
+  "+IrUzC": {
+    "translation": "Powered by Google Gemini",
+    "message": "Powered by Google Gemini",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/dashboard/ai-analysis-modal.jsx",
+        355
+      ]
+    ]
+  },
   "RvBAyC": {
+    "message": "Preparate para lo que viene",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/pages/Dashboard.js",
+        188
+      ]
+    ],
     "translation": "Preparate para lo que viene"
   },
+  "9M5J3U": {
+    "translation": "Procesando evento {0} de {1}",
+    "message": "Procesando evento {0} de {1}",
+    "placeholders": {
+      "0": [
+        "progress.current"
+      ],
+      "1": [
+        "progress.total"
+      ]
+    },
+    "comments": [],
+    "origin": [
+      [
+        "src/components/dashboard/ai-analysis-modal.jsx",
+        170
+      ]
+    ]
+  },
   "Oojfbh": {
+    "message": "Professional",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/sidebar/ShadSidebar.js",
+        67
+      ]
+    ],
     "translation": "Professional"
   },
   "LdSWvT": {
+    "message": "Proximos Eventos",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/pages/Dashboard.js",
+        185
+      ]
+    ],
     "translation": "Próximos Eventos"
   },
   "UDMjsP": {
+    "message": "Quick Actions",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/sidebar/ShadSidebar.js",
+        106
+      ]
+    ],
     "translation": "Quick Actions"
   },
   "common.rememberMe": {
+    "message": "Recuérdame",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/auth/Login.js",
+        304
+      ]
+    ],
     "translation": "Recuérdame"
   },
+  "wtAFiH": {
+    "translation": "Rol",
+    "message": "Rol",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/user/create-user-form.jsx",
+        129
+      ]
+    ]
+  },
   "A1taO8": {
+    "message": "Search",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/sidebar/Sidebar.js",
+        39
+      ],
+      [
+        "src/components/sidebar/ShadSidebar.js",
+        43
+      ],
+      [
+        "src/components/sidebar/app-sidebar.js",
+        69
+      ]
+    ],
     "translation": "Buscar"
   },
   "welcome.features.tracking": {
+    "message": "Seguimiento detallado",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/auth/Login.js",
+        194
+      ]
+    ],
     "translation": "Seguimiento detallado"
   },
   "Tz0i8g": {
+    "message": "Settings",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/sidebar/Sidebar.js",
+        42
+      ],
+      [
+        "src/components/sidebar/ShadSidebar.js",
+        46
+      ],
+      [
+        "src/components/sidebar/ShadSidebar.js",
+        188
+      ],
+      [
+        "src/components/sidebar/app-sidebar.js",
+        83
+      ]
+    ],
     "translation": "Configuración"
   },
   "bHYIks": {
+    "message": "Sign Out",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/sidebar/Sidebar.js",
+        154
+      ],
+      [
+        "src/components/sidebar/ShadSidebar.js",
+        196
+      ]
+    ],
     "translation": "Cerrar sesión"
   },
+  "qHmrAc": {
+    "translation": "Solo un administrador puede crear nuevos usuarios.",
+    "message": "Solo un administrador puede crear nuevos usuarios.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/auth/Register.js",
+        86
+      ]
+    ]
+  },
   "dYe7w0": {
+    "message": "Teléfono*",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/companies/ModalCompany.js",
+        397
+      ]
+    ],
     "translation": "Teléfono*"
   },
   "/+mLc0": {
+    "message": "Tipo de Identificación*",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/companies/ModalCompany.js",
+        320
+      ]
+    ],
     "translation": "Tipo de Identificación*"
   },
   "SJgxHg": {
+    "message": "Total de Personas",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/dashboard/chart-area-interactive.jsx",
+        103
+      ]
+    ],
     "translation": "Total de Personas"
+  },
+  "nwZuVg": {
+    "translation": "Total Pax",
+    "message": "Total Pax",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/dashboard/ai-analysis-modal.jsx",
+        184
+      ]
+    ]
+  },
+  "ylqS39": {
+    "translation": "Únete a nosotros",
+    "message": "Únete a nosotros",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/auth/Register.js",
+        99
+      ]
+    ]
+  },
+  "Yn1cMy": {
+    "translation": "Validación y consolidación de requerimientos de alimentación mediante IA.",
+    "message": "Validación y consolidación de requerimientos de alimentación mediante IA.",
+    "placeholders": {},
+    "comments": [],
+    "origin": [
+      [
+        "src/components/dashboard/ai-analysis-modal.jsx",
+        153
+      ]
+    ]
   }
 }
