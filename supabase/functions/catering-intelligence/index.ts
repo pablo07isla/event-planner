@@ -49,12 +49,19 @@ Deno.serve(async (req: Request) => {
       // which fires the webhook again. Only re-process if the fields
       // that actually feed the AI prompt have changed.
       if (payload.old_record) {
-        const descChanged = payload.record.eventDescription !== payload.old_record.eventDescription;
-        const countChanged = payload.record.peopleCount !== payload.old_record.peopleCount;
+        const descChanged =
+          payload.record.eventDescription !==
+          payload.old_record.eventDescription;
+        const countChanged =
+          payload.record.peopleCount !== payload.old_record.peopleCount;
         if (!descChanged && !countChanged) {
           return new Response(
-            JSON.stringify({ message: "No relevant changes, skipping to avoid loop" }),
-            { headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
+            JSON.stringify({
+              message: "No relevant changes, skipping to avoid loop",
+            }),
+            {
+              headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+            },
           );
         }
       }
@@ -99,7 +106,7 @@ STANDARD CATEGORIES (use EXACTLY these names, grouped by meal type):
 - Pernil Guisado
 - Chuleta Cerdo
 - Chuleta Pollo
-- Filete Champiñones
+- Filete de Pollo Champiñones (e.g., "Filete champi", "filete pollo champi")
 - Tilapia Frita
 - Tilapia Sudada (e.g., "tilapia en sancocho")
 
@@ -210,16 +217,22 @@ RULES:
       }
 
       const errorText = await geminiResponse.text();
-      console.warn(`Model ${model} failed (${geminiResponse.status}): ${errorText}`);
+      console.warn(
+        `Model ${model} failed (${geminiResponse.status}): ${errorText}`,
+      );
 
       // Only retry on 503 (unavailable) or 429 (rate limit)
       if (geminiResponse.status !== 503 && geminiResponse.status !== 429) {
-        throw new Error(`Gemini API Error: ${geminiResponse.status} - ${errorText}`);
+        throw new Error(
+          `Gemini API Error: ${geminiResponse.status} - ${errorText}`,
+        );
       }
 
       // If last model also failed, throw
       if (model === models[models.length - 1]) {
-        throw new Error(`All Gemini models unavailable. Last error: ${geminiResponse.status} - ${errorText}`);
+        throw new Error(
+          `All Gemini models unavailable. Last error: ${geminiResponse.status} - ${errorText}`,
+        );
       }
     }
     let rawText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || "[]";
