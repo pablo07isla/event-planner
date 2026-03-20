@@ -265,7 +265,7 @@ const EventList = ({ events, onClose }) => {
       // Preparar FormData para enviar el archivo
       const formData = new FormData();
       formData.append("file", blob, "reporte_eventos.pdf");
-      formData.append("channel", "C0A5C5V9D41");
+      formData.append("channel", "C0AML8MREF3");
 
       // Llamar a la Edge Function de Supabase
       const { data, error } = await supabase.functions.invoke("send-slack", {

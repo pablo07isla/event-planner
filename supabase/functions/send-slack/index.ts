@@ -6,6 +6,8 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+const DEFAULT_CHANNEL = Deno.env.get("SLACK_CHANNEL_ID") || "C0AML8MREF3";
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -19,7 +21,7 @@ serve(async (req) => {
     if (contentType.includes("multipart/form-data")) {
       const formData = await req.formData();
       const file = formData.get("file") as File;
-      const channel = (formData.get("channel") as string) || "C0A5C5V9D41";
+      const channel = (formData.get("channel") as string) || DEFAULT_CHANNEL;
 
       if (!file) {
         throw new Error("No se proporcionó ningún archivo");
@@ -207,7 +209,7 @@ serve(async (req) => {
     }
 
     const slackPayload = {
-      channel: channel || "C0A5C5V9D41",
+      channel: channel || DEFAULT_CHANNEL,
       blocks: blocks,
     };
 
