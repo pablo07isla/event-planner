@@ -126,26 +126,28 @@ export default function SectionCards({
     eventsToAnalyze.forEach((event) => {
       // Data is now pre-calculated in DB by Webhook
       const storedAnalysis = event.catering_intelligence;
+      // An empty object ({}) is the column default: the AI never stored a
+      // result (pending or failed), which is different from "no food found".
+      const hasAnalysis = Boolean(storedAnalysis?.mealGroups);
       const mealGroups = storedAnalysis?.mealGroups || {};
+      const eventLabel = `"${event.companyName || event.title}" (${
+        event.peopleCount || 0
+      } pax)`;
 
       // Check if no food detected but event has people
       const hasMeals = Object.values(mealGroups).some(
         (items) => items && items.length > 0,
       );
 
-      if (!hasMeals && event.peopleCount > 0) {
-        if (!storedAnalysis) {
-          // Analysis pending
-        } else {
-          allWarnings.push(
-            `Evento "${event.companyName || event.title}" (${
-              event.peopleCount
-            } pax) no tiene comida detectada.`,
-          );
-        }
+      if (!hasAnalysis) {
+        allWarnings.push(
+          `Evento ${eventLabel}: análisis de IA pendiente o fallido.`,
+        );
+      } else if (!hasMeals && event.peopleCount > 0) {
+        allWarnings.push(`Evento ${eventLabel} no tiene comida detectada.`);
       }
 
-      if (storedAnalysis) eventsWithData++;
+      if (hasAnalysis) eventsWithData++;
 
       // Aggregate items from all meal groups
       Object.entries(mealGroups).forEach(([mealType, items]) => {
